@@ -831,6 +831,7 @@ function applyTelegramSafeArea(tg) {
         <div class="post-tabs">
           <div class="post-tab active" id="postTabPost" onclick="switchPostTab('post')">➕ নতুন জব</div>
           <div class="post-tab" id="postTabMine" onclick="switchPostTab('mine')">📂 আমার জবসমূহ</div>
+          <div class="post-tab" id="postTabReview" onclick="switchPostTab('review')">📥 Submissions <span id="postReviewBadge" style="display:none;background:var(--red);color:#fff;font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:3px">0</span></div>
         </div>
 
         <div id="postFormPane">
@@ -881,6 +882,17 @@ function applyTelegramSafeArea(tg) {
             <div class="h-chip" onclick="filterMyPostedJobs('rejected',this)">❌ Rejected</div>
           </div>
           <div id="myPostedJobsList"></div>
+        </div>
+
+        <div id="postReviewPane" style="display:none">
+          <div class="post-limit-banner" style="background:var(--blue-dim);color:var(--blue);border-color:rgba(68,138,255,.2)">📥 আপনার পোস্ট করা জবে ওয়ার্কাররা যা সাবমিট করেছে তা এখানে রিভিউ করুন। Approve করলে ওয়ার্কারের ব্যালেন্সে টাকা যোগ হবে; Reject করলে বাজেট আপনার হোল্ডেই থেকে যাবে।</div>
+          <div class="mytask-filter history-filter">
+            <div class="h-chip active" onclick="filterMyJobSubmissions('pending',this)">⏳ Pending</div>
+            <div class="h-chip" onclick="filterMyJobSubmissions('approved',this)">✅ Approved</div>
+            <div class="h-chip" onclick="filterMyJobSubmissions('rejected',this)">❌ Rejected</div>
+            <div class="h-chip" onclick="filterMyJobSubmissions('all',this)">All</div>
+          </div>
+          <div id="myJobSubmissionsList"></div>
         </div>
       </div>
     </section>
@@ -1208,6 +1220,7 @@ const S = {
   _pendingProofFiles: {}, _dailyLinkPending: {}, _dailyLinkCompleting: {},
   supportMessages: [],
   myPostedJobs: [], postSelectedType: 'proof', postFilter: 'all',
+  myJobSubmissions: [], myJobSubFilter: 'pending',
   _settlingJobIds: {}, // guards against double-settling hold refunds/commits
 };
 
@@ -1762,6 +1775,10 @@ function listenMyTaskSubmissions(uid, onChange) {
 async function submitProofTask(jobId, job, proofText, imageFiles, user, userData) {
   let proofImageUrls = [];
   for (const file of imageFiles) proofImageUrls.push(await uploadProofToCloudinary(file));
+  // jobPosterId lets a regular user who posted this job find submissions to
+  // THEIR job (peer-review screen), same way admin already reviews all jobs.
+  // 'admin' for official admin-posted jobs — only the admin panel reviews those.
+  const jobPosterId = job.postedByAdmin === false ? (job.postedById || '') : 'admin';
   await fb.addDoc(fb.collection(db, 'taskSubmissions'), {
     jobId, jobTitle: job.title, reward: job.reward || 0,
     workerId: user.uid, workerName: userData?.name || user.displayName || 'Unknown',
@@ -1769,7 +1786,7 @@ async function submitProofTask(jobId, job, proofText, imageFiles, user, userData
     proofText: proofText || '', proofType: job.type,
     proofImageUrl: proofImageUrls[0] || '',
     proofImageUrls,
-    status: 'pending',
+    status: 'pending', jobPosterId,
     category: job.category || '', country: job.country || 'Global',
     date: new Date().toLocaleString('en-US'),
     _ts: Date.now(), createdAt: fb.serverTimestamp()
@@ -1780,12 +1797,13 @@ async function completeDailyLinkTask(jobId, job, user, userData, userRef) {
   const status = getDailyLinkStatus(jobId);
   if (status.onCooldown) throw new Error('ON_COOLDOWN');
   const nowTs = Date.now();
+  const jobPosterId = job.postedByAdmin === false ? (job.postedById || '') : 'admin';
   await fb.addDoc(fb.collection(db, 'taskSubmissions'), {
     jobId, jobTitle: job.title, reward: job.reward || 0,
     workerId: user.uid, workerName: userData?.name || user.displayName || 'Unknown',
     workerEmail: user.email || '',
     proofText: 'Auto-completed via daily link visit', proofType: 'dailylink',
-    status: 'approved', category: job.category || '', country: job.country || 'Global',
+    status: 'approved', jobPosterId, category: job.category || '', country: job.country || 'Global',
     date: new Date().toLocaleString('en-US'),
     _ts: nowTs, createdAt: fb.serverTimestamp()
   });
@@ -1798,6 +1816,66 @@ async function completeDailyLinkTask(jobId, job, user, userData, userRef) {
     await fb.updateDoc(userRef, {
       balance: fb.increment(job.reward || 0), totalEarned: fb.increment(job.reward || 0),
       tasksCompleted: fb.increment(1), approvedTasks: fb.increment(1)
+    }).catch(() => {});
+  }
+}
+
+// ══════ js/services/peerReview.js — job poster reviews submissions to THEIR job ══════
+// NOTE (security): like the rest of this app, balance credits/rejections are
+// written straight from the client. This mirrors the trust model already
+// used everywhere else here (registerUser's referral cascade, spin rewards,
+// withdrawals, etc.) but Firestore Rules MUST restrict a taskSubmissions
+// write to cases where request.auth.uid === resource.data.jobPosterId (or
+// 'admin' stays admin-only) — otherwise any signed-in user could credit
+// themselves. Flagging this clearly so it isn't missed when Rules are set.
+let _unsubMySubs = null;
+function listenSubmissionsToMyJobs(uid, onChange) {
+  if (_unsubMySubs) _unsubMySubs();
+  if (!uid) return;
+  _unsubMySubs = fb.onSnapshot(
+    fb.query(fb.collection(db, 'taskSubmissions'), fb.where('jobPosterId', '==', uid)),
+    snap => {
+      const list = [];
+      snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+      list.sort((a, b) => (b._ts || 0) - (a._ts || 0));
+      onChange && onChange(list);
+    },
+    e => console.warn('listenSubmissionsToMyJobs:', e)
+  );
+}
+
+// Approve a worker's submission to a job THIS user posted: credits the
+// worker's balance/stats and marks the job slot filled — same effect as the
+// admin panel's approveTask(), just scoped to jobs this user owns.
+async function approveMySubmission(sub) {
+  if (!sub || sub.status !== 'pending') throw new Error('ALREADY_REVIEWED');
+  const subRef = fb.doc(db, 'taskSubmissions', sub.id);
+  await fb.updateDoc(subRef, { status: 'approved' });
+  if (sub.workerId) {
+    await fb.updateDoc(fb.doc(db, 'users', sub.workerId), {
+      balance: fb.increment(sub.reward || 0), totalEarned: fb.increment(sub.reward || 0),
+      tasksCompleted: fb.increment(1), approvedTasks: fb.increment(1)
+    }).catch(() => {});
+    await fb.addDoc(fb.collection(db, 'users', sub.workerId, 'notifications'), {
+      title: '✅ Task Approved!', msg: `"${sub.jobTitle || 'Your task'}" was approved by the job poster — ${fmtUSD(sub.reward || 0)} added to your balance.`,
+      icon: '✅', unread: true, createdAt: fb.serverTimestamp()
+    }).catch(() => {});
+  }
+  if (sub.jobId && sub.jobId !== 'spin') {
+    await fb.updateDoc(fb.doc(db, 'jobs', sub.jobId), { filled: fb.increment(1) }).catch(() => {});
+  }
+}
+
+// Reject a worker's submission to a job THIS user posted. No balance moves —
+// the held job budget stays put so it can go to another worker instead.
+async function rejectMySubmission(sub, reason) {
+  if (!sub || sub.status !== 'pending') throw new Error('ALREADY_REVIEWED');
+  const subRef = fb.doc(db, 'taskSubmissions', sub.id);
+  await fb.updateDoc(subRef, { status: 'rejected', rejectReason: reason || '' });
+  if (sub.workerId) {
+    await fb.addDoc(fb.collection(db, 'users', sub.workerId, 'notifications'), {
+      title: '❌ Task Rejected', msg: `"${sub.jobTitle || 'Your task'}" was rejected. Reason: ${reason || '—'}`,
+      icon: '❌', unread: true, createdAt: fb.serverTimestamp()
     }).catch(() => {});
   }
 }
@@ -2469,9 +2547,76 @@ function populateCategorySelect() {
 function switchPostTab(tab) {
   document.getElementById('postTabPost')?.classList.toggle('active', tab === 'post');
   document.getElementById('postTabMine')?.classList.toggle('active', tab === 'mine');
+  document.getElementById('postTabReview')?.classList.toggle('active', tab === 'review');
   document.getElementById('postFormPane').style.display = tab === 'post' ? 'block' : 'none';
   document.getElementById('postMinePane').style.display = tab === 'mine' ? 'block' : 'none';
+  document.getElementById('postReviewPane').style.display = tab === 'review' ? 'block' : 'none';
   if (tab === 'mine') renderMyPostedJobs();
+  if (tab === 'review') renderMyJobSubmissions();
+}
+
+// ══════ Peer-review UI: submissions to jobs I posted ══════
+function updatePostReviewBadge() {
+  const badge = document.getElementById('postReviewBadge'); if (!badge) return;
+  const pending = S.myJobSubmissions.filter(s => s.status === 'pending').length;
+  badge.textContent = pending; badge.style.display = pending > 0 ? 'inline-block' : 'none';
+}
+function filterMyJobSubmissions(status, el) {
+  S.myJobSubFilter = status;
+  document.querySelectorAll('#postReviewPane .h-chip').forEach(c => c.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderMyJobSubmissions();
+}
+function renderMyJobSubmissions() {
+  const el = document.getElementById('myJobSubmissionsList'); if (!el) return;
+  const filter = S.myJobSubFilter || 'pending';
+  let list = S.myJobSubmissions;
+  if (filter !== 'all') list = list.filter(s => s.status === filter);
+  if (!list.length) { el.innerHTML = '<div class="history-empty"><div class="big">📥</div>এখানে কোনো সাবমিশন নেই।</div>'; return; }
+  el.innerHTML = list.map(s => {
+    const stClass = s.status === 'approved' ? 'type-done' : s.status === 'rejected' ? 'type-rejected' : 'type-pending';
+    const stLabel = s.status === 'approved' ? '✓ Approved' : s.status === 'rejected' ? '❌ Rejected' : '⏳ Pending';
+    const imgs = (s.proofImageUrls && s.proofImageUrls.length) ? s.proofImageUrls : (s.proofImageUrl ? [s.proofImageUrl] : []);
+    return `<div class="task-card" style="cursor:default">
+      <div class="task-card-inner">
+        <div style="display:flex;gap:9px;align-items:center;margin-bottom:8px">
+          <div class="poster-avatar" style="width:26px;height:26px;font-size:11px">${(s.workerName||'?').charAt(0).toUpperCase()}</div>
+          <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700">${escHtml(s.workerName||'Unknown Worker')}</div><div style="font-size:9.5px;color:var(--text3)">${escHtml(s.workerEmail||'')}</div></div>
+          <span class="badge ${stClass}">${stLabel}</span>
+        </div>
+        <div class="task-top"><div class="task-title">${escHtml(s.jobTitle||'Task')}</div><div class="task-reward-pill"><span>${fmtUSD(s.reward||0)}</span></div></div>
+        ${s.proofText ? `<div style="font-size:11.5px;color:var(--text2);margin-top:6px;font-style:italic">"${escHtml(s.proofText)}"</div>` : ''}
+        ${imgs.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;margin-top:8px">${imgs.map(u=>`<img src="${escHtml(u)}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer" onclick="window.open('${escHtml(u)}','_blank')">`).join('')}</div>` : ''}
+        ${s.rejectReason ? `<div class="myjob-reject-box">💬 <div><strong>আপনার কারণ:</strong> ${escHtml(s.rejectReason)}</div></div>` : ''}
+        <div style="font-size:10px;color:var(--text3);margin-top:6px">${s.date||''}</div>
+        ${s.status==='pending' ? `<div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn-ghost" style="flex:1;color:var(--red)" onclick="rejectJobSubmission('${s.id}')">❌ Reject</button>
+          <button class="btn-primary" style="flex:1" onclick="approveJobSubmission('${s.id}')">✅ Approve & Pay</button>
+        </div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+async function approveJobSubmission(subId) {
+  const sub = S.myJobSubmissions.find(s => s.id === subId); if (!sub) return;
+  try {
+    await approveMySubmission(sub);
+    showToast(`✅ Approved! ${fmtUSD(sub.reward||0)} credited to ${sub.workerName||'worker'}.`);
+  } catch (e) { console.error(e); showToast(e.message === 'ALREADY_REVIEWED' ? 'ইতিমধ্যে রিভিউ করা হয়েছে' : '❌ Approve failed', 'error'); }
+}
+function rejectJobSubmission(subId) {
+  const sub = S.myJobSubmissions.find(s => s.id === subId); if (!sub) return;
+  showConfirmHtml(`<div><div class="modal-title">❌ Reject Submission</div><div style="font-size:12.5px;color:var(--text2);margin-bottom:14px">${escHtml(sub.workerName||'Worker')} — "${escHtml(sub.jobTitle||'')}"</div><div class="field"><label>কারণ লিখুন (Worker দেখবে)</label><textarea id="jsRejectReason" rows="3" placeholder="যেমন: স্ক্রিনশট স্পষ্ট নয়..."></textarea></div><div style="display:flex;gap:9px"><button class="btn-ghost" style="flex:1" onclick="closeConfirm()">Cancel</button><button class="btn-primary" style="flex:1;background:var(--red)" onclick="confirmRejectJobSubmission('${subId}')">Reject</button></div></div>`);
+}
+async function confirmRejectJobSubmission(subId) {
+  const reason = document.getElementById('jsRejectReason')?.value.trim();
+  if (!reason) { showToast('কারণ লিখুন', 'error'); return; }
+  const sub = S.myJobSubmissions.find(s => s.id === subId); if (!sub) return;
+  closeConfirm();
+  try {
+    await rejectMySubmission(sub, reason);
+    showToast('❌ Rejected — worker notified with reason', 'info');
+  } catch (e) { console.error(e); showToast(e.message === 'ALREADY_REVIEWED' ? 'ইতিমধ্যে রিভিউ করা হয়েছে' : '❌ Reject failed', 'error'); }
 }
 function selectPostType(el, type) {
   S.postSelectedType = type;
@@ -3039,6 +3184,7 @@ Object.assign(window, {
   renderMyTasks, filterMyTasks,
   onEnterPostScreen, applySiteSettingsToPost, switchPostTab, selectPostType,
   updatePostBudgetPreview, submitJobPost, renderMyPostedJobs, filterMyPostedJobs,
+  filterMyJobSubmissions, renderMyJobSubmissions, approveJobSubmission, rejectJobSubmission, confirmRejectJobSubmission,
   applySiteSettingsToWallet, renderWithdrawMethodGrid, selectWithdrawMethod, updateWithdrawPreview,
   rebuildAndRenderTx, renderTxList, filterTx, doWithdraw,
   renderHistory, filterHistory,
@@ -3139,6 +3285,11 @@ async function bootstrapApp(user, ref, data) {
     // job this user posted — no admin panel changes required. See
     // settleJobPostHolds() in services/postJobs.js for the transaction logic.
     settleJobPostHolds(jobs, window._userRef);
+  });
+  listenSubmissionsToMyJobs(user.uid, (list) => {
+    S.myJobSubmissions = list;
+    renderMyJobSubmissions();
+    updatePostReviewBadge();
   });
   loadReferralTree(data).then(() => renderGenTree(S.currentGenTab));
   loadLeaderboard().then(lb => renderLeaderboard(lb));

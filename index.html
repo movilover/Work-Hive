@@ -2638,7 +2638,19 @@ function applySiteSettingsToWallet(SITE_) {
   const wInput = document.getElementById('withdrawAmt'); if (wInput) wInput.min = SITE_.minWithdraw;
   updateWithdrawPreview();
 }
-function renderWithdrawMethodGrid() {
+function renderWithdrawMethodGrid()
+function renderTransactionHistory() {
+  const filteredTransactions = filterTransactionHistory();
+  const transactionHtml = filteredTransactions.map(t => {
+    return `<div class="transaction">${t.type === 'withdrawal' ? 'Withdrawal' : 'Task'} - ${t.amount}</div>`;
+  }).join('');
+  document.getElementById('transactionHistory').innerHTML = transactionHtml;
+}
+function filterTransactionHistory() {
+  const transactions = S.transactionHistory;
+  const filteredTransactions = transactions.filter(t => t.type === 'withdrawal' || (t.type === 'task' && Date.now() - t.timestamp < 7 * 24 * 60 * 60 * 1000));
+  return filteredTransactions;
+} {
   if (!S.paymentMethods.length) return;
   const grid = document.getElementById('withdrawMethodGrid'); if (!grid) return;
   const emojiMap = { bKash: '📱', Nagad: '💳', Rocket: '🚀', USDT: '₮', Bank: '🏦' };

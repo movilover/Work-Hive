@@ -2591,9 +2591,12 @@ function renderMyPostedJobs() {
     const [label, cls] = STATUS_LABEL[j.status] || ['⏳ Review Pending', 'type-pending'];
     const heldNote = j.budgetHeld ? `<div class="myjob-meta" style="margin-top:4px"><span>💰 হোল্ড করা বাজেট: ${fmtUSD(j.budgetHeld)}${j.holdSettled ? (j.status === 'rejected' ? ' (ফেরত দেওয়া হয়েছে)' : ' (নিশ্চিত)') : ' (প্রক্রিয়াধীন)'}</span></div>` : '';
     return `<div class="myjob-card">
-      <div class="myjob-top"><div class="myjob-title">${escHtml(j.title)}</div><span class="badge ${cls}">${label}</span></div>
+      <div class="myjob-top"><div class="myjob-title">
+<div class="myjob-edit-status">এডিট করা হয়েছে</div>
+<div class="myjob-edit"><button onclick="editJobPost()">এডিট</button></div>${escHtml(j.title)}</div><span class="badge ${cls}">${label}</span></div>
       <div class="myjob-meta"><span>${escHtml(j.category || '')}</span><span>🌍 ${escHtml(j.country || 'Global')}</span></div>
       <div class="myjob-stats">
+<div class="myjob-admin-review"><button onclick="adminReview()">রিভিউ</button><button onclick="adminApprove()">অ্যাপ্রুভ</button></div>
         <div class="myjob-stat"><div class="v" style="color:var(--gold)">${fmtUSD(j.reward || 0)}</div><div class="l">Per Worker</div></div>
         <div class="myjob-stat"><div class="v">${j.filled || 0}/${j.limit || 0}</div><div class="l">Filled</div></div>
         <div class="myjob-stat"><div class="v" style="color:var(--green)">${fmtUSD((j.reward || 0) * (j.limit || 0))}</div><div class="l">Total Budget</div></div>

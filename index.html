@@ -2582,6 +2582,21 @@ async function submitJobPost() {
 const STATUS_LABEL = { pending_review: ['⏳ Review Pending', 'type-pending'], approved: ['✓ Live', 'type-done'], rejected: ['❌ Rejected', 'type-rejected'] };
 
 function renderMyPostedJobs() {
+const actionSelect = document.getElementById('action');
+subCategorySelect.addEventListener('change', (e) => {
+  const selectedSubCategory = e.target.value;
+  if (selectedSubCategory === 'Facebook') {
+    actionSelect.innerHTML = '<option value="like">Like</option><option value="comment">Comment</option><option value="share">Share</option><option value="page follows">Page Follows</option>';
+  }
+});
+const categorySelect = document.getElementById('category');
+const subCategorySelect = document.getElementById('sub-category');
+categorySelect.addEventListener('change', (e) => {
+  const selectedCategory = e.target.value;
+  if (selectedCategory === 'Social Media') {
+    subCategorySelect.innerHTML = '<option value="Facebook">Facebook</option><option value="Instagram">Instagram</option>';
+  }
+});
   const el = document.getElementById('myPostedJobsList'); if (!el) return;
   const filter = S.postFilter || 'all';
   let list = S.myPostedJobs;
@@ -2592,10 +2607,12 @@ function renderMyPostedJobs() {
     const heldNote = j.budgetHeld ? `<div class="myjob-meta" style="margin-top:4px"><span>💰 হোল্ড করা বাজেট: ${fmtUSD(j.budgetHeld)}${j.holdSettled ? (j.status === 'rejected' ? ' (ফেরত দেওয়া হয়েছে)' : ' (নিশ্চিত)') : ' (প্রক্রিয়াধীন)'}</span></div>` : '';
     return `<div class="myjob-card">
       <div class="myjob-top"><div class="myjob-title">
+<div class="category-select"><select id="category"><option value="">Select Category</option><option value="Social Media">Social Media</option></select></div><div class="sub-category-select" id="sub-category"></div>
 <div class="myjob-edit-status">এডিট করা হয়েছে</div>
 <div class="myjob-edit"><button onclick="editJobPost()">এডিট</button></div>${escHtml(j.title)}</div><span class="badge ${cls}">${label}</span></div>
       <div class="myjob-meta"><span>${escHtml(j.category || '')}</span><span>🌍 ${escHtml(j.country || 'Global')}</span></div>
       <div class="myjob-stats">
+<div class="action-select" id="action"></div>
 <div class="myjob-admin-review"><button onclick="adminReview()">রিভিউ</button><button onclick="adminApprove()">অ্যাপ্রুভ</button></div>
 <button onclick="adminReject()">রিজেক্ট</button>
         <div class="myjob-stat"><div class="v" style="color:var(--gold)">${fmtUSD(j.reward || 0)}</div><div class="l">Per Worker</div></div>

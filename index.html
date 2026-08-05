@@ -2597,6 +2597,7 @@ function renderMyPostedJobs() {
       <div class="myjob-meta"><span>${escHtml(j.category || '')}</span><span>🌍 ${escHtml(j.country || 'Global')}</span></div>
       <div class="myjob-stats">
 <div class="myjob-admin-review"><button onclick="adminReview()">রিভিউ</button><button onclick="adminApprove()">অ্যাপ্রুভ</button></div>
+<button onclick="adminReject()">রিজেক্ট</button>
         <div class="myjob-stat"><div class="v" style="color:var(--gold)">${fmtUSD(j.reward || 0)}</div><div class="l">Per Worker</div></div>
         <div class="myjob-stat"><div class="v">${j.filled || 0}/${j.limit || 0}</div><div class="l">Filled</div></div>
         <div class="myjob-stat"><div class="v" style="color:var(--green)">${fmtUSD((j.reward || 0) * (j.limit || 0))}</div><div class="l">Total Budget</div></div>

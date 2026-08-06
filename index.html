@@ -1203,35 +1203,6 @@ const fb = {
   fbStorageRef, uploadBytes, getDownloadURL
 };
 
-// ══════ AI PROXY (Groq + Gemini via Cloudflare Worker) ══════
-const AI_PROXY_URL = 'https://workhive-ai-proxy.omor-faruk-sojol-2.workers.dev';
-
-async function callAIProxy(prompt, systemPrompt = '', provider = 'groq') {
-  const res = await fetch(AI_PROXY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ provider, prompt, systemPrompt }),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || !data.ok) throw new Error(data.error || 'AI request failed');
-  return data.text || '';
-}
-
-async function aiImproveNote(jobId) {
-  const ta = document.getElementById('proofText' + jobId);
-  if (!ta) return;
-  const original = ta.value.trim();
-  if (!original) { showToast('আগে কিছু লিখুন, তারপর AI সেটা গুছিয়ে দেবে', 'error'); return; }
-  showToast('✨ AI লিখছে...', 'info');
-  try {
-    const improved = await callAIProxy(
-      'Rewrite this task-completion note in Bangla, keep it short (1-2 sentences), natural and honest, keep any @username or numbers unchanged: ' + original,
-      'You are helping a micro-task worker write a short, clear completion note in Bangla. Do not add fake claims.'
-    );
-    if (improved) { ta.value = improved; showToast('✅ AI দিয়ে গুছানো হয়েছে'); }
-  } catch (e) { console.error(e); showToast('❌ AI ব্যর্থ হয়েছে, ম্যানুয়ালি লিখুন', 'error'); }
-}
-
 // ══════ js/core/state.js ══════
 const S = {
   selectedWithdrawMethod: 'bKash',
@@ -1651,6 +1622,7 @@ function listenApprovedJobs(onChange) {
 // ══════ js/services/postJobs.js ══════
 let _unsubPostJobs = null;
 
+// Computes the full budget breakdown for a job post (per-worker reward × slots + platform fee)
 function computeJobBudget(reward, slots) {
   reward = Number(reward) || 0; slots = Number(slots) || 0;
   const workerTotal = reward * slots;
@@ -1659,6 +1631,17 @@ function computeJobBudget(reward, slots) {
   return { reward, slots, workerTotal, platformFee: parseFloat(platformFee.toFixed(2)), grandTotal: parseFloat(grandTotal.toFixed(2)) };
 }
 
+/**
+ * Creates a new job post from a regular user.
+ * SECURITY / BALANCE NOTE: the balance check + deduction happens inside a
+ * Firestore transaction (read current balance, verify sufficiency, deduct
+ * + hold, THEN create the job doc) so two rapid job-posts from the same
+ * user can't both pass the balance check against a stale cached balance.
+ * The job always lands as status: 'pending_review' — it will NOT show up
+ * in the public Tasks list (listenApprovedJobs only reads status=='approved')
+ * until an admin approves it from the admin panel. Firestore Rules must
+ * mirror this client-side validation (see firestore.rules in project root).
+ */
 async function createJobPost({ title, category, type, reward, limit, country, instructions, link, screenshotCount }, user, userData, userRef) {
   if (!SITE.postFeatureEnabled) throw new Error('POST_DISABLED');
   reward = Number(reward); limit = Number(limit);
@@ -1680,6 +1663,10 @@ async function createJobPost({ title, category, type, reward, limit, country, in
     const bal = uSnap.data().balance || 0;
     if (bal < budget.grandTotal) throw new Error('INSUFFICIENT_BALANCE');
 
+    // Deduct the full budget from the wallet now and track it as a "hold"
+    // against pending job posts. The money stays deducted whether the job
+    // is later approved (spent) or rejected (settleJobPostHold() below
+    // refunds it back once the admin decision is observed).
     tx.update(userRef, {
       balance: bal - budget.grandTotal,
       postingHold: fb.increment(budget.grandTotal)
@@ -1721,6 +1708,18 @@ function listenMyPostedJobs(uid, onChange) {
   );
 }
 
+/**
+ * Client-side settlement of the balance "hold" placed when a job was posted.
+ * Runs every time the logged-in user's own posted-jobs list updates, so it
+ * reacts the moment an admin approves/rejects one of their jobs — no admin
+ * panel changes required.
+ *  - status 'approved'  -> hold is committed (money was already deducted);
+ *                          just clear it from postingHold and mark settled.
+ *  - status 'rejected'  -> refund budgetHeld back into balance, clear hold,
+ *                          mark settled.
+ * Guarded by S._settlingJobIds + a Firestore transaction so this can never
+ * double-refund even if the listener fires multiple times quickly.
+ */
 async function settleJobPostHolds(jobs, userRef) {
   if (!userRef) return;
   for (const job of jobs) {
@@ -1734,7 +1733,7 @@ async function settleJobPostHolds(jobs, userRef) {
         const jSnap = await tx.get(jobRef);
         if (!jSnap.exists()) return;
         const jData = jSnap.data();
-        if (jData.holdSettled) return;
+        if (jData.holdSettled) return; // already settled by another tab/session
         const uSnap = await tx.get(userRef);
         if (!uSnap.exists()) return;
         const held = jData.budgetHeld || 0;
@@ -1776,6 +1775,9 @@ function listenMyTaskSubmissions(uid, onChange) {
 async function submitProofTask(jobId, job, proofText, imageFiles, user, userData) {
   let proofImageUrls = [];
   for (const file of imageFiles) proofImageUrls.push(await uploadProofToCloudinary(file));
+  // jobPosterId lets a regular user who posted this job find submissions to
+  // THEIR job (peer-review screen), same way admin already reviews all jobs.
+  // 'admin' for official admin-posted jobs — only the admin panel reviews those.
   const jobPosterId = job.postedByAdmin === false ? (job.postedById || '') : 'admin';
   await fb.addDoc(fb.collection(db, 'taskSubmissions'), {
     jobId, jobTitle: job.title, reward: job.reward || 0,
@@ -1819,6 +1821,13 @@ async function completeDailyLinkTask(jobId, job, user, userData, userRef) {
 }
 
 // ══════ js/services/peerReview.js — job poster reviews submissions to THEIR job ══════
+// NOTE (security): like the rest of this app, balance credits/rejections are
+// written straight from the client. This mirrors the trust model already
+// used everywhere else here (registerUser's referral cascade, spin rewards,
+// withdrawals, etc.) but Firestore Rules MUST restrict a taskSubmissions
+// write to cases where request.auth.uid === resource.data.jobPosterId (or
+// 'admin' stays admin-only) — otherwise any signed-in user could credit
+// themselves. Flagging this clearly so it isn't missed when Rules are set.
 let _unsubMySubs = null;
 function listenSubmissionsToMyJobs(uid, onChange) {
   if (_unsubMySubs) _unsubMySubs();
@@ -1835,6 +1844,9 @@ function listenSubmissionsToMyJobs(uid, onChange) {
   );
 }
 
+// Approve a worker's submission to a job THIS user posted: credits the
+// worker's balance/stats and marks the job slot filled — same effect as the
+// admin panel's approveTask(), just scoped to jobs this user owns.
 async function approveMySubmission(sub) {
   if (!sub || sub.status !== 'pending') throw new Error('ALREADY_REVIEWED');
   const subRef = fb.doc(db, 'taskSubmissions', sub.id);
@@ -1854,6 +1866,8 @@ async function approveMySubmission(sub) {
   }
 }
 
+// Reject a worker's submission to a job THIS user posted. No balance moves —
+// the held job budget stays put so it can go to another worker instead.
 async function rejectMySubmission(sub, reason) {
   if (!sub || sub.status !== 'pending') throw new Error('ALREADY_REVIEWED');
   const subRef = fb.doc(db, 'taskSubmissions', sub.id);
@@ -2076,6 +2090,8 @@ async function ensureUserDoc(user) {
   return { ref, data };
 }
 
+// FIX: wrap the auth service functions into a single object so calls like
+// AuthService.loginWithEmail(...) from screens/auth.js resolve correctly.
 const AuthService = { loginWithEmail, registerUser, loginWithGoogle, sendReset, changePassword, logout, deleteAccount };
 
 // ══════ js/services/support.js ══════
@@ -2115,6 +2131,122 @@ async function sendSupportMsgSvc(uid, userData, user, text, lang) {
     from: 'user', text, lang, _ts: Date.now(), createdAt: fb.serverTimestamp()
   });
   updateSupportThread(uid, userData, user, text, 'user', lang);
+}
+
+// ══════ js/screens/auth.js ══════
+function initAuthScreenBindings() {
+  try {
+    const saved = localStorage.getItem('wh_remember_email');
+    if (saved) { document.getElementById('loginEmail').value = saved; document.getElementById('rememberMe').checked = true; }
+  } catch (e) {}
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (document.getElementById('authScreen').style.display === 'none') return;
+    if (document.getElementById('loginPane').style.display !== 'none') doLogin(); else doRegister();
+  });
+}
+function switchAuthTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  document.getElementById('loginPane').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('registerPane').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('loginErr').textContent = '';
+  document.getElementById('regErr').textContent = '';
+}
+function togglePass(id, el) { const i = document.getElementById(id); i.type = i.type === 'password' ? 'text' : 'password'; el.textContent = i.type === 'password' ? '👁' : '🙈'; }
+function checkStrength(val) {
+  const el = document.getElementById('strengthFill'); let s = 0;
+  if (val.length >= 6) s++; if (val.length >= 10) s++; if (/[A-Z]/.test(val)) s++; if (/[0-9]/.test(val)) s++; if (/[^A-Za-z0-9]/.test(val)) s++;
+  const c = ['#FF5252', '#FFB300', '#FFB300', '#00E676', '#448AFF'], w = ['20%', '40%', '60%', '80%', '100%'];
+  el.style.width = s > 0 ? w[s - 1] : '0'; el.style.background = s > 0 ? c[s - 1] : 'transparent';
+}
+function setAuthLoading(type, loading) {
+  const btn = document.getElementById(type === 'login' ? 'loginBtn' : 'regBtn');
+  const txt = document.getElementById(type === 'login' ? 'loginBtnText' : 'regBtnText');
+  btn.disabled = loading;
+  txt.textContent = loading ? (type === 'login' ? 'Logging in...' : 'Creating...') : (type === 'login' ? 'Login' : 'Create Account');
+}
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim(), pass = document.getElementById('loginPass').value, errEl = document.getElementById('loginErr');
+  errEl.textContent = '';
+  if (!email || !pass) { errEl.textContent = '❌ Fill in all fields'; return; }
+  try { const remember = document.getElementById('rememberMe')?.checked; if (remember) localStorage.setItem('wh_remember_email', email); else localStorage.removeItem('wh_remember_email'); } catch (e) {}
+  setAuthLoading('login', true);
+  try {
+    await AuthService.loginWithEmail(email, pass);
+  } catch (e) {
+    const msgs = { 'auth/wrong-password': '❌ Wrong password', 'auth/user-not-found': '❌ No account with this email', 'auth/invalid-email': '❌ Invalid email format', 'auth/too-many-requests': '⚠ Too many attempts, try later', 'auth/invalid-credential': '❌ Wrong email or password', 'auth/network-request-failed': '❌ Check your internet connection' };
+    errEl.textContent = msgs[e.code] || '❌ ' + e.message;
+    setAuthLoading('login', false);
+  }
+}
+async function doRegister() {
+  const name = document.getElementById('regName').value.trim(), username = document.getElementById('regUsername').value.trim().toLowerCase(),
+    email = document.getElementById('regEmail').value.trim(), phone = document.getElementById('regPhone').value.trim(),
+    pass = document.getElementById('regPass').value, confirm = document.getElementById('regConfirmPass').value,
+    country = document.getElementById('regCountry').value, ref = document.getElementById('regRef').value.trim().toUpperCase(),
+    errEl = document.getElementById('regErr');
+  errEl.textContent = '';
+  if (!name) { errEl.textContent = '❌ Enter your name'; return; }
+  if (!username) { errEl.textContent = '❌ Enter username'; return; }
+  if (!email) { errEl.textContent = '❌ Enter email'; return; }
+  if (!phone) { errEl.textContent = '❌ Enter phone number'; return; }
+  if (!pass || pass.length < 6) { errEl.textContent = '❌ Password min 6 characters'; return; }
+  if (pass !== confirm) { errEl.textContent = '❌ Passwords do not match'; return; }
+  setAuthLoading('register', true);
+  try {
+    await AuthService.registerUser({ name, username, email, phone, country, pass, ref });
+  } catch (e) {
+    const msgs = { 'auth/email-already-in-use': '❌ Email already registered', 'auth/weak-password': '❌ Password too weak', 'auth/network-request-failed': '❌ Check connection' };
+    errEl.textContent = msgs[e.code] || '❌ ' + e.message;
+    setAuthLoading('register', false);
+  }
+}
+async function doGoogle() {
+  try { await AuthService.loginWithGoogle(); }
+  catch (e) { if (e.code !== 'auth/cancelled-popup-request') showToast('Google login failed', 'error'); }
+}
+let _resetCooldown = false;
+async function doForgotPassword() {
+  const email = document.getElementById('loginEmail').value.trim(), errEl = document.getElementById('loginErr');
+  if (!email) { errEl.style.color = 'var(--red)'; errEl.textContent = '❌ Enter your email first'; return; }
+  if (_resetCooldown) { showToast('Please wait before resending', 'info'); return; }
+  try {
+    await AuthService.sendReset(email);
+    _resetCooldown = true; setTimeout(() => _resetCooldown = false, 30000);
+    errEl.textContent = '';
+    showConfirmHtml(`<div style="text-align:center;padding:10px 0 14px"><div style="font-size:44px;margin-bottom:11px">📩</div><div class="modal-title">Reset link sent!</div><div style="font-size:12.5px;color:var(--text2);margin-bottom:14px">Check <b>${escHtml(email)}</b> — check spam too.</div><button class="btn-primary" onclick="closeConfirm()">OK</button></div>`);
+  } catch (e) {
+    const m = { 'auth/user-not-found': '❌ No account with this email', 'auth/invalid-email': '❌ Invalid email' };
+    errEl.style.color = 'var(--red)'; errEl.textContent = m[e.code] || '❌ Could not send.';
+  }
+}
+function openChangePassword() {
+  showConfirmHtml(`<div><div class="modal-title">🔒 Change Password</div><div style="font-size:12.5px;color:var(--text2);margin-bottom:14px">Enter current password to verify.</div><div class="field"><label>Current Password</label><input type="password" id="cpOld" placeholder="Current password"></div><div class="field"><label>New Password</label><input type="password" id="cpNew" placeholder="At least 6 characters"></div><div class="field"><label>Confirm New Password</label><input type="password" id="cpConfirm" placeholder="Re-enter new password"></div><div class="auth-error" id="cpErr"></div><div style="display:flex;gap:9px"><button class="btn-ghost" style="flex:1" onclick="closeConfirm()">Cancel</button><button class="btn-primary" style="flex:1" onclick="submitChangePassword()">Update</button></div></div>`);
+}
+async function submitChangePassword() {
+  const old = document.getElementById('cpOld').value, nw = document.getElementById('cpNew').value, cf = document.getElementById('cpConfirm').value, errEl = document.getElementById('cpErr');
+  errEl.textContent = '';
+  if (!old || !nw || !cf) { errEl.textContent = '❌ Fill all fields'; return; }
+  if (nw.length < 6) { errEl.textContent = '❌ Min 6 chars'; return; }
+  if (nw !== cf) { errEl.textContent = '❌ Passwords do not match'; return; }
+  const user = window._currentUser; if (!user) { errEl.textContent = '❌ Please try again'; return; }
+  try {
+    await AuthService.changePassword(user, old, nw);
+    closeConfirm(); showToast('✅ Password updated!');
+  } catch (e) { const m = { 'auth/wrong-password': '❌ Wrong current password', 'auth/invalid-credential': '❌ Wrong current password' }; errEl.textContent = m[e.code] || '❌ Failed'; }
+}
+async function doLogout() { try { await AuthService.logout(); } catch (e) { showToast('Logout failed', 'error'); } }
+function doLogoutConfirm() {
+  showConfirmHtml(`<div style="text-align:center;padding:10px 0 18px"><div style="font-size:38px;margin-bottom:11px">🚪</div><div class="modal-title">Log out?</div><div style="font-size:12.5px;color:var(--text2);margin-bottom:18px">You can log back in anytime.</div><div style="display:flex;gap:9px"><button class="btn-ghost" onclick="closeConfirm()" style="flex:1">Cancel</button><button class="btn-primary" onclick="closeConfirm();doLogout()" style="flex:1">Logout</button></div></div>`);
+}
+function confirmDeleteAccount() {
+  showConfirmHtml(`<div style="text-align:center;padding:10px 0 18px"><div style="font-size:38px;margin-bottom:11px">⚠️</div><div class="modal-title">Delete Account?</div><div style="font-size:12.5px;color:var(--text2);margin-bottom:18px">All data will be permanently lost.</div><div style="display:flex;gap:9px"><button class="btn-ghost" onclick="closeConfirm()" style="flex:1">Cancel</button><button class="btn-primary" style="flex:1;background:var(--red);color:#fff" onclick="reallyDeleteAccount()">Delete</button></div></div>`);
+}
+async function reallyDeleteAccount() {
+  closeConfirm();
+  const user = window._currentUser; if (!user) return;
+  try { await AuthService.deleteAccount(user); } catch (e) { showToast('Delete failed — re-login and try', 'error'); }
 }
 
 // ══════ js/screens/home.js ══════
@@ -2213,7 +2345,7 @@ function openTaskModal(jobId) {
     const visited = S._visitedLinks[jobId];
     submissionHtml = `
       <button class="link-visit-btn ${visited ? 'visited' : ''}" id="visitBtn${jobId}" onclick="visitLink('${jobId}','${escHtml(t.link || '')}')">${visited ? '✅ Link Visited' : '🔗 Visit the Link First'}</button>
-      <div class="field"><label>Confirmation Note (Optional)</label><textarea id="proofText${jobId}" placeholder="e.g. Done! My username: @yourname" rows="2"></textarea><div style="display:flex;justify-content:flex-end;margin-top:6px"><button type="button" class="btn-ghost" style="padding:6px 12px;font-size:11px;width:auto" onclick="aiImproveNote('${jobId}')">✨ AI দিয়ে গুছিয়ে লিখুন</button></div></div>
+      <div class="field"><label>Confirmation Note (Optional)</label><textarea id="proofText${jobId}" placeholder="e.g. Done! My username: @yourname" rows="2"></textarea></div>
       <button class="btn-primary" ${visited ? '' : 'disabled'} id="finishBtn${jobId}" onclick="submitTaskProof('${jobId}',document.getElementById('proofText${jobId}').value)">${visited ? '📤 Submit Completion' : '⬆ Visit the link first'}</button>`;
   } else {
     const shotCount = Math.max(1, parseInt(t.screenshotCount) || 1);
@@ -2223,7 +2355,7 @@ function openTaskModal(jobId) {
         <div class="proof-upload-area" id="proofUploadArea${jobId}_${i}" onclick="document.getElementById('proofFile${jobId}_${i}').click()"><div class="pua-icon">📷</div><div class="pua-text">Tap to select a screenshot</div><div class="pua-sub">Choose from your gallery — PNG or JPG</div></div>
         <input type="file" id="proofFile${jobId}_${i}" accept="image/*" style="display:none" onchange="handleProofFileSelect('${jobId}', ${i}, this)"></div>`;
     }
-    submissionHtml = `${shotsHtml}<div class="field"><label>Proof / Note (Optional)</label><textarea id="proofText${jobId}" placeholder="e.g. Liked and commented. My username: @yourname" rows="3"></textarea><div style="display:flex;justify-content:flex-end;margin-top:6px"><button type="button" class="btn-ghost" style="padding:6px 12px;font-size:11px;width:auto" onclick="aiImproveNote('${jobId}')">✨ AI দিয়ে গুছিয়ে লিখুন</button></div></div><button class="btn-primary" id="submitProofBtn${jobId}" data-shots="${shotCount}" onclick="submitTaskProof('${jobId}',document.getElementById('proofText${jobId}').value)">📤 Submit Proof for Review${shotCount > 1 ? ' (0/' + shotCount + ' uploaded)' : ''}</button>`;
+    submissionHtml = `${shotsHtml}<div class="field"><label>Proof / Note (Optional)</label><textarea id="proofText${jobId}" placeholder="e.g. Liked and commented. My username: @yourname" rows="3"></textarea></div><button class="btn-primary" id="submitProofBtn${jobId}" data-shots="${shotCount}" onclick="submitTaskProof('${jobId}',document.getElementById('proofText${jobId}').value)">📤 Submit Proof for Review${shotCount > 1 ? ' (0/' + shotCount + ' uploaded)' : ''}</button>`;
   }
   document.getElementById('modalContent').innerHTML = `
     <div class="modal-task-header" style="background:${grad}"><div class="mth-ico" style="background:rgba(255,255,255,.18)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></div><div><div class="mth-title">${escHtml(t.title)}</div><div class="mth-cat">${escHtml(t.category)} · ${escHtml(t.country || 'Global')}</div></div></div>
@@ -2272,6 +2404,8 @@ async function runCompleteDailyLink(jobId) {
   if (S._dailyLinkCompleting[jobId]) return;
   S._dailyLinkCompleting[jobId] = true;
   try {
+    // FIX: was calling a non-existent completeDailyLinkTaskSvc; the real
+    // service function is completeDailyLinkTask (imported above).
     await completeDailyLinkTask(jobId, t, user, data, window._userRef);
     showToast('🎉 টাস্ক সম্পন্ন! +' + fmtUSD(t.reward || 0) + ' ব্যালেন্সে যোগ হয়েছে। পরবর্তী ২৪ ঘণ্টা এই টাস্কটি লক থাকবে।', 'info');
     closeTaskModal(); renderAllTasks('__current__');
@@ -2421,6 +2555,7 @@ function switchPostTab(tab) {
   if (tab === 'review') renderMyJobSubmissions();
 }
 
+// ══════ Peer-review UI: submissions to jobs I posted ══════
 function updatePostReviewBadge() {
   const badge = document.getElementById('postReviewBadge'); if (!badge) return;
   const pending = S.myJobSubmissions.filter(s => s.status === 'pending').length;
@@ -2493,6 +2628,8 @@ function selectPostType(el, type) {
   if (shotField) shotField.style.display = type === 'proof' ? 'block' : 'none';
 }
 
+// FIX: budget preview now also shows the user's current balance and flags
+// insufficient balance in red, disabling the submit button until it's fixed.
 function updatePostBudgetPreview() {
   const reward = Number(document.getElementById('postReward')?.value) || 0;
   const slots = Number(document.getElementById('postSlots')?.value) || 0;
@@ -2526,6 +2663,10 @@ const ERR_MSGS = {
   INSUFFICIENT_BALANCE: 'আপনার ওয়ালেট ব্যালেন্স যথেষ্ট নয়। জব পোস্ট করার আগে ব্যালেন্স যোগ করুন (Deposit)।',
 };
 
+// FIX: hard balance gate before submitting — the transaction inside
+// createJobPost() re-checks this server-side-equivalent way (via Firestore
+// transaction), but we also gate here so the user gets an immediate,
+// friendly alert instead of waiting for a round-trip failure.
 async function submitJobPost() {
   const user = window._currentUser, userData = window._userData, userRef = window._userRef;
   if (!user || !userRef) { showToast('Please login again', 'error'); return; }
@@ -2586,7 +2727,7 @@ function renderMyPostedJobs() {
   const filter = S.postFilter || 'all';
   let list = S.myPostedJobs;
   if (filter !== 'all') list = list.filter(j => j.status === filter);
-  if (!list.length) { el.innerHTML = '<div class="history-empty"><div class="big">📢</div>এখনো কোনো জব পোস্ট করেননি。</div>'; return; }
+  if (!list.length) { el.innerHTML = '<div class="history-empty"><div class="big">📢</div>এখনো কোনো জব পোস্ট করেননি।</div>'; return; }
   el.innerHTML = list.map(j => {
     const [label, cls] = STATUS_LABEL[j.status] || ['⏳ Review Pending', 'type-pending'];
     const heldNote = j.budgetHeld ? `<div class="myjob-meta" style="margin-top:4px"><span>💰 হোল্ড করা বাজেট: ${fmtUSD(j.budgetHeld)}${j.holdSettled ? (j.status === 'rejected' ? ' (ফেরত দেওয়া হয়েছে)' : ' (নিশ্চিত)') : ' (প্রক্রিয়াধীন)'}</span></div>` : '';
@@ -2594,48 +2735,6 @@ function renderMyPostedJobs() {
       <div class="myjob-top"><div class="myjob-title">${escHtml(j.title)}</div><span class="badge ${cls}">${label}</span></div>
       <div class="myjob-meta"><span>${escHtml(j.category || '')}</span><span>🌍 ${escHtml(j.country || 'Global')}</span></div>
       <div class="myjob-stats">
-        <div class="myjob-stat"><div class="v" style="color:var(--gold)">${fmtUSD(j.reward || 0)}</div><div class="l">Per Worker</div></div>
-        <div class="myjob-stat"><div class="v">${j.filled || 0}/${j.limit || 0}</div><div class="l">Filled</div></div>
-        <div class="myjob-stat"><div class="v" style="color:var(--green)">${fmtUSD((j.reward || 0) * (j.limit || 0))}</div><div class="l">Total Budget</div></div>
-      </div>
-      ${heldNote}
-      ${j.status === 'rejected' && j.rejectReason ? `<div class="myjob-reject-box">💬 <div><strong>এডমিনের কারণ:</strong> ${escHtml(j.rejectReason)}</div></div>` : ''}
-    </div>`;
-  }).join('');
-}
-const actionSelect = document.getElementById('action');
-subCategorySelect.addEventListener('change', (e) => {
-  const selectedSubCategory = e.target.value;
-  if (selectedSubCategory === 'Facebook') {
-    actionSelect.innerHTML = '<option value="like">Like</option><option value="comment">Comment</option><option value="share">Share</option><option value="page follows">Page Follows</option>';
-  }
-});
-const categorySelect = document.getElementById('category');
-const subCategorySelect = document.getElementById('sub-category');
-categorySelect.addEventListener('change', (e) => {
-  const selectedCategory = e.target.value;
-  if (selectedCategory === 'Social Media') {
-    subCategorySelect.innerHTML = '<option value="Facebook">Facebook</option><option value="Instagram">Instagram</option>';
-  }
-});
-  const el = document.getElementById('myPostedJobsList'); if (!el) return;
-  const filter = S.postFilter || 'all';
-  let list = S.myPostedJobs;
-  if (filter !== 'all') list = list.filter(j => j.status === filter);
-  if (!list.length) { el.innerHTML = '<div class="history-empty"><div class="big">📢</div>এখনো কোনো জব পোস্ট করেননি।</div>'; return; }
-  el.innerHTML = list.map(j => {
-    const [label, cls] = STATUS_LABEL[j.status] || ['⏳ Review Pending', 'type-pending'];
-    const heldNote = j.budgetHeld ? `<div class="myjob-meta" style="margin-top:4px"><span>💰 হোল্ড করা বাজেট: ${fmtUSD(j.budgetHeld)}${j.holdSettled ? (j.status === 'rejected' ? ' (ফেরত দেওয়া হয়েছে)' : ' (নিশ্চিত)') : ' (প্রক্রিয়াধীন)'}</span></div>` : '';
-    return `<div class="myjob-card">
-      <div class="myjob-top"><div class="myjob-title">
-<div class="category-select"><select id="category"><option value="">Select Category</option><option value="Social Media">Social Media</option></select></div><div class="sub-category-select" id="sub-category"></div>
-<div class="myjob-edit-status">এডিট করা হয়েছে</div>
-<div class="myjob-edit"><button onclick="editJobPost()">এডিট</button></div>${escHtml(j.title)}</div><span class="badge ${cls}">${label}</span></div>
-      <div class="myjob-meta"><span>${escHtml(j.category || '')}</span><span>🌍 ${escHtml(j.country || 'Global')}</span></div>
-      <div class="myjob-stats">
-<div class="action-select" id="action"></div>
-<div class="myjob-admin-review"><button onclick="adminReview()">রিভিউ</button><button onclick="adminApprove()">অ্যাপ্রুভ</button></div>
-<button onclick="adminReject()">রিজেক্ট</button>
         <div class="myjob-stat"><div class="v" style="color:var(--gold)">${fmtUSD(j.reward || 0)}</div><div class="l">Per Worker</div></div>
         <div class="myjob-stat"><div class="v">${j.filled || 0}/${j.limit || 0}</div><div class="l">Filled</div></div>
         <div class="myjob-stat"><div class="v" style="color:var(--green)">${fmtUSD((j.reward || 0) * (j.limit || 0))}</div><div class="l">Total Budget</div></div>
@@ -2659,19 +2758,7 @@ function applySiteSettingsToWallet(SITE_) {
   const wInput = document.getElementById('withdrawAmt'); if (wInput) wInput.min = SITE_.minWithdraw;
   updateWithdrawPreview();
 }
-function renderWithdrawMethodGrid()
-function renderTransactionHistory() {
-  const filteredTransactions = filterTransactionHistory();
-  const transactionHtml = filteredTransactions.map(t => {
-    return `<div class="transaction">${t.type === 'withdrawal' ? 'Withdrawal' : 'Task'} - ${t.amount}</div>`;
-  }).join('');
-  document.getElementById('transactionHistory').innerHTML = transactionHtml;
-}
-function filterTransactionHistory() {
-  const transactions = S.transactionHistory;
-  const filteredTransactions = transactions.filter(t => t.type === 'withdrawal' || (t.type === 'task' && Date.now() - t.timestamp < 7 * 24 * 60 * 60 * 1000));
-  return filteredTransactions;
-} {
+function renderWithdrawMethodGrid() {
   if (!S.paymentMethods.length) return;
   const grid = document.getElementById('withdrawMethodGrid'); if (!grid) return;
   const emojiMap = { bKash: '📱', Nagad: '💳', Rocket: '🚀', USDT: '₮', Bank: '🏦' };
@@ -2871,6 +2958,8 @@ function updateAvatarDisplay(name, photoURL) {
   const gn = document.getElementById('greetName'); if (gn) gn.textContent = name || '—';
 }
 
+// FIX: Jobs Posted stat now reads live from S.myPostedJobs (kept in sync by
+// listenMyPostedJobs) instead of the non-existent _myPostedJobsCount field.
 function updateJobsPostedStat() {
   const el = document.getElementById('homeJobsPosted');
   if (el) el.textContent = S.myPostedJobs.length;
@@ -2936,6 +3025,8 @@ async function saveProfile() {
   }
 }
 
+// FIX: restores the "prefill Edit Profile fields on load" behaviour from
+// the old codebase. Called once from bootstrapApp() right after login.
 function prefillEditProfileFields(data, user) {
   const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
   setVal('editName', data?.name || user?.displayName || '');
@@ -3015,122 +3106,6 @@ function renderSpinHistory() {
   el.innerHTML = S.spinHistory.map(h => `<div class="spin-hist-row"><span>${h.date}</span><span style="font-weight:800;color:${h.value > 0 ? 'var(--gold)' : 'var(--text3)'}">${h.label}</span><span style="color:${h.value > 0 ? 'var(--green)' : 'var(--text3)'};">${h.value > 0 ? '+' + fmtUSD(h.value) : '—'}</span></div>`).join('');
 }
 
-// ══════ js/screens/auth.js ══════
-function initAuthScreenBindings() {
-  try {
-    const saved = localStorage.getItem('wh_remember_email');
-    if (saved) { document.getElementById('loginEmail').value = saved; document.getElementById('rememberMe').checked = true; }
-  } catch (e) {}
-  document.addEventListener('keydown', e => {
-    if (e.key !== 'Enter') return;
-    if (document.getElementById('authScreen').style.display === 'none') return;
-    if (document.getElementById('loginPane').style.display !== 'none') doLogin(); else doRegister();
-  });
-}
-function switchAuthTab(tab) {
-  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
-  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
-  document.getElementById('loginPane').style.display = tab === 'login' ? 'block' : 'none';
-  document.getElementById('registerPane').style.display = tab === 'register' ? 'block' : 'none';
-  document.getElementById('loginErr').textContent = '';
-  document.getElementById('regErr').textContent = '';
-}
-function togglePass(id, el) { const i = document.getElementById(id); i.type = i.type === 'password' ? 'text' : 'password'; el.textContent = i.type === 'password' ? '👁' : '🙈'; }
-function checkStrength(val) {
-  const el = document.getElementById('strengthFill'); let s = 0;
-  if (val.length >= 6) s++; if (val.length >= 10) s++; if (/[A-Z]/.test(val)) s++; if (/[0-9]/.test(val)) s++; if (/[^A-Za-z0-9]/.test(val)) s++;
-  const c = ['#FF5252', '#FFB300', '#FFB300', '#00E676', '#448AFF'], w = ['20%', '40%', '60%', '80%', '100%'];
-  el.style.width = s > 0 ? w[s - 1] : '0'; el.style.background = s > 0 ? c[s - 1] : 'transparent';
-}
-function setAuthLoading(type, loading) {
-  const btn = document.getElementById(type === 'login' ? 'loginBtn' : 'regBtn');
-  const txt = document.getElementById(type === 'login' ? 'loginBtnText' : 'regBtnText');
-  btn.disabled = loading;
-  txt.textContent = loading ? (type === 'login' ? 'Logging in...' : 'Creating...') : (type === 'login' ? 'Login' : 'Create Account');
-}
-async function doLogin() {
-  const email = document.getElementById('loginEmail').value.trim(), pass = document.getElementById('loginPass').value, errEl = document.getElementById('loginErr');
-  errEl.textContent = '';
-  if (!email || !pass) { errEl.textContent = '❌ Fill in all fields'; return; }
-  try { const remember = document.getElementById('rememberMe')?.checked; if (remember) localStorage.setItem('wh_remember_email', email); else localStorage.removeItem('wh_remember_email'); } catch (e) {}
-  setAuthLoading('login', true);
-  try {
-    await AuthService.loginWithEmail(email, pass);
-  } catch (e) {
-    const msgs = { 'auth/wrong-password': '❌ Wrong password', 'auth/user-not-found': '❌ No account with this email', 'auth/invalid-email': '❌ Invalid email format', 'auth/too-many-requests': '⚠ Too many attempts, try later', 'auth/invalid-credential': '❌ Wrong email or password', 'auth/network-request-failed': '❌ Check your internet connection' };
-    errEl.textContent = msgs[e.code] || '❌ ' + e.message;
-    setAuthLoading('login', false);
-  }
-}
-async function doRegister() {
-  const name = document.getElementById('regName').value.trim(), username = document.getElementById('regUsername').value.trim().toLowerCase(),
-    email = document.getElementById('regEmail').value.trim(), phone = document.getElementById('regPhone').value.trim(),
-    pass = document.getElementById('regPass').value, confirm = document.getElementById('regConfirmPass').value,
-    country = document.getElementById('regCountry').value, ref = document.getElementById('regRef').value.trim().toUpperCase(),
-    errEl = document.getElementById('regErr');
-  errEl.textContent = '';
-  if (!name) { errEl.textContent = '❌ Enter your name'; return; }
-  if (!username) { errEl.textContent = '❌ Enter username'; return; }
-  if (!email) { errEl.textContent = '❌ Enter email'; return; }
-  if (!phone) { errEl.textContent = '❌ Enter phone number'; return; }
-  if (!pass || pass.length < 6) { errEl.textContent = '❌ Password min 6 characters'; return; }
-  if (pass !== confirm) { errEl.textContent = '❌ Passwords do not match'; return; }
-  setAuthLoading('register', true);
-  try {
-    await AuthService.registerUser({ name, username, email, phone, country, pass, ref });
-  } catch (e) {
-    const msgs = { 'auth/email-already-in-use': '❌ Email already registered', 'auth/weak-password': '❌ Password too weak', 'auth/network-request-failed': '❌ Check connection' };
-    errEl.textContent = msgs[e.code] || '❌ ' + e.message;
-    setAuthLoading('register', false);
-  }
-}
-async function doGoogle() {
-  try { await AuthService.loginWithGoogle(); }
-  catch (e) { if (e.code !== 'auth/cancelled-popup-request') showToast('Google login failed', 'error'); }
-}
-let _resetCooldown = false;
-async function doForgotPassword() {
-  const email = document.getElementById('loginEmail').value.trim(), errEl = document.getElementById('loginErr');
-  if (!email) { errEl.style.color = 'var(--red)'; errEl.textContent = '❌ Enter your email first'; return; }
-  if (_resetCooldown) { showToast('Please wait before resending', 'info'); return; }
-  try {
-    await AuthService.sendReset(email);
-    _resetCooldown = true; setTimeout(() => _resetCooldown = false, 30000);
-    errEl.textContent = '';
-    showConfirmHtml(`<div style="text-align:center;padding:10px 0 14px"><div style="font-size:44px;margin-bottom:11px">📩</div><div class="modal-title">Reset link sent!</div><div style="font-size:12.5px;color:var(--text2);margin-bottom:14px">Check <b>${escHtml(email)}</b> — check spam too.</div><button class="btn-primary" onclick="closeConfirm()">OK</button></div>`);
-  } catch (e) {
-    const m = { 'auth/user-not-found': '❌ No account with this email', 'auth/invalid-email': '❌ Invalid email' };
-    errEl.style.color = 'var(--red)'; errEl.textContent = m[e.code] || '❌ Could not send.';
-  }
-}
-function openChangePassword() {
-  showConfirmHtml(`<div><div class="modal-title">🔒 Change Password</div><div style="font-size:12.5px;color:var(--text2);margin-bottom:14px">Enter current password to verify.</div><div class="field"><label>Current Password</label><input type="password" id="cpOld" placeholder="Current password"></div><div class="field"><label>New Password</label><input type="password" id="cpNew" placeholder="At least 6 characters"></div><div class="field"><label>Confirm New Password</label><input type="password" id="cpConfirm" placeholder="Re-enter new password"></div><div class="auth-error" id="cpErr"></div><div style="display:flex;gap:9px"><button class="btn-ghost" style="flex:1" onclick="closeConfirm()">Cancel</button><button class="btn-primary" style="flex:1" onclick="submitChangePassword()">Update</button></div></div>`);
-}
-async function submitChangePassword() {
-  const old = document.getElementById('cpOld').value, nw = document.getElementById('cpNew').value, cf = document.getElementById('cpConfirm').value, errEl = document.getElementById('cpErr');
-  errEl.textContent = '';
-  if (!old || !nw || !cf) { errEl.textContent = '❌ Fill all fields'; return; }
-  if (nw.length < 6) { errEl.textContent = '❌ Min 6 chars'; return; }
-  if (nw !== cf) { errEl.textContent = '❌ Passwords do not match'; return; }
-  const user = window._currentUser; if (!user) { errEl.textContent = '❌ Please try again'; return; }
-  try {
-    await AuthService.changePassword(user, old, nw);
-    closeConfirm(); showToast('✅ Password updated!');
-  } catch (e) { const m = { 'auth/wrong-password': '❌ Wrong current password', 'auth/invalid-credential': '❌ Wrong current password' }; errEl.textContent = m[e.code] || '❌ Failed'; }
-}
-async function doLogout() { try { await AuthService.logout(); } catch (e) { showToast('Logout failed', 'error'); } }
-function doLogoutConfirm() {
-  showConfirmHtml(`<div style="text-align:center;padding:10px 0 18px"><div style="font-size:38px;margin-bottom:11px">🚪</div><div class="modal-title">Log out?</div><div style="font-size:12.5px;color:var(--text2);margin-bottom:18px">You can log back in anytime.</div><div style="display:flex;gap:9px"><button class="btn-ghost" onclick="closeConfirm()" style="flex:1">Cancel</button><button class="btn-primary" onclick="closeConfirm();doLogout()" style="flex:1">Logout</button></div></div>`);
-}
-function confirmDeleteAccount() {
-  showConfirmHtml(`<div style="text-align:center;padding:10px 0 18px"><div style="font-size:38px;margin-bottom:11px">⚠️</div><div class="modal-title">Delete Account?</div><div style="font-size:12.5px;color:var(--text2);margin-bottom:18px">All data will be permanently lost.</div><div style="display:flex;gap:9px"><button class="btn-ghost" onclick="closeConfirm()" style="flex:1">Cancel</button><button class="btn-primary" style="flex:1;background:var(--red);color:#fff" onclick="reallyDeleteAccount()">Delete</button></div></div>`);
-}
-async function reallyDeleteAccount() {
-  closeConfirm();
-  const user = window._currentUser; if (!user) return;
-  try { await AuthService.deleteAccount(user); } catch (e) { showToast('Delete failed — re-login and try', 'error'); }
-}
-
 // ══════ js/screens/support.js ══════
 const SUP_T = {
   bn: {
@@ -3205,7 +3180,7 @@ Object.assign(window, {
   confirmDeleteAccount, reallyDeleteAccount,
   updateGreeting, refreshWalletUI, renderHomeTasks, renderRecentActivity, renderLeaderboard,
   renderTaskCategories, filterTaskCategory, renderAllTasks, openTaskModal, closeTaskModal,
-  visitLink, startDailyLinkTask, handleProofFileSelect, removeProofImage, submitTaskProof, aiImproveNote,
+  visitLink, startDailyLinkTask, handleProofFileSelect, removeProofImage, submitTaskProof,
   renderMyTasks, filterMyTasks,
   onEnterPostScreen, applySiteSettingsToPost, switchPostTab, selectPostType,
   updatePostBudgetPreview, submitJobPost, renderMyPostedJobs, filterMyPostedJobs,
@@ -3240,6 +3215,8 @@ function showAuthScreen() {
   document.getElementById('appShell').style.display = 'none';
 }
 
+// Small helper so OneSignal linking is a one-liner at both call sites and
+// silently no-ops everywhere except inside the Capacitor Android app.
 function onesignalLogin(uid) {
   if (window.Capacitor?.Plugins?.OneSignal) {
     try { window.Capacitor.Plugins.OneSignal.login({ externalId: uid }); }
@@ -3263,6 +3240,7 @@ async function bootstrapApp(user, ref, data) {
   shell.style.display = 'flex'; shell.style.flexDirection = 'column';
   window._lastKnownBalance = data?.balance || 0;
 
+  // FIX: restore Edit Profile field prefill (was dropped in the modular rewrite)
   prefillEditProfileFields(data, user);
 
   updateProfileUI(data, user);
@@ -3303,6 +3281,9 @@ async function bootstrapApp(user, ref, data) {
     renderMyPostedJobs();
     updateJobsPostedStat();
     rebuildAndRenderTx();
+    // FIX: settles the balance hold the moment an admin approves/rejects a
+    // job this user posted — no admin panel changes required. See
+    // settleJobPostHolds() in services/postJobs.js for the transaction logic.
     settleJobPostHolds(jobs, window._userRef);
   });
   listenSubmissionsToMyJobs(user.uid, (list) => {
@@ -3341,6 +3322,8 @@ function applySiteSettingsToUI() {
 
 fb.onAuthStateChanged(auth, async (user) => {
   if (user && !user.isAnonymous) {
+    // FIX: restore OneSignal <-> Firebase UID linking for push notifications
+    // inside the Capacitor Android app (no-op everywhere else).
     onesignalLogin(user.uid);
     try {
       const { ref, data } = await ensureUserDoc(user);
@@ -3350,6 +3333,9 @@ fb.onAuthStateChanged(auth, async (user) => {
       await bootstrapApp(user, null, {});
     }
   } else if (!user) {
+    // FIX: unlink this device from OneSignal's last-known Firebase UID on
+    // logout, so a shared/borrowed phone doesn't keep receiving the
+    // previous user's push notifications.
     onesignalLogout();
     clearUserListeners();
     window._currentUser = null; window._userData = null;

@@ -2582,27 +2582,6 @@ async function submitJobPost() {
 const STATUS_LABEL = { pending_review: ['⏳ Review Pending', 'type-pending'], approved: ['✓ Live', 'type-done'], rejected: ['❌ Rejected', 'type-rejected'] };
 
 function renderMyPostedJobs() {
-  const el = document.getElementById('myPostedJobsList'); if (!el) return;
-  const filter = S.postFilter || 'all';
-  let list = S.myPostedJobs;
-  if (filter !== 'all') list = list.filter(j => j.status === filter);
-  if (!list.length) { el.innerHTML = '<div class="history-empty"><div class="big">📢</div>এখনো কোনো জব পোস্ট করেননি。</div>'; return; }
-  el.innerHTML = list.map(j => {
-    const [label, cls] = STATUS_LABEL[j.status] || ['⏳ Review Pending', 'type-pending'];
-    const heldNote = j.budgetHeld ? `<div class="myjob-meta" style="margin-top:4px"><span>💰 হোল্ড করা বাজেট: ${fmtUSD(j.budgetHeld)}${j.holdSettled ? (j.status === 'rejected' ? ' (ফেরত দেওয়া হয়েছে)' : ' (নিশ্চিত)') : ' (প্রক্রিয়াধীন)'}</span></div>` : '';
-    return `<div class="myjob-card">
-      <div class="myjob-top"><div class="myjob-title">${escHtml(j.title)}</div><span class="badge ${cls}">${label}</span></div>
-      <div class="myjob-meta"><span>${escHtml(j.category || '')}</span><span>🌍 ${escHtml(j.country || 'Global')}</span></div>
-      <div class="myjob-stats">
-        <div class="myjob-stat"><div class="v" style="color:var(--gold)">${fmtUSD(j.reward || 0)}</div><div class="l">Per Worker</div></div>
-        <div class="myjob-stat"><div class="v">${j.filled || 0}/${j.limit || 0}</div><div class="l">Filled</div></div>
-        <div class="myjob-stat"><div class="v" style="color:var(--green)">${fmtUSD((j.reward || 0) * (j.limit || 0))}</div><div class="l">Total Budget</div></div>
-      </div>
-      ${heldNote}
-      ${j.status === 'rejected' && j.rejectReason ? `<div class="myjob-reject-box">💬 <div><strong>এডমিনের কারণ:</strong> ${escHtml(j.rejectReason)}</div></div>` : ''}
-    </div>`;
-  }).join('');
-}
 const actionSelect = document.getElementById('action');
 subCategorySelect.addEventListener('change', (e) => {
   const selectedSubCategory = e.target.value;
@@ -2659,19 +2638,7 @@ function applySiteSettingsToWallet(SITE_) {
   const wInput = document.getElementById('withdrawAmt'); if (wInput) wInput.min = SITE_.minWithdraw;
   updateWithdrawPreview();
 }
-function renderWithdrawMethodGrid()
-function renderTransactionHistory() {
-  const filteredTransactions = filterTransactionHistory();
-  const transactionHtml = filteredTransactions.map(t => {
-    return `<div class="transaction">${t.type === 'withdrawal' ? 'Withdrawal' : 'Task'} - ${t.amount}</div>`;
-  }).join('');
-  document.getElementById('transactionHistory').innerHTML = transactionHtml;
-}
-function filterTransactionHistory() {
-  const transactions = S.transactionHistory;
-  const filteredTransactions = transactions.filter(t => t.type === 'withdrawal' || (t.type === 'task' && Date.now() - t.timestamp < 7 * 24 * 60 * 60 * 1000));
-  return filteredTransactions;
-} {
+function renderWithdrawMethodGrid() {
   if (!S.paymentMethods.length) return;
   const grid = document.getElementById('withdrawMethodGrid'); if (!grid) return;
   const emojiMap = { bKash: '📱', Nagad: '💳', Rocket: '🚀', USDT: '₮', Bank: '🏦' };

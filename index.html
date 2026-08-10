@@ -398,6 +398,7 @@ main{flex:1;overflow-y:auto;padding:4px 16px 110px;scroll-behavior:smooth}
 .asr-ico.sup{background:var(--cyan-dim);border:1px solid rgba(0,188,212,.15)}
 .asr-ico.spin{background:var(--red-dim);border:1px solid rgba(255,82,82,.15)}
 .asr-ico.myjobs{background:var(--green-dim);border:1px solid var(--green-border)}
+.asr-ico.kyc{background:var(--gold-dim);border:1px solid rgba(255,179,0,.2)}
 .asr-txt{flex:1}
 .asr-label{font-size:13px;font-weight:700}
 .asr-sub{font-size:11px;color:var(--text3);margin-top:1px;font-weight:600}
@@ -589,6 +590,19 @@ html[data-env="telegram"] nav.tabbar{padding-bottom:calc(20px + var(--tg-safe-bo
 .dl-icon-btn:active{transform:scale(.88)}
 .dl-icon-btn.copy-done{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
 
+.kyc-status-card{border-radius:var(--r-xl);padding:20px 18px;margin-bottom:16px;text-align:center;position:relative;overflow:hidden}
+.kyc-status-card.none{background:var(--bg3);border:1px solid var(--border)}
+.kyc-status-card.pending{background:var(--gold-dim);border:1px solid rgba(255,179,0,.25)}
+.kyc-status-card.verified{background:var(--green-dim);border:1px solid var(--green-border)}
+.kyc-status-card.rejected{background:var(--red-dim);border:1px solid rgba(255,82,82,.25)}
+.kyc-status-ico{font-size:40px;margin-bottom:10px}
+.kyc-status-title{font-size:16px;font-weight:900;margin-bottom:5px}
+.kyc-status-desc{font-size:12px;color:var(--text2);line-height:1.6;max-width:280px;margin:0 auto}
+.kyc-doc-upload{border:1.5px dashed rgba(0,230,118,.3);border-radius:var(--r-md);padding:16px;text-align:center;cursor:pointer;background:rgba(0,230,118,.02);margin-bottom:10px;transition:border-color .2s,background .2s}
+.kyc-doc-upload:hover{border-color:rgba(0,230,118,.5)}
+.kyc-doc-upload.has-image{padding:8px}
+.kyc-doc-preview{width:100%;max-height:150px;object-fit:contain;border-radius:8px;background:#000;display:block;margin-bottom:6px}
+
 
 /* ── Post (job posting) feature styles ── */
 .post-tabs{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:3px;gap:3px;margin-bottom:14px}
@@ -746,6 +760,10 @@ function applyTelegramSafeArea(tg) {
     <!-- HOME -->
     <section class="screen active" id="screen-home">
       <div id="siteBanner" class="demo-banner" style="margin-top:6px"></div>
+      <div id="emailVerifyBanner" class="info-banner" style="display:none;margin-top:6px;background:var(--red-dim);color:var(--red);border-color:rgba(255,82,82,.25)">
+        ⚠️ আপনার ইমেইল ভেরিফাই করা হয়নি — Withdraw ও Job Post ব্লক করা আছে।
+        <span style="text-decoration:underline;font-weight:800;cursor:pointer;margin-left:6px" onclick="resendVerifyEmail()">Resend Email</span>
+      </div>
 
       <div class="wallet-compact-card">
         <div class="wc-top">
@@ -1011,6 +1029,32 @@ function applyTelegramSafeArea(tg) {
       </div>
     </section>
 
+    <!-- KYC -->
+    <section class="screen" id="screen-kyc">
+      <div class="sec-title" style="margin-top:13px"><h3>🪪 KYC ভেরিফিকেশন</h3></div>
+      <div id="kycDisabledNote" class="demo-banner" style="display:none">📌 এই মুহূর্তে KYC ভেরিফিকেশন এডমিন বন্ধ রেখেছেন।</div>
+      <div id="kycStatusCardWrap"></div>
+      <div id="kycFormWrap" style="display:none">
+        <div class="field"><label>পূর্ণ নাম (আইডি অনুযায়ী)</label><input type="text" id="kycFullName" placeholder="Your full legal name"></div>
+        <div class="field"><label>আইডির ধরন</label><select id="kycIdType"><option value="NID">National ID (NID)</option><option value="Passport">Passport</option><option value="DrivingLicense">Driving License</option><option value="BirthCert">Birth Certificate</option></select></div>
+        <div class="field"><label>আইডি নম্বর</label><input type="text" id="kycIdNumber" placeholder="e.g. 1234567890"></div>
+        <div class="field"><label>আইডির সামনের দিকের ছবি</label>
+          <div class="kyc-doc-upload" id="kycFrontUploadArea" onclick="document.getElementById('kycFrontInput').click()">
+            <div class="pua-icon">📷</div><div class="pua-text">সামনের দিকের ছবি আপলোড করুন</div>
+          </div>
+          <input type="file" id="kycFrontInput" accept="image/*" style="display:none" onchange="handleKycFile(this,'front')">
+        </div>
+        <div class="field"><label>আইডির পেছনের দিকের ছবি</label>
+          <div class="kyc-doc-upload" id="kycBackUploadArea" onclick="document.getElementById('kycBackInput').click()">
+            <div class="pua-icon">📷</div><div class="pua-text">পেছনের দিকের ছবি আপলোড করুন</div>
+          </div>
+          <input type="file" id="kycBackInput" accept="image/*" style="display:none" onchange="handleKycFile(this,'back')">
+        </div>
+        <div class="auth-error" id="kycErr"></div>
+        <button class="btn-primary" id="kycSubmitBtn" onclick="submitKyc()">📤 জমা দিন</button>
+      </div>
+    </section>
+
     <!-- EDIT PROFILE -->
     <section class="screen" id="screen-editprofile">
       <div class="sec-title" style="margin-top:13px"><h3>✏️ Edit Profile</h3></div>
@@ -1069,6 +1113,7 @@ function applyTelegramSafeArea(tg) {
       <div class="account-settings-title">Account &amp; Settings</div>
       <div class="account-settings-list">
         <div class="account-setting-row" onclick="goTab('editprofile')"><div class="asr-ico edit">✏️</div><div class="asr-txt"><div class="asr-label">Edit Profile</div><div class="asr-sub">Update name, bio, photo</div></div><div class="asr-arrow">›</div></div>
+        <div class="account-setting-row" onclick="goTab('kyc')"><div class="asr-ico kyc">🪪</div><div class="asr-txt"><div class="asr-label">KYC ভেরিফিকেশন</div><div class="asr-sub" id="kycMenuSub">আপনার পরিচয় যাচাই করুন</div></div><div class="asr-arrow">›</div></div>
         <div class="account-setting-row" onclick="openChangePassword()"><div class="asr-ico pw">🔒</div><div class="asr-txt"><div class="asr-label">Change Password</div><div class="asr-sub">Update your login password</div></div><div class="asr-arrow">›</div></div>
         <div class="account-setting-row" onclick="goTab('referral')"><div class="asr-ico ref">👥</div><div class="asr-txt"><div class="asr-label">Referral Program</div><div class="asr-sub">3-generation earnings</div></div><div class="asr-arrow">›</div></div>
         <div class="account-setting-row" onclick="goTab('post');switchPostTab('mine')"><div class="asr-ico myjobs">📢</div><div class="asr-txt"><div class="asr-label">My Posted Jobs</div><div class="asr-sub">Track jobs you've posted</div></div><div class="asr-arrow">›</div></div>
@@ -1137,7 +1182,8 @@ function applyTelegramSafeArea(tg) {
       <div id="msgArea"></div>
     </div>
     <div class="sup-inputbar">
-      <div class="sup-attach">📎</div>
+      <div class="sup-attach" onclick="document.getElementById('supAttachInput').click()">📎</div>
+      <input type="file" id="supAttachInput" accept="image/*" style="display:none" onchange="handleSupportAttach(this)">
       <input type="text" id="supInput" placeholder="Type your message...">
       <div class="sup-send" onclick="sendSupportMsg()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></div>
     </div>
@@ -1164,7 +1210,7 @@ import {
   onAuthStateChanged, signOut, createUserWithEmailAndPassword,
   signInWithEmailAndPassword, updateProfile, sendPasswordResetEmail,
   deleteUser, EmailAuthProvider, reauthenticateWithCredential, updatePassword,
-  signInAnonymously
+  signInAnonymously, sendEmailVerification, reload
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore, doc, setDoc, getDoc, updateDoc, increment,
@@ -1196,7 +1242,7 @@ const fb = {
   createUserWithEmailAndPassword, signInWithEmailAndPassword,
   updateProfile, sendPasswordResetEmail, deleteUser,
   EmailAuthProvider, reauthenticateWithCredential, updatePassword,
-  signInAnonymously,
+  signInAnonymously, sendEmailVerification, reload,
   doc, setDoc, getDoc, updateDoc, increment,
   collection, addDoc, getDocs, query, orderBy, where,
   serverTimestamp, deleteDoc, onSnapshot, limit, writeBatch, runTransaction,
@@ -1221,7 +1267,9 @@ const S = {
   supportMessages: [],
   myPostedJobs: [], postSelectedType: 'proof', postFilter: 'all',
   myJobSubmissions: [], myJobSubFilter: 'pending',
-  _settlingJobIds: {}, // guards against double-settling hold refunds/commits
+  _settlingJobIds: {},
+  _editingJobId: null,
+  _kycFiles: {},
 };
 
 const SITE = {
@@ -1238,6 +1286,7 @@ const SITE = {
   postMaxSlots: 500,
   postPlatformFeePct: 10,
   postApprovalNote: 'জব পোস্ট করার পর এডমিন রিভিউ করে অনুমোদন দিলে এটি Tasks তালিকায় দেখা যাবে। বাজেট সমপরিমাণ ব্যালেন্স আপনার ওয়ালেট থেকে সাথে সাথে হোল্ড করা হবে।',
+  kycEnabled: true,
 };
 
 const catGradients = {
@@ -1415,6 +1464,8 @@ function goTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   if (screenHooks[name]) screenHooks[name]();
   document.getElementById('mainScroll')?.scrollTo(0, 0);
+  const fab = document.getElementById('helpFab');
+  if (fab) fab.style.display = (name === 'home') ? 'flex' : 'none';
 }
 
 const onboardSteps = () => [
@@ -1597,6 +1648,7 @@ function listenSiteSettings(onChange) {
       if (d.postMaxSlots !== undefined) SITE.postMaxSlots = d.postMaxSlots;
       if (d.postPlatformFeePct !== undefined) SITE.postPlatformFeePct = d.postPlatformFeePct;
       if (d.postApprovalNote) SITE.postApprovalNote = d.postApprovalNote;
+      if (d.kycEnabled !== undefined) SITE.kycEnabled = d.kycEnabled;
       onChange && onChange(SITE);
     },
     e => console.warn('siteSettings:', e)
@@ -1622,7 +1674,6 @@ function listenApprovedJobs(onChange) {
 // ══════ js/services/postJobs.js ══════
 let _unsubPostJobs = null;
 
-// Computes the full budget breakdown for a job post (per-worker reward × slots + platform fee)
 function computeJobBudget(reward, slots) {
   reward = Number(reward) || 0; slots = Number(slots) || 0;
   const workerTotal = reward * slots;
@@ -1631,17 +1682,6 @@ function computeJobBudget(reward, slots) {
   return { reward, slots, workerTotal, platformFee: parseFloat(platformFee.toFixed(2)), grandTotal: parseFloat(grandTotal.toFixed(2)) };
 }
 
-/**
- * Creates a new job post from a regular user.
- * SECURITY / BALANCE NOTE: the balance check + deduction happens inside a
- * Firestore transaction (read current balance, verify sufficiency, deduct
- * + hold, THEN create the job doc) so two rapid job-posts from the same
- * user can't both pass the balance check against a stale cached balance.
- * The job always lands as status: 'pending_review' — it will NOT show up
- * in the public Tasks list (listenApprovedJobs only reads status=='approved')
- * until an admin approves it from the admin panel. Firestore Rules must
- * mirror this client-side validation (see firestore.rules in project root).
- */
 async function createJobPost({ title, category, type, reward, limit, country, instructions, link, screenshotCount }, user, userData, userRef) {
   if (!SITE.postFeatureEnabled) throw new Error('POST_DISABLED');
   reward = Number(reward); limit = Number(limit);
@@ -1663,10 +1703,6 @@ async function createJobPost({ title, category, type, reward, limit, country, in
     const bal = uSnap.data().balance || 0;
     if (bal < budget.grandTotal) throw new Error('INSUFFICIENT_BALANCE');
 
-    // Deduct the full budget from the wallet now and track it as a "hold"
-    // against pending job posts. The money stays deducted whether the job
-    // is later approved (spent) or rejected (settleJobPostHold() below
-    // refunds it back once the admin decision is observed).
     tx.update(userRef, {
       balance: bal - budget.grandTotal,
       postingHold: fb.increment(budget.grandTotal)
@@ -1708,18 +1744,6 @@ function listenMyPostedJobs(uid, onChange) {
   );
 }
 
-/**
- * Client-side settlement of the balance "hold" placed when a job was posted.
- * Runs every time the logged-in user's own posted-jobs list updates, so it
- * reacts the moment an admin approves/rejects one of their jobs — no admin
- * panel changes required.
- *  - status 'approved'  -> hold is committed (money was already deducted);
- *                          just clear it from postingHold and mark settled.
- *  - status 'rejected'  -> refund budgetHeld back into balance, clear hold,
- *                          mark settled.
- * Guarded by S._settlingJobIds + a Firestore transaction so this can never
- * double-refund even if the listener fires multiple times quickly.
- */
 async function settleJobPostHolds(jobs, userRef) {
   if (!userRef) return;
   for (const job of jobs) {
@@ -1733,7 +1757,7 @@ async function settleJobPostHolds(jobs, userRef) {
         const jSnap = await tx.get(jobRef);
         if (!jSnap.exists()) return;
         const jData = jSnap.data();
-        if (jData.holdSettled) return; // already settled by another tab/session
+        if (jData.holdSettled) return;
         const uSnap = await tx.get(userRef);
         if (!uSnap.exists()) return;
         const held = jData.budgetHeld || 0;
@@ -1775,9 +1799,6 @@ function listenMyTaskSubmissions(uid, onChange) {
 async function submitProofTask(jobId, job, proofText, imageFiles, user, userData) {
   let proofImageUrls = [];
   for (const file of imageFiles) proofImageUrls.push(await uploadProofToCloudinary(file));
-  // jobPosterId lets a regular user who posted this job find submissions to
-  // THEIR job (peer-review screen), same way admin already reviews all jobs.
-  // 'admin' for official admin-posted jobs — only the admin panel reviews those.
   const jobPosterId = job.postedByAdmin === false ? (job.postedById || '') : 'admin';
   await fb.addDoc(fb.collection(db, 'taskSubmissions'), {
     jobId, jobTitle: job.title, reward: job.reward || 0,
@@ -1820,14 +1841,7 @@ async function completeDailyLinkTask(jobId, job, user, userData, userRef) {
   }
 }
 
-// ══════ js/services/peerReview.js — job poster reviews submissions to THEIR job ══════
-// NOTE (security): like the rest of this app, balance credits/rejections are
-// written straight from the client. This mirrors the trust model already
-// used everywhere else here (registerUser's referral cascade, spin rewards,
-// withdrawals, etc.) but Firestore Rules MUST restrict a taskSubmissions
-// write to cases where request.auth.uid === resource.data.jobPosterId (or
-// 'admin' stays admin-only) — otherwise any signed-in user could credit
-// themselves. Flagging this clearly so it isn't missed when Rules are set.
+// ══════ js/services/peerReview.js ══════
 let _unsubMySubs = null;
 function listenSubmissionsToMyJobs(uid, onChange) {
   if (_unsubMySubs) _unsubMySubs();
@@ -1844,9 +1858,6 @@ function listenSubmissionsToMyJobs(uid, onChange) {
   );
 }
 
-// Approve a worker's submission to a job THIS user posted: credits the
-// worker's balance/stats and marks the job slot filled — same effect as the
-// admin panel's approveTask(), just scoped to jobs this user owns.
 async function approveMySubmission(sub) {
   if (!sub || sub.status !== 'pending') throw new Error('ALREADY_REVIEWED');
   const subRef = fb.doc(db, 'taskSubmissions', sub.id);
@@ -1866,8 +1877,6 @@ async function approveMySubmission(sub) {
   }
 }
 
-// Reject a worker's submission to a job THIS user posted. No balance moves —
-// the held job budget stays put so it can go to another worker instead.
 async function rejectMySubmission(sub, reason) {
   if (!sub || sub.status !== 'pending') throw new Error('ALREADY_REVIEWED');
   const subRef = fb.doc(db, 'taskSubmissions', sub.id);
@@ -2031,7 +2040,7 @@ async function registerUser({ name, username, email, phone, country, pass, ref }
     name, username, email, country, phone, bio: '', photoURL: '',
     balance: 0, totalEarned: 0, totalWithdrawn: 0, pendingAmount: 0, postingHold: 0,
     tasksCompleted: 0, approvedTasks: 0, accuracy: 0, streak: 0, workerLevel: 1,
-    kyc: false, kycStatus: 'pending',
+    kyc: false, kycStatus: 'none',
     referralCode: refCode, referredBy: ref || '', referralCount: 0, referralEarned: 0,
     gen2Count: 0, gen3Count: 0, gen2Earned: 0, gen3Earned: 0,
     spinLastUsed: null, isNewUser: true, status: 'active', role: 'user',
@@ -2039,6 +2048,7 @@ async function registerUser({ name, username, email, phone, country, pass, ref }
     createdAt: fb.serverTimestamp(), lastActive: fb.serverTimestamp(), lastLoginAt: fb.serverTimestamp()
   };
   await fb.setDoc(fb.doc(db, 'users', cred.user.uid), userData);
+  fb.sendEmailVerification(cred.user).catch(() => {});
   if (ref) applyReferralCascade(ref, name).catch(e => console.warn('referral cascade:', e));
   return cred.user;
 }
@@ -2075,7 +2085,7 @@ async function ensureUserDoc(user) {
       photoURL: user.photoURL || '',
       balance: 0, totalEarned: 0, totalWithdrawn: 0, pendingAmount: 0, postingHold: 0,
       tasksCompleted: 0, approvedTasks: 0, accuracy: 0, streak: 0, workerLevel: 1,
-      kyc: false, kycStatus: 'pending',
+      kyc: false, kycStatus: 'none',
       referralCode: refCode, referredBy: '', referralCount: 0, referralEarned: 0,
       gen2Count: 0, gen3Count: 0, gen2Earned: 0, gen3Earned: 0,
       spinLastUsed: null, isNewUser: true, status: 'active', role: 'user',
@@ -2090,8 +2100,6 @@ async function ensureUserDoc(user) {
   return { ref, data };
 }
 
-// FIX: wrap the auth service functions into a single object so calls like
-// AuthService.loginWithEmail(...) from screens/auth.js resolve correctly.
 const AuthService = { loginWithEmail, registerUser, loginWithGoogle, sendReset, changePassword, logout, deleteAccount };
 
 // ══════ js/services/support.js ══════
@@ -2249,6 +2257,25 @@ async function reallyDeleteAccount() {
   try { await AuthService.deleteAccount(user); } catch (e) { showToast('Delete failed — re-login and try', 'error'); }
 }
 
+// ══════ Email verification ══════
+let _lastVerifySent = 0;
+async function resendVerifyEmail() {
+  const user = window._currentUser; if (!user) return;
+  if (Date.now() - _lastVerifySent < 30000) { showToast('একটু অপেক্ষা করে আবার চেষ্টা করুন', 'info'); return; }
+  try { await fb.sendEmailVerification(user); _lastVerifySent = Date.now(); showToast('📩 ভেরিফিকেশন ইমেইল পাঠানো হয়েছে', 'info'); }
+  catch (e) { showToast('❌ পাঠাতে ব্যর্থ হয়েছে', 'error'); }
+}
+function updateEmailVerifyBanner() {
+  const user = window._currentUser;
+  const el = document.getElementById('emailVerifyBanner');
+  if (el) el.style.display = (user && !user.emailVerified) ? 'flex' : 'none';
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && window._currentUser) {
+    fb.reload(window._currentUser).then(updateEmailVerifyBanner).catch(() => {});
+  }
+});
+
 // ══════ js/screens/home.js ══════
 function updateGreeting() {
   const h = new Date().getHours();
@@ -2404,8 +2431,6 @@ async function runCompleteDailyLink(jobId) {
   if (S._dailyLinkCompleting[jobId]) return;
   S._dailyLinkCompleting[jobId] = true;
   try {
-    // FIX: was calling a non-existent completeDailyLinkTaskSvc; the real
-    // service function is completeDailyLinkTask (imported above).
     await completeDailyLinkTask(jobId, t, user, data, window._userRef);
     showToast('🎉 টাস্ক সম্পন্ন! +' + fmtUSD(t.reward || 0) + ' ব্যালেন্সে যোগ হয়েছে। পরবর্তী ২৪ ঘণ্টা এই টাস্কটি লক থাকবে।', 'info');
     closeTaskModal(); renderAllTasks('__current__');
@@ -2555,7 +2580,6 @@ function switchPostTab(tab) {
   if (tab === 'review') renderMyJobSubmissions();
 }
 
-// ══════ Peer-review UI: submissions to jobs I posted ══════
 function updatePostReviewBadge() {
   const badge = document.getElementById('postReviewBadge'); if (!badge) return;
   const pending = S.myJobSubmissions.filter(s => s.status === 'pending').length;
@@ -2628,8 +2652,6 @@ function selectPostType(el, type) {
   if (shotField) shotField.style.display = type === 'proof' ? 'block' : 'none';
 }
 
-// FIX: budget preview now also shows the user's current balance and flags
-// insufficient balance in red, disabling the submit button until it's fixed.
 function updatePostBudgetPreview() {
   const reward = Number(document.getElementById('postReward')?.value) || 0;
   const slots = Number(document.getElementById('postSlots')?.value) || 0;
@@ -2663,13 +2685,10 @@ const ERR_MSGS = {
   INSUFFICIENT_BALANCE: 'আপনার ওয়ালেট ব্যালেন্স যথেষ্ট নয়। জব পোস্ট করার আগে ব্যালেন্স যোগ করুন (Deposit)।',
 };
 
-// FIX: hard balance gate before submitting — the transaction inside
-// createJobPost() re-checks this server-side-equivalent way (via Firestore
-// transaction), but we also gate here so the user gets an immediate,
-// friendly alert instead of waiting for a round-trip failure.
 async function submitJobPost() {
   const user = window._currentUser, userData = window._userData, userRef = window._userRef;
   if (!user || !userRef) { showToast('Please login again', 'error'); return; }
+  if (!user.emailVerified) { showToast('⚠️ Job Post করতে আগে ইমেইল ভেরিফাই করুন', 'error'); return; }
 
   const reward = Number(document.getElementById('postReward').value) || 0;
   const slots = Number(document.getElementById('postSlots').value) || 0;
@@ -2720,7 +2739,7 @@ async function submitJobPost() {
   }
 }
 
-const STATUS_LABEL = { pending_review: ['⏳ Review Pending', 'type-pending'], approved: ['✓ Live', 'type-done'], rejected: ['❌ Rejected', 'type-rejected'] };
+const STATUS_LABEL = { pending_review: ['⏳ Review Pending', 'type-pending'], approved: ['✓ Live', 'type-done'], rejected: ['❌ Rejected', 'type-rejected'], pending_reapproval: ['🔄 Needs Re-Approval', 'type-pending'] };
 
 function renderMyPostedJobs() {
   const el = document.getElementById('myPostedJobsList'); if (!el) return;
@@ -2741,6 +2760,8 @@ function renderMyPostedJobs() {
       </div>
       ${heldNote}
       ${j.status === 'rejected' && j.rejectReason ? `<div class="myjob-reject-box">💬 <div><strong>এডমিনের কারণ:</strong> ${escHtml(j.rejectReason)}</div></div>` : ''}
+      ${j.status === 'pending_reapproval' ? `<div class="myjob-reject-box" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(224,64,251,.2)">🔄 <div>আপনি এই জব এডিট করেছেন — এডমিন আবার রিভিউ করার পর এটি লাইভ হবে।</div></div>` : ''}
+      ${(j.status === 'approved' || j.status === 'pending_reapproval') ? `<button class="btn-ghost" style="margin-top:9px" onclick="openEditJobModal('${j.id}')">✏️ Edit This Job</button>` : ''}
     </div>`;
   }).join('');
 }
@@ -2749,6 +2770,49 @@ function filterMyPostedJobs(status, el) {
   document.querySelectorAll('#screen-post .mytask-filter .h-chip').forEach(c => c.classList.remove('active'));
   if (el) el.classList.add('active');
   renderMyPostedJobs();
+}
+
+// ══════ Job Edit → Re-approval ══════
+function openEditJobModal(jobId) {
+  const j = S.myPostedJobs.find(x => x.id === jobId); if (!j) return;
+  S._editingJobId = jobId;
+  showConfirmHtml(`
+    <div class="modal-title">✏️ জব এডিট করুন</div>
+    <div style="font-size:11.5px;color:var(--text3);margin-bottom:12px;line-height:1.6">রিওয়ার্ড ও স্লট সংখ্যা এখান থেকে পরিবর্তন করা যাবে না (বাজেট হোল্ডের কারণে)। জবটি বর্তমানে <b>Approved</b> থাকলে, Save করলে এটি আবার Admin রিভিউতে যাবে এবং অনুমোদন না হওয়া পর্যন্ত Worker-দের কাছ থেকে অস্থায়ীভাবে লুকানো থাকবে।</div>
+    <div class="field"><label>জব টাইটেল</label><input type="text" id="editJobTitle" value="${escHtml(j.title || '')}"></div>
+    <div class="field"><label>নির্দেশনা</label><textarea id="editJobInstructions" rows="3">${escHtml(j.instructions || '')}</textarea></div>
+    ${j.type !== 'proof' ? `<div class="field"><label>লিংক</label><input type="url" id="editJobLink" value="${escHtml(j.link || '')}"></div>` : ''}
+    <div class="field"><label>দেশ</label><input type="text" id="editJobCountry" value="${escHtml(j.country || 'Global')}"></div>
+    <div class="auth-error" id="editJobErr"></div>
+    <div style="display:flex;gap:9px">
+      <button class="btn-ghost" style="flex:1" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-primary" style="flex:1" onclick="saveJobEdit()">Save &amp; Resubmit</button>
+    </div>`);
+}
+async function saveJobEdit() {
+  const jobId = S._editingJobId; if (!jobId) return;
+  const j = S.myPostedJobs.find(x => x.id === jobId); if (!j) return;
+  const errEl = document.getElementById('editJobErr');
+  const title = document.getElementById('editJobTitle').value.trim();
+  const instructions = document.getElementById('editJobInstructions').value.trim();
+  const linkEl = document.getElementById('editJobLink');
+  const link = linkEl ? linkEl.value.trim() : (j.link || '');
+  const country = document.getElementById('editJobCountry').value.trim() || 'Global';
+  if (!title || title.length < 5) { errEl.textContent = '❌ টাইটেল অন্তত ৫ অক্ষরের হতে হবে'; return; }
+  if (!instructions || instructions.length < 10) { errEl.textContent = '❌ নির্দেশনা অন্তত ১০ অক্ষরের হতে হবে'; return; }
+  try {
+    const wasApproved = j.status === 'approved';
+    await fb.updateDoc(fb.doc(db, 'jobs', jobId), {
+      title, instructions, link, country,
+      status: wasApproved ? 'pending_reapproval' : j.status,
+      editedAt: fb.serverTimestamp(),
+    });
+    closeConfirm();
+    showToast(wasApproved ? '✅ আপডেট হয়েছে — এডমিন আবার রিভিউ করার পর লাইভ হবে' : '✅ জব আপডেট হয়েছে', 'info');
+  } catch (e) {
+    console.error(e);
+    showToast('❌ আপডেট ব্যর্থ হয়েছে, আবার চেষ্টা করুন', 'error');
+  }
 }
 
 // ══════ js/screens/wallet.js ══════
@@ -2787,6 +2851,8 @@ function renderTxList() {
 }
 function filterTx(type, el) { S.txFilter = type; document.querySelectorAll('.tx-filter-btn').forEach(b => b.classList.remove('active')); if (el && el.classList) el.classList.add('active'); renderTxList(); }
 async function doWithdraw() {
+  const user0 = window._currentUser;
+  if (user0 && !user0.emailVerified) { showToast('⚠️ Withdraw করতে আগে ইমেইল ভেরিফাই করুন', 'error'); return; }
   const amt = Number(document.getElementById('withdrawAmt').value), num = document.getElementById('withdrawNumber').value.trim(), notes = document.getElementById('withdrawNotes')?.value.trim() || '';
   if (!amt || amt < SITE.minWithdraw) { showToast(`Minimum withdrawal $${SITE.minWithdraw.toFixed(2)}`, 'error'); return; }
   const currentBal = window._userData?.balance || 0;
@@ -2958,8 +3024,6 @@ function updateAvatarDisplay(name, photoURL) {
   const gn = document.getElementById('greetName'); if (gn) gn.textContent = name || '—';
 }
 
-// FIX: Jobs Posted stat now reads live from S.myPostedJobs (kept in sync by
-// listenMyPostedJobs) instead of the non-existent _myPostedJobsCount field.
 function updateJobsPostedStat() {
   const el = document.getElementById('homeJobsPosted');
   if (el) el.textContent = S.myPostedJobs.length;
@@ -2978,8 +3042,17 @@ function updateProfileUI(data, user) {
   set('profilePhone', data.phone || '—'); set('profileCountry', data.country || '—'); set('profileReferrals', data.referralCount || 0); set('refCode', refCode);
   if (data.createdAt) { try { const d = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt); if (!isNaN(d)) set('profileJoined', d.toLocaleDateString('en-US')); } catch (e) {} }
   if (data.bio) { const b = document.getElementById('profileBio'); if (b) { b.textContent = data.bio; b.style.display = 'block'; } }
+  const kycStatus = data.kycStatus || 'none';
+  const kycBadgeMap = {
+    verified: '<span class="p-badge worker" style="background:var(--green-dim);color:var(--green);border-color:var(--green-border)">✅ KYC Verified</span>',
+    pending: '<span class="p-badge unverified" style="background:var(--gold-dim);color:var(--gold);border-color:rgba(255,179,0,.2)">⏳ KYC Pending</span>',
+    rejected: '<span class="p-badge unverified">❌ KYC Rejected</span>',
+    none: '<span class="p-badge unverified">⚠ KYC Not Submitted</span>',
+  };
   const badgesEl = document.getElementById('profileBadges');
-  if (badgesEl) badgesEl.innerHTML = `<span class="p-badge worker">🐝 Worker L${wLv}</span><span class="p-badge unverified">⚠ KYC Pending</span>`;
+  if (badgesEl) badgesEl.innerHTML = `<span class="p-badge worker">🐝 Worker L${wLv}</span>${kycBadgeMap[kycStatus] || kycBadgeMap.none}`;
+  const kycSub = document.getElementById('kycMenuSub');
+  if (kycSub) kycSub.textContent = kycStatus === 'verified' ? 'ভেরিফাইড ✅' : kycStatus === 'pending' ? 'রিভিউ চলছে...' : kycStatus === 'rejected' ? 'আবার জমা দিন' : 'আপনার পরিচয় যাচাই করুন';
   set('workerLevelLabel', `Level ${wLv} / 5`);
   const fillEl = document.getElementById('workerLevelFill'); if (fillEl) fillEl.style.width = ((wLv - 1) / 4 * 100 + 10) + '%';
   set('homeWorkerLv', 'L' + wLv); set('homeRefCount', data.referralCount || 0); set('homeStreak', (data.streak || 0) + ' days'); set('homeTasks', data.tasksCompleted || 0);
@@ -3025,8 +3098,6 @@ async function saveProfile() {
   }
 }
 
-// FIX: restores the "prefill Edit Profile fields on load" behaviour from
-// the old codebase. Called once from bootstrapApp() right after login.
 function prefillEditProfileFields(data, user) {
   const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
   setVal('editName', data?.name || user?.displayName || '');
@@ -3034,6 +3105,91 @@ function prefillEditProfileFields(data, user) {
   setVal('editBio', data?.bio || '');
   setVal('editPhone', data?.phone || '');
   setVal('editCountry', data?.country || '');
+}
+
+// ══════ js/screens/kyc.js ══════
+function onEnterKycScreen() {
+  const data = window._userData || {};
+  const status = data.kycStatus || 'none';
+  const disabledNote = document.getElementById('kycDisabledNote');
+  const formWrap = document.getElementById('kycFormWrap');
+  if (disabledNote) disabledNote.style.display = SITE.kycEnabled ? 'none' : 'flex';
+  const cardWrap = document.getElementById('kycStatusCardWrap');
+  if (cardWrap) {
+    const cards = {
+      none: { cls: 'none', ico: '🪪', title: 'KYC জমা দেওয়া হয়নি', desc: 'নিচের ফর্মটি পূরণ করে আপনার পরিচয় যাচাই করুন।' },
+      pending: { cls: 'pending', ico: '⏳', title: 'রিভিউ চলছে', desc: 'আপনার KYC তথ্য এডমিন রিভিউ করছে। সাধারণত ২৪–৪৮ ঘণ্টা সময় লাগে।' },
+      verified: { cls: 'verified', ico: '✅', title: 'ভেরিফাইড', desc: 'আপনার পরিচয় সফলভাবে যাচাই করা হয়েছে।' },
+      rejected: { cls: 'rejected', ico: '❌', title: 'রিজেক্ট হয়েছে', desc: data.kycRejectReason ? ('কারণ: ' + data.kycRejectReason) : 'দয়া করে সঠিক তথ্য দিয়ে আবার জমা দিন।' },
+    };
+    const c = cards[status] || cards.none;
+    cardWrap.innerHTML = `<div class="kyc-status-card ${c.cls}"><div class="kyc-status-ico">${c.ico}</div><div class="kyc-status-title">${c.title}</div><div class="kyc-status-desc">${escHtml(c.desc)}</div></div>`;
+  }
+  if (formWrap) {
+    const showForm = SITE.kycEnabled && (status === 'none' || status === 'rejected');
+    formWrap.style.display = showForm ? 'block' : 'none';
+    if (showForm) {
+      const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+      setVal('kycFullName', data.kycFullName || data.name || '');
+      setVal('kycIdType', data.kycIdType || 'NID');
+      setVal('kycIdNumber', data.kycIdNumber || '');
+      S._kycFiles = {};
+      ['kycFrontUploadArea', 'kycBackUploadArea'].forEach(id => {
+        const area = document.getElementById(id);
+        if (area) { area.classList.remove('has-image'); area.innerHTML = `<div class="pua-icon">📷</div><div class="pua-text">${id.includes('Front') ? 'সামনের দিকের ছবি আপলোড করুন' : 'পেছনের দিকের ছবি আপলোড করুন'}</div>`; }
+      });
+      const errEl = document.getElementById('kycErr'); if (errEl) errEl.textContent = '';
+    }
+  }
+}
+function handleKycFile(input, side) {
+  const file = input.files && input.files[0]; if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('একটি ছবি ফাইল দিন', 'error'); return; }
+  if (file.size > 8 * 1024 * 1024) { showToast('ছবি খুব বড় (সর্বোচ্চ 8MB)', 'error'); return; }
+  S._kycFiles[side] = file;
+  const area = document.getElementById(side === 'front' ? 'kycFrontUploadArea' : 'kycBackUploadArea');
+  const reader = new FileReader();
+  reader.onload = e => {
+    if (area) { area.classList.add('has-image'); area.innerHTML = `<img class="kyc-doc-preview" src="${e.target.result}">`; }
+  };
+  reader.readAsDataURL(file);
+}
+async function submitKyc() {
+  const errEl = document.getElementById('kycErr');
+  if (!SITE.kycEnabled) { showToast('KYC এই মুহূর্তে বন্ধ আছে', 'error'); return; }
+  const fullName = document.getElementById('kycFullName').value.trim();
+  const idType = document.getElementById('kycIdType').value;
+  const idNumber = document.getElementById('kycIdNumber').value.trim();
+  if (!fullName) { errEl.textContent = '❌ পূর্ণ নাম দিন'; return; }
+  if (!idNumber) { errEl.textContent = '❌ আইডি নম্বর দিন'; return; }
+  if (!S._kycFiles.front) { errEl.textContent = '❌ সামনের দিকের ছবি দিন'; return; }
+  if (!S._kycFiles.back) { errEl.textContent = '❌ পেছনের দিকের ছবি দিন'; return; }
+  const user = window._currentUser, userRef = window._userRef;
+  if (!user || !userRef) { showToast('আবার লগইন করুন', 'error'); return; }
+  errEl.textContent = '';
+  const btn = document.getElementById('kycSubmitBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ জমা দেওয়া হচ্ছে...'; }
+  try {
+    const [frontUrl, backUrl] = await Promise.all([
+      uploadProofToCloudinary(S._kycFiles.front, 'workhive_kyc'),
+      uploadProofToCloudinary(S._kycFiles.back, 'workhive_kyc'),
+    ]);
+    await fb.updateDoc(userRef, {
+      kycStatus: 'pending', kyc: false,
+      kycFullName: fullName, kycIdType: idType, kycIdNumber: idNumber,
+      kycFrontUrl: frontUrl, kycBackUrl: backUrl,
+      kycRejectReason: '', kycSubmittedAt: fb.serverTimestamp(),
+    });
+    showToast('✅ KYC জমা হয়েছে — এডমিন রিভিউ করবে', 'info');
+    onEnterKycScreen();
+  } catch (e) {
+    console.error(e);
+    let msg = '❌ জমা দিতে ব্যর্থ হয়েছে, আবার চেষ্টা করুন';
+    if (e.cloudinary) msg = '❌ ছবি আপলোড ব্যর্থ হয়েছে';
+    showToast(msg, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📤 জমা দিন'; }
+  }
 }
 
 // ══════ js/screens/spin.js ══════
@@ -3153,10 +3309,32 @@ function renderSupportMessages() {
   const list = S.supportMessages || [];
   area.innerHTML = list.map(m => {
     const time = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : (m.timeLabel || '');
-    if (m.from === 'admin') return `<div class="msg-row them"><div class="msg-ava"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/></svg></div><div><div class="msg-bubble">${escHtml(m.text)}<div class="msg-time">${time}</div></div></div></div>`;
-    return `<div class="msg-row me"><div><div class="msg-bubble">${escHtml(m.text)}<div class="msg-time">${time}</div></div></div></div>`;
+    const imgHtml = m.imageUrl ? `<img src="${escHtml(m.imageUrl)}" style="max-width:180px;border-radius:10px;display:block;margin-bottom:${m.text ? '6px' : '0'};cursor:pointer" onclick="window.open('${escHtml(m.imageUrl)}','_blank')">` : '';
+    if (m.from === 'admin') return `<div class="msg-row them"><div class="msg-ava"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/></svg></div><div><div class="msg-bubble">${imgHtml}${escHtml(m.text || '')}<div class="msg-time">${time}</div></div></div></div>`;
+    return `<div class="msg-row me"><div><div class="msg-bubble" onpointerdown="startMsgLongPress('${m.id}')" onpointerup="cancelMsgLongPress()" onpointerleave="cancelMsgLongPress()">${imgHtml}${escHtml(m.text || '')}<div class="msg-time">${time}</div></div></div></div>`;
   }).join('');
   area.scrollTop = area.scrollHeight;
+}
+let _msgLongPressTimer = null;
+function startMsgLongPress(id) { clearTimeout(_msgLongPressTimer); _msgLongPressTimer = setTimeout(() => confirmDeleteSupportMsg(id), 600); }
+function cancelMsgLongPress() { clearTimeout(_msgLongPressTimer); }
+function confirmDeleteSupportMsg(id) {
+  if (!confirm('এই মেসেজটি মুছে ফেলতে চান?')) return;
+  const uid = window._currentUser?.uid; if (!uid) return;
+  fb.deleteDoc(fb.doc(db, 'users', uid, 'supportChat', id)).then(() => showToast('🗑️ মুছে ফেলা হয়েছে')).catch(() => showToast('❌ মুছতে ব্যর্থ হয়েছে', 'error'));
+}
+async function handleSupportAttach(input) {
+  const file = input.files && input.files[0]; if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('শুধু ছবি ফাইল দিন', 'error'); return; }
+  if (file.size > 8 * 1024 * 1024) { showToast('ছবি খুব বড় (সর্বোচ্চ 8MB)', 'error'); return; }
+  const uid = window._currentUser?.uid; if (!uid) return;
+  input.value = '';
+  try {
+    showToast('⬆ ছবি আপলোড হচ্ছে...', 'info');
+    const url = await uploadProofToCloudinary(file, 'workhive_support');
+    await fb.addDoc(fb.collection(db, 'users', uid, 'supportChat'), { from: 'user', text: '', imageUrl: url, lang: _supLang, _ts: Date.now(), createdAt: fb.serverTimestamp() });
+    updateSupportThread(uid, window._userData, window._currentUser, '📷 ছবি পাঠানো হয়েছে', 'user', _supLang);
+  } catch (e) { console.error(e); showToast('❌ ছবি পাঠাতে ব্যর্থ হয়েছে', 'error'); }
 }
 async function sendSupportMsg() {
   const input = document.getElementById('supInput'); const val = input.value.trim(); if (!val) return;
@@ -3170,14 +3348,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (supInputEl) supInputEl.addEventListener('keydown', e => { if (e.key === 'Enter') sendSupportMsg(); });
 });
 
-// ══════ js/main.js (flattened — everything above is in the same module scope) ══════
+// ══════ js/main.js (flattened) ══════
 Object.assign(window, {
   goTab, nextOnboard, closeOnboard, closeConfirm,
   copyInstructionLink, copyDailyLink, showToast,
   AuthService,
   initAuthScreenBindings, switchAuthTab, togglePass, checkStrength, doLogin, doForgotPassword,
   doGoogle, doRegister, openChangePassword, submitChangePassword, doLogout, doLogoutConfirm,
-  confirmDeleteAccount, reallyDeleteAccount,
+  confirmDeleteAccount, reallyDeleteAccount, resendVerifyEmail,
   updateGreeting, refreshWalletUI, renderHomeTasks, renderRecentActivity, renderLeaderboard,
   renderTaskCategories, filterTaskCategory, renderAllTasks, openTaskModal, closeTaskModal,
   visitLink, startDailyLinkTask, handleProofFileSelect, removeProofImage, submitTaskProof,
@@ -3185,6 +3363,7 @@ Object.assign(window, {
   onEnterPostScreen, applySiteSettingsToPost, switchPostTab, selectPostType,
   updatePostBudgetPreview, submitJobPost, renderMyPostedJobs, filterMyPostedJobs,
   filterMyJobSubmissions, renderMyJobSubmissions, approveJobSubmission, rejectJobSubmission, confirmRejectJobSubmission,
+  openEditJobModal, saveJobEdit,
   applySiteSettingsToWallet, renderWithdrawMethodGrid, selectWithdrawMethod, updateWithdrawPreview,
   rebuildAndRenderTx, renderTxList, filterTx, doWithdraw,
   renderHistory, filterHistory,
@@ -3192,9 +3371,10 @@ Object.assign(window, {
   onEnterReferralScreen, applySiteSettingsToReferral, updateReferralUI, switchGenTab,
   renderGenTree, showRefUserProfile, closeRefUserModal, copyRef, shareRef,
   updateAvatarDisplay, updateProfileUI, previewAvatar, saveProfile,
+  onEnterKycScreen, handleKycFile, submitKyc,
   applySiteSettingsToSpin, drawSpinWheel, checkSpinUsed, doSpin, renderSpinHistory,
   applySiteSettingsToSupport, toggleHelpLang, openSupport, closeSupport,
-  renderSupportMessages, sendSupportMsg,
+  renderSupportMessages, sendSupportMsg, handleSupportAttach, startMsgLongPress, cancelMsgLongPress, confirmDeleteSupportMsg,
 });
 
 onEnterScreen('tasks', () => renderAllTasks('__current__'));
@@ -3203,6 +3383,8 @@ onEnterScreen('post', () => onEnterPostScreen());
 onEnterScreen('history', () => renderHistory());
 onEnterScreen('referral', () => onEnterReferralScreen());
 onEnterScreen('wallet', () => renderTxList());
+onEnterScreen('kyc', () => onEnterKycScreen());
+onEnterScreen('home', () => updateEmailVerifyBanner());
 
 let _appInitialized = false;
 let _userUnsubs = [];
@@ -3215,8 +3397,6 @@ function showAuthScreen() {
   document.getElementById('appShell').style.display = 'none';
 }
 
-// Small helper so OneSignal linking is a one-liner at both call sites and
-// silently no-ops everywhere except inside the Capacitor Android app.
 function onesignalLogin(uid) {
   if (window.Capacitor?.Plugins?.OneSignal) {
     try { window.Capacitor.Plugins.OneSignal.login({ externalId: uid }); }
@@ -3240,7 +3420,6 @@ async function bootstrapApp(user, ref, data) {
   shell.style.display = 'flex'; shell.style.flexDirection = 'column';
   window._lastKnownBalance = data?.balance || 0;
 
-  // FIX: restore Edit Profile field prefill (was dropped in the modular rewrite)
   prefillEditProfileFields(data, user);
 
   updateProfileUI(data, user);
@@ -3250,6 +3429,7 @@ async function bootstrapApp(user, ref, data) {
   renderHomeTasks();
   drawSpinWheel(); checkSpinUsed();
   updateReferralUI(data);
+  updateEmailVerifyBanner();
 
   clearUserListeners();
   _userUnsubs.push(
@@ -3264,6 +3444,7 @@ async function bootstrapApp(user, ref, data) {
       if (_appInitialized && newBal > oldBal) showToast(`💰 Balance updated: $${newBal.toFixed(2)}`);
       window._lastKnownBalance = newBal;
       updatePostBudgetPreview();
+      if (document.getElementById('screen-kyc')?.classList.contains('active')) onEnterKycScreen();
     })
   );
 
@@ -3281,9 +3462,6 @@ async function bootstrapApp(user, ref, data) {
     renderMyPostedJobs();
     updateJobsPostedStat();
     rebuildAndRenderTx();
-    // FIX: settles the balance hold the moment an admin approves/rejects a
-    // job this user posted — no admin panel changes required. See
-    // settleJobPostHolds() in services/postJobs.js for the transaction logic.
     settleJobPostHolds(jobs, window._userRef);
   });
   listenSubmissionsToMyJobs(user.uid, (list) => {
@@ -3322,8 +3500,6 @@ function applySiteSettingsToUI() {
 
 fb.onAuthStateChanged(auth, async (user) => {
   if (user && !user.isAnonymous) {
-    // FIX: restore OneSignal <-> Firebase UID linking for push notifications
-    // inside the Capacitor Android app (no-op everywhere else).
     onesignalLogin(user.uid);
     try {
       const { ref, data } = await ensureUserDoc(user);
@@ -3333,9 +3509,6 @@ fb.onAuthStateChanged(auth, async (user) => {
       await bootstrapApp(user, null, {});
     }
   } else if (!user) {
-    // FIX: unlink this device from OneSignal's last-known Firebase UID on
-    // logout, so a shared/borrowed phone doesn't keep receiving the
-    // previous user's push notifications.
     onesignalLogout();
     clearUserListeners();
     window._currentUser = null; window._userData = null;

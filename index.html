@@ -25,6 +25,13 @@
   --shadow:0 8px 40px rgba(0,0,0,0.8);
   --r-xl:24px;--r-lg:18px;--r-md:13px;--r-sm:9px;
 }
+/* Real color emoji — applied only to icon-only elements (never to headings/banners/badges that mix emoji with Bangla/English text), so the Inter/Noto Sans Bengali body font stays untouched everywhere else. */
+.emoji, .mp-emoji, .qa-sec-ico, .qa-primary-ico, .combo-ico, .psc-icon, .tx-ico,
+.activity-icon, .notif-ico, .avatar-edit-btn, .spin-center, .load-logo, .auth-logo,
+.lb-rank, .pua-icon, .dv-icon, .kyc-status-ico, .ref-stat-ico, .asr-ico,
+.onboard-ico, .coming-soon-icon-box {
+  font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Segoe UI Symbol",sans-serif;
+}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{height:100%}
 body{font-family:'Inter','Noto Sans Bengali',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px 12px}
@@ -828,6 +835,7 @@ function applyTelegramSafeArea(tg) {
     <div class="sb-item" data-sb="post" onclick="sbGoTab('post')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span>Post a Job</span></div>
 
     <div class="sb-section-lbl">Wallet</div>
+    <div class="sb-item" data-sb="deposit" onclick="sbGoTab('deposit')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span>Deposit</span></div>
     <div class="sb-item" data-sb="wallet" onclick="sbGoTab('wallet')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2.5"/><path d="M2 10h20M6 15h3"/></svg><span>Withdraw Funds</span></div>
     <div class="sb-item" data-sb="history" onclick="sbGoTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 5-8"/></svg><span>Wallet / Task Statement</span></div>
 
@@ -1023,6 +1031,31 @@ function applyTelegramSafeArea(tg) {
           <div id="myJobSubmissionsList"></div>
         </div>
       </div>
+    </section>
+
+    <!-- DEPOSIT -->
+    <section class="screen" id="screen-deposit">
+      <div class="sec-title" style="margin-top:13px"><h3>💰 Deposit</h3></div>
+      <div class="demo-banner">📌 ম্যানুয়ালি পেমেন্ট সেন্ড করে Transaction ID দিন — এডমিন ভেরিফাই করে ব্যালেন্স যোগ করবে।</div>
+
+      <div class="field"><label>Quick Amount</label>
+        <div class="method-selector" id="depAmtGrid" style="grid-template-columns:repeat(4,1fr)"></div>
+      </div>
+      <div class="field"><label>অথবা নিজে লিখুন ($)</label><input type="number" id="depCustomAmt" step="0.01" placeholder="0.00" oninput="onDepositCustomAmt()"></div>
+
+      <div class="field"><label>Payment Method</label>
+        <div class="method-selector" id="depMethodGrid"></div>
+      </div>
+
+      <div class="field" id="depAccountInfoField" style="display:none"></div>
+      <div class="field"><label>আপনি যে নাম্বার থেকে সেন্ড করেছেন</label><input type="text" id="depSenderNumber" placeholder="e.g. 01XXXXXXXXX"></div>
+      <div class="field"><label>Transaction ID (TrxID)</label><input type="text" id="depTrxId" placeholder="e.g. 9AK2XJ7L"></div>
+
+      <div class="withdraw-preview-row"><div class="wpr-l">Deposit Amount</div><div class="wpr-v" id="depPreviewAmt">$0.00</div></div>
+      <button class="btn-primary" onclick="submitDepositRequest()">📤 Deposit Request পাঠান</button>
+
+      <div class="tx-section-header"><h3>Deposit History</h3></div>
+      <div id="depositHistoryList"></div>
     </section>
 
     <!-- WALLET -->
@@ -1369,6 +1402,7 @@ const fb = {
 const S = {
   selectedWithdrawMethod: 'bKash',
   approvedJobs: [], myTaskSubmissions: [], transactions: [], notifications: [],
+  deposits: [],
   paymentMethods: [], spinHistory: [],
   spinPrizes: [
     { label: '$0.05', value: 0.05, color: '#00E676' }, { label: '$0.10', value: 0.10, color: '#448AFF' },
@@ -1439,6 +1473,43 @@ const nameColor = name => avatarColors[(name || 'A').charCodeAt(0) % avatarColor
 const getCatGrad = cat => catGradients[cat] || catGradients['Other'];
 const getCatAccent = cat => catAccent[cat] || '#78909C';
 const getCatSvg = cat => catSvg[cat] || catSvg['Other'];
+
+// Known platform → logo image URL. Match is done against subcategory first, then category (case-insensitive, partial match ok).
+const PLATFORM_LOGOS = {
+  facebook:  'https://cdn.simpleicons.org/facebook/1877F2',
+  instagram: 'https://cdn.simpleicons.org/instagram/E4405F',
+  youtube:   'https://cdn.simpleicons.org/youtube/FF0000',
+  tiktok:    'https://cdn.simpleicons.org/tiktok/FFFFFF',
+  whatsapp:  'https://cdn.simpleicons.org/whatsapp/25D366',
+  telegram:  'https://cdn.simpleicons.org/telegram/26A5E4',
+  twitter:   'https://cdn.simpleicons.org/x/FFFFFF',
+  x:         'https://cdn.simpleicons.org/x/FFFFFF',
+  linkedin:  'https://cdn.simpleicons.org/linkedin/0A66C2',
+  pinterest: 'https://cdn.simpleicons.org/pinterest/BD081C',
+  snapchat:  'https://cdn.simpleicons.org/snapchat/FFFC00',
+  discord:   'https://cdn.simpleicons.org/discord/5865F2',
+  playstore: 'https://cdn.simpleicons.org/googleplay/00C7B7',
+  appstore:  'https://cdn.simpleicons.org/appstore/0D96F6',
+};
+function getPlatformLogo(t) {
+  const keys = [t.subcategory, t.category].filter(Boolean).map(s => s.toLowerCase());
+  for (const k of keys) {
+    for (const name in PLATFORM_LOGOS) {
+      if (k.includes(name)) return PLATFORM_LOGOS[name];
+    }
+  }
+  return null; // no match → caller falls back to existing SVG icon
+}
+function taskIcoHtml(t, sizeStyle) {
+  const logo = getPlatformLogo(t);
+  const grad = getCatGrad(t.category);
+  const styleAttr = sizeStyle ? ` style="background:#fff;${sizeStyle}"` : ` style="background:#fff"`;
+  if (logo) {
+    return `<div class="task-ico"${styleAttr}><img src="${logo}" style="width:60%;height:60%;object-fit:contain" onerror="this.parentElement.style.background='${grad}';this.remove()"></div>`;
+  }
+  const svgStyleAttr = sizeStyle ? ` style="background:${grad};${sizeStyle}"` : ` style="background:${grad}"`;
+  return `<div class="task-ico"${svgStyleAttr}><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${getCatSvg(t.category)}</svg></div>`;
+}
 
 function verifiedTickSvg(size = 13) {
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#448AFF" class="verified-tick" aria-label="Verified"><path d="M12 2l2.4 2.4 3.3-.5 1 3.2 3.2 1-.5 3.3L24 12l-2.4 2.4.5 3.3-3.2 1-1 3.2-3.3-.5L12 24l-2.4-2.4-3.3.5-1-3.2-3.2-1 .5-3.3L0 12l2.4-2.4-.5-3.3 3.2-1 1-3.2 3.3.5z"/><path d="M9.5 12.5l1.8 1.8 3.7-4" stroke="#0d1520" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -1673,7 +1744,7 @@ function taskCardHtml(t, compact = false) {
         <div class="task-card-inner">
           ${posterRowHtml(t, true)}
           <div style="display:flex;gap:9px;align-items:flex-start">
-            <div class="task-ico" style="background:${grad};width:32px;height:32px;border-radius:9px"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></div>
+            ${taskIcoHtml(t, 'width:32px;height:32px;border-radius:9px')}
             <div class="task-body"><div class="task-top"><div class="task-title" style="font-size:10.5px">${escHtml(t.title)}</div><div class="task-reward-pill" style="padding:2px 7px"><span style="font-size:11px">+${fmtUSD(t.reward || 0)}</span></div></div>
             <div class="task-meta" style="font-size:8.5px;margin-top:4px">${badge}</div></div>
           </div>
@@ -1685,7 +1756,7 @@ function taskCardHtml(t, compact = false) {
       <div class="task-card-inner">
         ${posterRowHtml(t, false)}
         <div style="display:flex;gap:11px;align-items:flex-start">
-          <div class="task-ico" style="background:${grad}"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></div>
+          ${taskIcoHtml(t)}
           <div class="task-body">
             <div class="task-top"><div class="task-title">${escHtml(t.title)}</div><div class="task-reward-pill"><span>+${fmtUSD(t.reward || 0)}</span></div></div>
             <div class="task-meta">${badge}<span>${escHtml(t.category || '')}${t.subcategory ? ' · ' + escHtml(t.subcategory) : ''}</span><span>🌍 ${escHtml(t.country || 'Global')}</span></div>
@@ -1718,7 +1789,7 @@ function taskCardHtml(t, compact = false) {
       <div class="task-card-inner">
         ${posterRowHtml(t, true)}
         <div style="display:flex;gap:9px;align-items:flex-start">
-          <div class="task-ico" style="background:${grad};width:32px;height:32px;border-radius:9px"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></div>
+          ${taskIcoHtml(t, 'width:32px;height:32px;border-radius:9px')}
           <div class="task-body"><div class="task-top"><div class="task-title" style="font-size:10.5px">${escHtml(t.title)}</div><div class="task-reward-pill" style="padding:2px 7px"><span style="font-size:11px">+${fmtUSD(t.reward || 0)}</span></div></div>
           <div class="task-meta" style="font-size:8.5px;margin-top:4px">${statusBadge}</div></div>
         </div>
@@ -1730,7 +1801,7 @@ function taskCardHtml(t, compact = false) {
     <div class="task-card-inner">
       ${posterRowHtml(t, false)}
       <div style="display:flex;gap:11px;align-items:flex-start">
-        <div class="task-ico" style="background:${grad}"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></div>
+        ${taskIcoHtml(t)}
         <div class="task-body">
           <div class="task-top"><div class="task-title">${escHtml(t.title)}</div><div class="task-reward-pill"><span>+${fmtUSD(t.reward || 0)}</span></div></div>
           <div class="task-meta">
@@ -2188,6 +2259,28 @@ async function requestWithdrawal({ amount, method, account, notes, feePct }, use
   if (userRef) await fb.updateDoc(userRef, { balance: fb.increment(-amount), pendingAmount: fb.increment(net) }).catch(() => {});
 }
 
+async function requestDeposit({ amount, method, senderNumber, trxId }, user, userData) {
+  await fb.addDoc(fb.collection(db, 'deposits'), {
+    userId: user.uid, userName: userData?.name || user.displayName || 'Unknown', userEmail: user.email || '',
+    amount, method, senderNumber, txnId: trxId, status: 'pending',
+    date: new Date().toLocaleString('en-US'), _ts: Date.now(), createdAt: fb.serverTimestamp()
+  });
+}
+let _unsubDeposits = null;
+function listenUserDeposits(uid, onChange) {
+  if (_unsubDeposits) _unsubDeposits();
+  if (!uid) return;
+  _unsubDeposits = fb.onSnapshot(
+    fb.query(fb.collection(db, 'deposits'), fb.where('userId', '==', uid)),
+    snap => {
+      S.deposits = [];
+      snap.forEach(d => S.deposits.push({ id: d.id, ...d.data() }));
+      S.deposits.sort((a, b) => (b._ts || 0) - (a._ts || 0));
+      onChange && onChange(S.deposits);
+    }, e => console.warn('listenUserDeposits:', e)
+  );
+}
+
 function listenPaymentMethods(onChange) {
   fb.onSnapshot(
     fb.query(fb.collection(db, 'paymentMethods'), fb.where('enabled', '==', true)),
@@ -2627,7 +2720,7 @@ function openTaskModal(jobId) {
       actionHtml = `<div class="daily-visit-box" id="dailyVisitBox${jobId}"><div class="dv-icon">🔗</div><div class="dv-text" id="dlStatus${jobId}">নিচের বাটনে চাপুন — লিংকে ভিজিট করুন, তারপর এই অ্যাপে ফিরে আসুন। ৩ সেকেন্ড পর টাস্কটি অটোমেটিক সম্পন্ন হয়ে যাবে ও ব্যালেন্স যোগ হবে।</div></div><button class="btn-primary" id="dlStartBtn${jobId}" onclick="startDailyLinkTask('${jobId}','${escHtml(t.link || '#')}')">🔗 লিংক ভিজিট করুন</button>`;
     }
     document.getElementById('modalContent').innerHTML = `
-      <div class="modal-task-header" style="background:${grad}"><div class="mth-ico" style="background:rgba(255,255,255,.18)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></div><div><div class="mth-title">${escHtml(t.title)}</div><div class="mth-cat">${escHtml(t.category)} · 🔁 Daily Repeat Task</div></div></div>
+      <div class="modal-task-header" style="background:${grad}">${(function(){ const logo = getPlatformLogo(t); return logo ? `<div class="mth-ico" style="background:#fff"><img src="${logo}" style="width:60%;height:60%;object-fit:contain" onerror="this.parentElement.style.background='rgba(255,255,255,.18)';this.remove()"></div>` : `<div class="mth-ico" style="background:rgba(255,255,255,.18)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></div>`; })()}<div><div class="mth-title">${escHtml(t.title)}</div><div class="mth-cat">${escHtml(t.category)} · 🔁 Daily Repeat Task</div></div></div>
       ${modalPosterRowHtml(t)}
       <div class="modal-stats-row"><div class="msr-cell"><div class="msr-val" style="color:var(--gold)">+${fmtUSD(t.reward || 0)}</div><div class="msr-lbl">Reward</div></div><div class="msr-cell"><div class="msr-val" style="color:var(--purple)">24h</div><div class="msr-lbl">Cooldown</div></div><div class="msr-cell"><div class="msr-val" style="color:var(--green)">Auto</div><div class="msr-lbl">Instant Credit</div></div></div>
       <div class="modal-instructions"><div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📋 Task Instructions</div><p style="font-size:12.5px;color:var(--text2);line-height:1.7;margin:0">${linkifyInstructionText(rawInstructions)}</p>${directLinkHtml}</div>
@@ -2662,7 +2755,7 @@ function openTaskModal(jobId) {
     submissionHtml = `${shotsHtml}<div class="field"><label>Proof / Note (Optional)</label><textarea id="proofText${jobId}" placeholder="e.g. Liked and commented. My username: @yourname" rows="3"></textarea></div><button class="btn-primary" id="submitProofBtn${jobId}" data-shots="${shotCount}" onclick="submitTaskProof('${jobId}',document.getElementById('proofText${jobId}').value)">📤 Submit Proof for Review${shotCount > 1 ? ' (0/' + shotCount + ' uploaded)' : ''}</button>`;
   }
   document.getElementById('modalContent').innerHTML = `
-    <div class="modal-task-header" style="background:${grad}"><div class="mth-ico" style="background:rgba(255,255,255,.18)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></div><div><div class="mth-title">${escHtml(t.title)}</div><div class="mth-cat">${escHtml(t.category)} · ${escHtml(t.country || 'Global')}</div></div></div>
+    <div class="modal-task-header" style="background:${grad}">${(function(){ const logo = getPlatformLogo(t); return logo ? `<div class="mth-ico" style="background:#fff"><img src="${logo}" style="width:60%;height:60%;object-fit:contain" onerror="this.parentElement.style.background='rgba(255,255,255,.18)';this.remove()"></div>` : `<div class="mth-ico" style="background:rgba(255,255,255,.18)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></div>`; })()}<div><div class="mth-title">${escHtml(t.title)}</div><div class="mth-cat">${escHtml(t.category)} · ${escHtml(t.country || 'Global')}</div></div></div>
     ${modalPosterRowHtml(t)}
     <div class="modal-stats-row"><div class="msr-cell"><div class="msr-val" style="color:var(--gold)">+${fmtUSD(t.reward || 0)}</div><div class="msr-lbl">Reward</div></div><div class="msr-cell"><div class="msr-val">${lim - filled}</div><div class="msr-lbl">Slots Left</div></div><div class="msr-cell"><div class="msr-val" style="color:var(--gold)">⏳ Pending</div><div class="msr-lbl">After Submit</div></div></div>
     <div class="modal-instructions"><div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📋 Task Instructions</div>${stepsHtml}${directLinkHtml}</div>
@@ -2800,7 +2893,7 @@ function renderMyTasks() {
       <div class="task-card-accent" style="background:${grad}"></div>
       <div class="task-card-inner">
         <div style="display:flex;gap:11px;align-items:flex-start">
-          <div class="task-ico" style="background:${grad}"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round">${ico}</svg></div>
+          ${h.jobId === 'spin' ? `<div class="task-ico" style="background:${grad}"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round">${ico}</svg></div>` : taskIcoHtml(h)}
           <div class="task-body">
             <div class="task-top"><div class="task-title">${escHtml(h.jobTitle || h.title || 'Task')}</div><div class="task-reward-pill" style="background:${rwColor}15;border-color:${rwColor}33"><span style="color:${rwColor}">+${fmtUSD(h.reward || 0)}</span></div></div>
             <div class="task-meta"><span class="badge ${stClass}">${stLabel}</span><span>${escHtml(h.category || '')}</span><span>${h.date || ''}</span></div>
@@ -3116,6 +3209,63 @@ async function saveJobEdit() {
   }
 }
 
+// ══════ js/screens/deposit.js ══════
+const QUICK_DEP_AMTS = [1, 2, 5, 10, 20, 50];
+let depSelectedAmt = 0, depSelectedMethod = null;
+
+function renderDepAmtGrid() {
+  const el = document.getElementById('depAmtGrid'); if (!el) return;
+  el.innerHTML = QUICK_DEP_AMTS.map(a =>
+    `<div class="method-pill ${depSelectedAmt===a?'active':''}" onclick="selectDepAmt(${a})" style="padding:12px 4px"><span style="font-size:14px;font-weight:800">$${a}</span></div>`
+  ).join('');
+}
+function selectDepAmt(a){ depSelectedAmt=a; const c=document.getElementById('depCustomAmt'); if(c) c.value=''; renderDepAmtGrid(); updateDepPreview(); }
+function onDepositCustomAmt(){ depSelectedAmt = Number(document.getElementById('depCustomAmt').value)||0; renderDepAmtGrid(); updateDepPreview(); }
+function updateDepPreview(){ const el = document.getElementById('depPreviewAmt'); if (el) el.textContent = fmtUSD(depSelectedAmt); }
+
+function renderDepMethodGrid() {
+  const grid = document.getElementById('depMethodGrid'); if(!grid) return;
+  const methods = S.paymentMethods.filter(m => m.depositEnabled !== false);
+  grid.innerHTML = methods.map(m =>
+    `<div class="method-pill ${depSelectedMethod===m.name?'active':''}" data-method="${escHtml(m.name)}" onclick="selectDepMethod('${escHtml(m.name)}')">
+      <span class="mp-emoji">${m.logo ? `<img src="${m.logo}" style="width:22px;height:22px;border-radius:5px;object-fit:cover">` : '💳'}</span>${escHtml(m.name)}
+    </div>`
+  ).join('');
+  if (!depSelectedMethod && methods.length) selectDepMethod(methods[0].name);
+  else if (depSelectedMethod) selectDepMethod(depSelectedMethod);
+}
+function selectDepMethod(name){
+  depSelectedMethod = name;
+  document.querySelectorAll('#depMethodGrid .method-pill').forEach(p=>p.classList.toggle('active', p.dataset.method===name));
+  const m = S.paymentMethods.find(x=>x.name===name);
+  const info = document.getElementById('depAccountInfoField'); if (!info) return;
+  if (m && m.number) {
+    info.style.display = 'block';
+    info.innerHTML = `<label>এই নাম্বারে/অ্যাড্রেসে সেন্ড করুন</label><div class="withdraw-preview-row"><div class="wpr-l">${escHtml(m.name)}</div><div class="wpr-v" style="font-size:13px">${escHtml(m.number)}</div></div>${m.depositInstructions?`<p style="font-size:10.5px;color:var(--text3);margin-top:6px">${escHtml(m.depositInstructions)}</p>`:''}`;
+  } else { info.style.display = 'none'; }
+}
+async function submitDepositRequest(){
+  const senderNumber = document.getElementById('depSenderNumber').value.trim();
+  const trxId = document.getElementById('depTrxId').value.trim();
+  if (!depSelectedAmt || depSelectedAmt <= 0) { showToast('Amount দিন', 'error'); return; }
+  if (!depSelectedMethod) { showToast('Payment method বেছে নিন', 'error'); return; }
+  if (!senderNumber) { showToast('আপনার নাম্বার দিন', 'error'); return; }
+  if (!trxId) { showToast('Transaction ID দিন', 'error'); return; }
+  const user = window._currentUser, data = window._userData;
+  if (!user) { showToast('আবার লগইন করুন', 'error'); return; }
+  try {
+    await requestDeposit({ amount: depSelectedAmt, method: depSelectedMethod, senderNumber, trxId }, user, data);
+    showToast('📤 Deposit Request পাঠানো হয়েছে — এডমিন ভেরিফাই করবে', 'info');
+    depSelectedAmt = 0; document.getElementById('depCustomAmt').value=''; document.getElementById('depSenderNumber').value=''; document.getElementById('depTrxId').value='';
+    renderDepAmtGrid(); updateDepPreview();
+  } catch(e){ console.error(e); showToast('❌ ব্যর্থ হয়েছে, আবার চেষ্টা করুন', 'error'); }
+}
+function renderDepositHistory(){
+  const el = document.getElementById('depositHistoryList'); if(!el) return;
+  if (!S.deposits.length) { el.innerHTML = '<div class="history-empty"><div class="big">💰</div>এখনো কোনো Deposit নেই।</div>'; return; }
+  el.innerHTML = S.deposits.map(d => `<div class="tx-row"><div class="tx-left"><div class="tx-ico" style="background:${d.status==='approved'?'var(--green-dim)':d.status==='rejected'?'var(--red-dim)':'var(--gold-dim)'}">${d.status==='approved'?'✅':d.status==='rejected'?'❌':'⏳'}</div><div><div class="tx-name">Deposit — ${escHtml(d.method)}</div><div class="tx-date">${d.date}</div></div></div><div class="tx-amt ${d.status==='approved'?'pos':d.status==='rejected'?'neg':'pend'}">${fmtUSD(d.amount)}</div></div>`).join('');
+}
+
 // ══════ js/screens/wallet.js ══════
 function applySiteSettingsToWallet(SITE_) {
   const wMinL = document.getElementById('withdrawMinLabel'); if (wMinL) wMinL.textContent = `Min $${SITE_.minWithdraw.toFixed(2)} · bKash / Nagad / USDT`;
@@ -3127,7 +3277,13 @@ function renderWithdrawMethodGrid() {
   if (!S.paymentMethods.length) return;
   const grid = document.getElementById('withdrawMethodGrid'); if (!grid) return;
   const emojiMap = { bKash: '📱', Nagad: '💳', Rocket: '🚀', USDT: '₮', Bank: '🏦' };
-  grid.innerHTML = S.paymentMethods.map(m => `<div class="method-pill ${S.selectedWithdrawMethod === m.name ? 'active' : ''}" data-method="${escHtml(m.name)}" onclick="selectWithdrawMethod(this)"><span class="mp-emoji">${m.logo ? `<img src="${m.logo}" style="width:22px;height:22px;border-radius:5px;object-fit:cover">` : (m.emoji || emojiMap[m.name] || '💳')}</span>${escHtml(m.name)}</div>`).join('');
+  const methods = S.paymentMethods.filter(m => m.withdrawEnabled !== false);
+  grid.innerHTML = methods.map(m => `<div class="method-pill ${S.selectedWithdrawMethod === m.name ? 'active' : ''}" data-method="${escHtml(m.name)}" onclick="selectWithdrawMethod(this)"><span class="mp-emoji">${m.logo ? `<img src="${m.logo}" style="width:22px;height:22px;border-radius:5px;object-fit:cover">` : (m.emoji || emojiMap[m.name] || '💳')}</span>${escHtml(m.name)}</div>`).join('');
+  if (methods.length && !methods.some(m => m.name === S.selectedWithdrawMethod)) {
+    S.selectedWithdrawMethod = methods[0].name;
+    const firstPill = grid.querySelector('.method-pill');
+    if (firstPill) firstPill.classList.add('active');
+  }
 }
 function selectWithdrawMethod(el) {
   document.querySelectorAll('#withdrawMethodGrid .method-pill').forEach(m => m.classList.remove('active'));
@@ -3187,7 +3343,7 @@ function renderHistory() {
     return `<div class="task-card" style="cursor:default">
       <div class="task-card-accent" style="background:${grad(h)}"></div>
       <div class="task-card-inner" style="display:flex;gap:11px;align-items:flex-start">
-        <div class="task-ico" style="background:${grad(h)}"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round">${ico(h)}</svg></div>
+        ${h.jobId === 'spin' ? `<div class="task-ico" style="background:${grad(h)}"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round">${ico(h)}</svg></div>` : taskIcoHtml(h)}
         <div class="task-body">
           <div class="task-top"><div class="task-title">${escHtml(h.jobTitle || h.title || 'Task')}</div><div class="task-reward-pill" style="background:${rwColor}15;border-color:${rwColor}33"><span style="color:${rwColor}">+${fmtUSD(h.reward || 0)}</span></div></div>
           <div class="task-meta"><span class="badge ${stClass}">${stLabel}</span><span>${escHtml(h.category || '')}</span><span>${h.date || ''}</span></div>
@@ -3846,6 +4002,7 @@ Object.assign(window, {
   updatePostBudgetPreview, submitJobPost, renderMyPostedJobs, filterMyPostedJobs,
   filterMyJobSubmissions, renderMyJobSubmissions, approveJobSubmission, rejectJobSubmission, confirmRejectJobSubmission,
   openEditJobModal, saveJobEdit,
+  selectDepAmt, onDepositCustomAmt, selectDepMethod, submitDepositRequest, renderDepositHistory,
   applySiteSettingsToWallet, renderWithdrawMethodGrid, selectWithdrawMethod, updateWithdrawPreview,
   rebuildAndRenderTx, renderTxList, filterTx, doWithdraw,
   renderHistory, filterHistory,
@@ -3864,6 +4021,7 @@ onEnterScreen('mytasks', () => renderMyTasks());
 onEnterScreen('post', () => onEnterPostScreen());
 onEnterScreen('history', () => renderHistory());
 onEnterScreen('referral', () => onEnterReferralScreen());
+onEnterScreen('deposit', () => { renderDepAmtGrid(); renderDepMethodGrid(); updateDepPreview(); renderDepositHistory(); });
 onEnterScreen('wallet', () => renderTxList());
 onEnterScreen('kyc', () => onEnterKycScreen());
 onEnterScreen('home', () => updateEmailVerifyBanner());
@@ -3937,8 +4095,9 @@ async function bootstrapApp(user, ref, data) {
     renderHomeTasks(); renderAllTasks('__current__'); rebuildAndRenderTx();
   });
   listenUserWithdrawals(user.uid, () => rebuildAndRenderTx());
+  listenUserDeposits(user.uid, () => renderDepositHistory());
   listenUserNotifications(user.uid, () => renderNotifications());
-  listenPaymentMethods(() => renderWithdrawMethodGrid());
+  listenPaymentMethods(() => { renderWithdrawMethodGrid(); renderDepMethodGrid(); });
   listenSiteSettings(() => { applySiteSettingsToUI(); });
   listenSupportChat(user.uid, () => renderSupportMessages());
   listenMyPostedJobs(user.uid, (jobs) => {

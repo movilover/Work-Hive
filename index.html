@@ -466,6 +466,78 @@ nav.tabbar{position:absolute;bottom:0;left:0;right:0;display:flex;background:rgb
 .close-x{position:absolute;top:14px;right:16px;cursor:pointer;font-size:17px;opacity:.3;z-index:2;transition:opacity .15s}
 .close-x:hover{opacity:.7}
 
+/* PUBLIC PROFILE MODAL */
+.pp-hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:6px 0 16px}
+.pp-avatar{width:80px;height:80px;border-radius:24px;background:var(--green-dim);border:2px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:32px;color:var(--green);margin-bottom:12px;overflow:hidden}
+.pp-name-row{display:flex;align-items:center;gap:6px;justify-content:center}
+.pp-name{font-size:19px;font-weight:900}
+.pp-username{font-size:12.5px;color:var(--green);font-weight:700;margin-top:2px}
+.pp-joined{font-size:11px;color:var(--text3);font-weight:600;margin-top:3px}
+.pp-follow-row{display:flex;align-items:center;gap:18px;margin-top:14px}
+.pp-follow-stat{text-align:center;cursor:default}
+.pp-follow-stat .v{font-size:16px;font-weight:900}
+.pp-follow-stat .l{font-size:9.5px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.pp-actions{display:flex;gap:8px;margin-top:14px;width:100%}
+.btn-follow{flex:1;padding:11px;border-radius:12px;border:none;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;background:var(--green);color:#001a0a;transition:transform .15s,opacity .2s}
+.btn-follow.following{background:var(--bg3);color:var(--text2);border:1px solid var(--border2)}
+.btn-follow:active{transform:scale(.96)}
+.btn-follow:disabled{opacity:.6}
+.btn-report{width:44px;flex-shrink:0;border-radius:12px;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px}
+.pp-tabs{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:3px;gap:3px;margin:16px 0 12px}
+.pp-tab{flex:1;text-align:center;padding:9px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--text3);transition:all .2s}
+.pp-tab.active{background:var(--green);color:#001a0a}
+.pp-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.pp-stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:13px;text-align:center}
+.pp-stat-card .v{font-size:17px;font-weight:900}
+.pp-stat-card .l{font-size:9.5px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-top:3px}
+.pp-review-summary{display:flex;align-items:center;gap:16px;background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px}
+.pp-review-avg{text-align:center;flex-shrink:0}
+.pp-review-avg .n{font-size:30px;font-weight:900;color:var(--gold);line-height:1}
+.pp-review-avg .stars{font-size:13px;color:var(--gold);margin-top:3px}
+.pp-review-avg .cnt{font-size:10px;color:var(--text3);font-weight:600;margin-top:2px}
+.pp-rbar-wrap{flex:1}
+.pp-rbar-row{display:flex;align-items:center;gap:7px;margin-bottom:4px;font-size:10px;color:var(--text3)}
+.pp-rbar-track{flex:1;height:5px;background:var(--bg4);border-radius:4px;overflow:hidden}
+.pp-rbar-fill{height:100%;background:var(--gold);border-radius:4px}
+.pp-review-item{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+.pp-review-item:last-child{border-bottom:none}
+.pp-review-ava{width:32px;height:32px;border-radius:10px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0}
+.pp-review-name{font-size:12px;font-weight:700}
+.pp-review-stars{font-size:11px;color:var(--gold);margin:2px 0}
+.pp-review-comment{font-size:11.5px;color:var(--text2);line-height:1.5}
+.pp-review-meta{font-size:9.5px;color:var(--text3);margin-top:3px}
+.star-input{display:flex;gap:8px;justify-content:center;margin:14px 0}
+.star-input .st{font-size:32px;cursor:pointer;color:var(--border2);transition:color .15s,transform .1s}
+.star-input .st.active{color:var(--gold)}
+.star-input .st:active{transform:scale(.85)}
+
+/* SIDEBAR NAVIGATION */
+.sidebar-overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:150;display:none;border-radius:38px}
+.sidebar-overlay.show{display:block}
+.sidebar-panel{position:absolute;top:0;left:0;bottom:0;width:78%;max-width:300px;background:var(--bg2);border-right:1px solid var(--border2);z-index:151;transform:translateX(-105%);transition:transform .28s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;padding:calc(18px + env(safe-area-inset-top)) 0 calc(14px + env(safe-area-inset-bottom));border-radius:0 24px 24px 0;overflow-y:auto}
+.sidebar-panel.show{transform:translateX(0)}
+.sb-profile{display:flex;align-items:center;gap:11px;padding:0 16px 16px;margin-bottom:8px;border-bottom:1px solid var(--border);cursor:pointer;position:relative}
+.sb-avatar{width:46px;height:46px;border-radius:14px;background:var(--green-dim);border:1.5px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--green);font-size:18px;flex-shrink:0;overflow:hidden}
+.sb-profile-info{flex:1;min-width:0}
+.sb-profile-name{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-profile-sub{font-size:10.5px;color:var(--text3);font-weight:700;margin-top:2px;display:flex;align-items:center;gap:4px}
+.sb-close{position:absolute;top:0;right:12px;width:26px;height:26px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.sb-close svg{width:13px;height:13px;stroke:var(--text3)}
+.sb-section-lbl{font-size:9.5px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;padding:14px 16px 6px}
+.sb-item{display:flex;align-items:center;gap:13px;padding:11px 16px;cursor:pointer;position:relative;transition:background .15s;color:var(--text2)}
+.sb-item:active{background:rgba(255,255,255,.03)}
+.sb-item svg{width:18px;height:18px;stroke:var(--text3);flex-shrink:0;transition:stroke .15s}
+.sb-item span{font-size:13px;font-weight:600;transition:color .15s}
+.sb-item.active{background:var(--green-dim);color:var(--green)}
+.sb-item.active::before{content:'';position:absolute;left:0;top:8px;bottom:8px;width:3px;background:var(--green);border-radius:0 3px 3px 0}
+.sb-item.active svg{stroke:var(--green)}
+.sb-item.active span{color:var(--green);font-weight:700}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9.5px;font-weight:800;padding:1px 7px;border-radius:20px}
+.sb-spacer{flex:1}
+.sb-logout{color:var(--red);border-top:1px solid var(--border);margin-top:6px;padding-top:14px}
+.sb-logout svg{stroke:var(--red)}
+.sb-logout span{color:var(--red)}
+
 .toast{position:absolute;bottom:95px;left:50%;transform:translateX(-50%) translateY(18px);background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);backdrop-filter:blur(24px);color:var(--green);padding:11px 20px;border-radius:15px;font-size:12.5px;font-weight:700;box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:80;opacity:0;transition:all .32s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;max-width:90%}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.error{background:rgba(255,82,82,.1);border-color:rgba(255,82,82,.3);color:var(--red)}
@@ -737,6 +809,39 @@ function applyTelegramSafeArea(tg) {
 
 <!-- APP SHELL -->
 <div id="appShell">
+
+  <!-- SIDEBAR NAVIGATION -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+  <aside class="sidebar-panel" id="sidebarPanel">
+    <div class="sb-profile" onclick="closeSidebar();goTab('profile')">
+      <div class="sb-avatar" id="sbAvatar"><span id="sbAvatarLetter">?</span></div>
+      <div class="sb-profile-info">
+        <div class="sb-profile-name" id="sbProfileName">Loading...</div>
+        <div class="sb-profile-sub" id="sbProfileSub">🐝 Worker L1</div>
+      </div>
+      <div class="sb-close" onclick="event.stopPropagation();closeSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
+    </div>
+
+    <div class="sb-section-lbl">Navigation</div>
+    <div class="sb-item" data-sb="home" onclick="sbGoTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Dashboard</span></div>
+    <div class="sb-item" data-sb="mytasks" onclick="sbGoTab('mytasks')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>My Tasks</span></div>
+    <div class="sb-item" data-sb="post" onclick="sbGoTab('post')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span>Post a Job</span></div>
+
+    <div class="sb-section-lbl">Wallet</div>
+    <div class="sb-item" data-sb="wallet" onclick="sbGoTab('wallet')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2.5"/><path d="M2 10h20M6 15h3"/></svg><span>Withdraw Funds</span></div>
+    <div class="sb-item" data-sb="history" onclick="sbGoTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 5-8"/></svg><span>Wallet / Task Statement</span></div>
+
+    <div class="sb-section-lbl">Account</div>
+    <div class="sb-item" data-sb="referral" onclick="sbGoTab('referral')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Refer &amp; Earn</span></div>
+    <div class="sb-item" data-sb="spin" onclick="sbGoTab('spin')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><span>Lucky Spin</span></div>
+    <div class="sb-item" data-sb="notifications" onclick="sbGoTab('notifications')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Notifications</span><span class="sb-badge" id="sbNotifBadge" style="display:none">0</span></div>
+    <div class="sb-item" data-sb="kyc" onclick="sbGoTab('kyc')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M15 8h3M15 12h3M6 17h12"/></svg><span>KYC Verification</span></div>
+    <div class="sb-item" data-sb="support" onclick="sbGoTab('support')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg><span>Support</span></div>
+
+    <div class="sb-spacer"></div>
+    <div class="sb-item sb-logout" onclick="closeSidebar();doLogoutConfirm()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></div>
+  </aside>
+
   <div class="status-bar">
     <span id="clockTime">9:41</span>
     <span style="letter-spacing:1px;color:var(--text3)">WORKHIVE 🐝</span>
@@ -744,6 +849,9 @@ function applyTelegramSafeArea(tg) {
   </div>
   <header class="topbar">
     <div class="greet-side">
+      <div class="icon-btn" id="hamburgerBtn" onclick="openSidebar()" style="margin-right:2px">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </div>
       <div class="user-avatar-btn" id="topAvatar" onclick="goTab('profile')"><span id="topAvatarLetter">?</span></div>
       <div><div class="greet-hello" id="greetHello">Good Morning</div><div class="greet-name" id="greetName">Loading...</div></div>
     </div>
@@ -819,6 +927,7 @@ function applyTelegramSafeArea(tg) {
       <div class="sec-title" style="margin-top:13px"><h3>Micro Tasks</h3><span id="taskCountBadge" style="font-size:11.5px;color:var(--text3);font-weight:700"></span></div>
       <div class="demo-banner">📌 Only admin-approved tasks shown. Submit proof — admin verifies and credits your balance.</div>
       <div class="chip-row" id="categoryChips"></div>
+      <div class="chip-row" id="subcategoryChips" style="display:none"></div>
       <div id="taskListFull"></div>
     </section>
 
@@ -856,7 +965,8 @@ function applyTelegramSafeArea(tg) {
           <div class="post-limit-banner" id="postApprovalNote">জব পোস্ট করার পর এডমিন রিভিউ করে অনুমোদন দিলে এটি Tasks তালিকায় দেখা যাবে। বাজেট সমপরিমাণ ব্যালেন্স আপনার ওয়ালেট থেকে সাথে সাথে হোল্ড করা হবে।</div>
 
           <div class="field"><label>জব টাইটেল</label><input type="text" id="postTitle" placeholder="e.g. Follow our Facebook Page"></div>
-          <div class="field"><label>ক্যাটাগরি</label><select id="postCategory"></select></div>
+          <div class="field"><label>ক্যাটাগরি</label><select id="postCategory" onchange="onPostCategoryChange()"></select></div>
+          <div class="field" id="postSubcategoryField" style="display:none"><label>সাব-ক্যাটাগরি</label><select id="postSubcategory"></select></div>
 
           <div class="field"><label>টাস্ক টাইপ</label></div>
           <div class="post-type-grid">
@@ -1197,6 +1307,12 @@ function applyTelegramSafeArea(tg) {
   <div class="overlay" id="refUserOverlay" onclick="if(event.target===this)closeRefUserModal()">
     <div class="modal-sheet"><span class="close-x" onclick="closeRefUserModal()">✕</span><div class="modal-handle"></div><div id="refUserContent"></div></div>
   </div>
+  <div class="overlay" id="publicProfileOverlay" onclick="if(event.target===this)closePublicProfile()">
+    <div class="modal-sheet" style="max-height:92%"><span class="close-x" onclick="closePublicProfile()">✕</span><div class="modal-handle"></div><div id="publicProfileContent"></div></div>
+  </div>
+  <div class="overlay" id="reviewPromptOverlay">
+    <div class="modal-sheet"><div id="reviewPromptContent"></div></div>
+  </div>
 
   <div class="toast" id="toast"></div>
 </div>
@@ -1262,6 +1378,8 @@ const S = {
   ],
   isSpinning: false, spinUsedToday: false, spinAngle: 0,
   myTasksFilter: 'all', txFilter: 'all', historyFilter: 'all',
+  categories: [], activeSubChip: 'All',
+  publicProfile: null, _publicFollowBusy: false, _reviewCtx: null,
   _visitedLinks: {}, gen1Users: [], gen2Users: [], gen3Users: [], currentGenTab: 1,
   _pendingProofFiles: {}, _dailyLinkPending: {}, _dailyLinkCompleting: {},
   supportMessages: [],
@@ -1333,12 +1451,13 @@ function posterRowHtml(t, compact) {
   const name = jobPosterName(t);
   const initial = (name || 'W').charAt(0).toUpperCase();
   const avSize = compact ? 20 : 26;
-  return `<div class="poster-row" style="${compact ? 'margin-bottom:6px' : ''}">
+  const clickAttr = (!admin && t.postedById) ? `onclick="event.stopPropagation();openPublicProfile('${t.postedById}')" style="cursor:pointer"` : '';
+  return `<div class="poster-row" style="${compact ? 'margin-bottom:6px;' : ''}${(!admin && t.postedById) ? 'cursor:pointer' : ''}" ${clickAttr}>
     <div class="poster-avatar" style="width:${avSize}px;height:${avSize}px;font-size:${compact ? 10 : 12}px">${t.postedByAvatar ? `<img src="${escHtml(t.postedByAvatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">` : initial}</div>
     <div class="poster-info">
       <div class="poster-name-row">
         <span class="poster-name" style="${compact ? 'font-size:9.5px' : ''}">${escHtml(name)}</span>
-        ${admin ? verifiedTickSvg(compact ? 10 : 12) : ''}
+        ${admin ? verifiedTickSvg(compact ? 10 : 12) : (t.postedByKycVerified ? verifiedTickSvg(compact ? 10 : 12) : '')}
       </div>
       ${!compact ? `<span class="poster-sub">${admin ? 'Official task provider' : 'Community job'}</span>` : ''}
     </div>
@@ -1349,16 +1468,17 @@ function modalPosterRowHtml(t) {
   const admin = isJobAdmin(t);
   const name = jobPosterName(t);
   const initial = (name || 'W').charAt(0).toUpperCase();
-  return `<div class="modal-poster-row">
+  const clickAttr = (!admin && t.postedById) ? `onclick="openPublicProfile('${t.postedById}')" style="cursor:pointer"` : '';
+  return `<div class="modal-poster-row" ${clickAttr}>
     <div class="modal-poster-avatar">${t.postedByAvatar ? `<img src="${escHtml(t.postedByAvatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">` : initial}</div>
     <div style="flex:1;min-width:0">
       <div class="poster-name-row">
         <span class="poster-name" style="font-size:12.5px">${escHtml(name)}</span>
-        ${admin ? verifiedTickSvg(14) : ''}
+        ${admin ? verifiedTickSvg(14) : (t.postedByKycVerified ? verifiedTickSvg(14) : '')}
       </div>
       <span class="poster-sub">${admin ? 'Official task provider' : 'Community job'}</span>
     </div>
-    ${admin ? `<span class="admin-chip">🛡 Admin</span>` : ''}
+    ${admin ? `<span class="admin-chip">🛡 Admin</span>` : (!admin && t.postedById ? `<span class="asr-arrow">›</span>` : '')}
   </div>`;
 }
 
@@ -1462,10 +1582,39 @@ function goTab(name) {
   const sc = document.getElementById('screen-' + name);
   if (sc) sc.classList.add('active');
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.sb-item[data-sb]').forEach(t => t.classList.toggle('active', t.dataset.sb === name));
   if (screenHooks[name]) screenHooks[name]();
   document.getElementById('mainScroll')?.scrollTo(0, 0);
   const fab = document.getElementById('helpFab');
   if (fab) fab.style.display = (name === 'home') ? 'flex' : 'none';
+}
+
+// SIDEBAR NAVIGATION
+function openSidebar() {
+  document.getElementById('sidebarOverlay')?.classList.add('show');
+  document.getElementById('sidebarPanel')?.classList.add('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebarOverlay')?.classList.remove('show');
+  document.getElementById('sidebarPanel')?.classList.remove('show');
+}
+function sbGoTab(name) { closeSidebar(); goTab(name); }
+function updateSidebarProfile(data, user) {
+  if (!data) return;
+  const name = data.name || user?.displayName || 'WorkHive User';
+  const letter = (name || '?').charAt(0).toUpperCase();
+  const nameEl = document.getElementById('sbProfileName'); if (nameEl) nameEl.textContent = name;
+  const subEl = document.getElementById('sbProfileSub');
+  if (subEl) subEl.innerHTML = `🐝 Worker L${data.workerLevel || 1}${(data.kycStatus === 'verified') ? ' · ' + verifiedTickSvg(11) + ' Verified' : ''}`;
+  const av = document.getElementById('sbAvatar');
+  if (av) {
+    if (data.photoURL) av.innerHTML = `<img src="${data.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">`;
+    else av.innerHTML = `<span>${letter}</span>`;
+  }
+}
+function updateSidebarNotifBadge(count) {
+  const el = document.getElementById('sbNotifBadge'); if (!el) return;
+  if (count > 0) { el.textContent = count; el.style.display = 'inline-block'; } else el.style.display = 'none';
 }
 
 const onboardSteps = () => [
@@ -1539,7 +1688,7 @@ function taskCardHtml(t, compact = false) {
           <div class="task-ico" style="background:${grad}"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></div>
           <div class="task-body">
             <div class="task-top"><div class="task-title">${escHtml(t.title)}</div><div class="task-reward-pill"><span>+${fmtUSD(t.reward || 0)}</span></div></div>
-            <div class="task-meta">${badge}<span>${escHtml(t.category || '')}</span><span>🌍 ${escHtml(t.country || 'Global')}</span></div>
+            <div class="task-meta">${badge}<span>${escHtml(t.category || '')}${t.subcategory ? ' · ' + escHtml(t.subcategory) : ''}</span><span>🌍 ${escHtml(t.country || 'Global')}</span></div>
           </div>
         </div>
         <div class="task-bottom-row">
@@ -1586,7 +1735,7 @@ function taskCardHtml(t, compact = false) {
           <div class="task-top"><div class="task-title">${escHtml(t.title)}</div><div class="task-reward-pill"><span>+${fmtUSD(t.reward || 0)}</span></div></div>
           <div class="task-meta">
             <span class="badge ${t.type === 'link' ? 'type-link' : 'type-proof'}">${t.type === 'link' ? '🔗 Link' : '📸 Proof'}</span>
-            <span>${escHtml(t.category || '')}</span><span>🌍 ${escHtml(t.country || 'Global')}</span>
+            <span>${escHtml(t.category || '')}${t.subcategory ? ' · ' + escHtml(t.subcategory) : ''}</span><span>🌍 ${escHtml(t.country || 'Global')}</span>
           </div>
         </div>
       </div>
@@ -1671,6 +1820,103 @@ function listenApprovedJobs(onChange) {
   );
 }
 
+// ══════ js/services/social.js (follows + reviews) ══════
+async function isFollowing(followerId, followingId) {
+  const snap = await fb.getDoc(fb.doc(db, 'follows', followerId + '_' + followingId)).catch(() => null);
+  return !!(snap && snap.exists && snap.exists());
+}
+async function toggleFollow(followerId, followingId) {
+  if (!followerId || !followingId || followerId === followingId) throw new Error('INVALID_FOLLOW');
+  const followRef = fb.doc(db, 'follows', followerId + '_' + followingId);
+  const followerRef = fb.doc(db, 'users', followerId);
+  const followingRef = fb.doc(db, 'users', followingId);
+  let nowFollowing;
+  await fb.runTransaction(db, async (tx) => {
+    const snap = await tx.get(followRef);
+    if (snap.exists()) {
+      tx.delete(followRef);
+      tx.update(followerRef, { followingCount: fb.increment(-1) });
+      tx.update(followingRef, { followersCount: fb.increment(-1) });
+      nowFollowing = false;
+    } else {
+      tx.set(followRef, { followerId, followingId, createdAt: fb.serverTimestamp() });
+      tx.update(followerRef, { followingCount: fb.increment(1) });
+      tx.update(followingRef, { followersCount: fb.increment(1) });
+      nowFollowing = true;
+    }
+  });
+  return nowFollowing;
+}
+async function getUserProfileStats(uid) {
+  const [postedJobsSnap, workerSubsSnap, clientSubsSnap, userSnap] = await Promise.all([
+    fb.getDocs(fb.query(fb.collection(db, 'jobs'), fb.where('postedById', '==', uid))).catch(() => ({ forEach: () => {} })),
+    fb.getDocs(fb.query(fb.collection(db, 'taskSubmissions'), fb.where('workerId', '==', uid))).catch(() => ({ forEach: () => {} })),
+    fb.getDocs(fb.query(fb.collection(db, 'taskSubmissions'), fb.where('jobPosterId', '==', uid))).catch(() => ({ forEach: () => {} })),
+    fb.getDoc(fb.doc(db, 'users', uid)).catch(() => null),
+  ]);
+  let jobsPosted = 0, activeJobs = 0, totalSpent = 0;
+  postedJobsSnap.forEach(d => { const j = d.data(); jobsPosted++; if (j.status === 'approved') activeJobs++; totalSpent += (j.workerTotal || 0); });
+  let submissionsReceived = 0;
+  clientSubsSnap.forEach(() => { submissionsReceived++; });
+  let totalSubmissions = 0, approved = 0, rejected = 0, totalEarnedFromTasks = 0;
+  workerSubsSnap.forEach(d => {
+    const s = d.data(); totalSubmissions++;
+    if (s.status === 'approved' || s.status === 'completed') { approved++; totalEarnedFromTasks += (s.reward || 0); }
+    else if (s.status === 'rejected') rejected++;
+  });
+  const approvalRate = totalSubmissions ? Math.round((approved / totalSubmissions) * 100) : 0;
+  return {
+    client: { jobsPosted, activeJobs, submissionsReceived, totalSpent },
+    freelancer: { totalSubmissions, approved, rejected, approvalRate, totalEarned: (userSnap && userSnap.exists && userSnap.exists()) ? (userSnap.data().totalEarned || 0) : totalEarnedFromTasks },
+  };
+}
+async function getUserReviews(uid) {
+  const snap = await fb.getDocs(fb.query(fb.collection(db, 'reviews'), fb.where('toUserId', '==', uid))).catch(() => ({ forEach: () => {} }));
+  const list = [];
+  snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+  list.sort((a, b) => (b._ts || 0) - (a._ts || 0));
+  return list;
+}
+async function hasReviewedSubmission(fromUserId, submissionId) {
+  const snap = await fb.getDocs(fb.query(fb.collection(db, 'reviews'), fb.where('fromUserId', '==', fromUserId), fb.where('submissionId', '==', submissionId))).catch(() => null);
+  if (!snap) return false;
+  return !snap.empty;
+}
+async function submitReview({ fromUserId, toUserId, rating, comment, jobTitle, submissionId }) {
+  if (!fromUserId || !toUserId || fromUserId === toUserId) throw new Error('INVALID_REVIEW');
+  const already = await hasReviewedSubmission(fromUserId, submissionId);
+  if (already) throw new Error('ALREADY_REVIEWED');
+  await fb.addDoc(fb.collection(db, 'reviews'), {
+    fromUserId, toUserId, rating: Math.max(1, Math.min(5, Number(rating) || 5)),
+    comment: (comment || '').trim(), jobTitle: jobTitle || '', submissionId: submissionId || '',
+    _ts: Date.now(), createdAt: fb.serverTimestamp(),
+  });
+  // Recompute the target user's average rating (small collections — fine to read all).
+  const allSnap = await fb.getDocs(fb.query(fb.collection(db, 'reviews'), fb.where('toUserId', '==', toUserId))).catch(() => null);
+  if (allSnap) {
+    let sum = 0, cnt = 0;
+    allSnap.forEach(d => { sum += (d.data().rating || 0); cnt++; });
+    const avg = cnt ? (sum / cnt) : 0;
+    await fb.updateDoc(fb.doc(db, 'users', toUserId), { avgRating: avg, reviewCount: cnt }).catch(() => {});
+  }
+}
+
+// ══════ js/services/categories.js ══════
+let _unsubCategories = null;
+function listenCategories(onChange) {
+  if (_unsubCategories) _unsubCategories();
+  _unsubCategories = fb.onSnapshot(
+    fb.query(fb.collection(db, 'categories'), fb.orderBy('order', 'asc')),
+    snap => {
+      S.categories = [];
+      snap.forEach(d => S.categories.push({ id: d.id, ...d.data() }));
+      onChange && onChange(S.categories);
+    },
+    e => { console.warn('listenCategories:', e); onChange && onChange(S.categories); }
+  );
+}
+function findCategory(name) { return S.categories.find(c => c.name === name); }
+
 // ══════ js/services/postJobs.js ══════
 let _unsubPostJobs = null;
 
@@ -1682,7 +1928,7 @@ function computeJobBudget(reward, slots) {
   return { reward, slots, workerTotal, platformFee: parseFloat(platformFee.toFixed(2)), grandTotal: parseFloat(grandTotal.toFixed(2)) };
 }
 
-async function createJobPost({ title, category, type, reward, limit, country, instructions, link, screenshotCount }, user, userData, userRef) {
+async function createJobPost({ title, category, subcategory, type, reward, limit, country, instructions, link, screenshotCount }, user, userData, userRef) {
   if (!SITE.postFeatureEnabled) throw new Error('POST_DISABLED');
   reward = Number(reward); limit = Number(limit);
   if (!title || title.trim().length < 5) throw new Error('TITLE_SHORT');
@@ -1709,7 +1955,7 @@ async function createJobPost({ title, category, type, reward, limit, country, in
     });
 
     tx.set(newJobRef, {
-      title: title.trim(), category, type, reward, limit, filled: 0,
+      title: title.trim(), category, subcategory: subcategory || '', type, reward, limit, filled: 0,
       country: country || 'Global', instructions: instructions.trim(),
       link: link || '', screenshotCount: type === 'proof' ? Math.max(1, Number(screenshotCount) || 1) : 0,
       status: 'pending_review',
@@ -1790,6 +2036,12 @@ function listenMyTaskSubmissions(uid, onChange) {
       S.myTaskSubmissions = [];
       snap.forEach(d => S.myTaskSubmissions.push({ id: d.id, ...d.data() }));
       S.myTaskSubmissions.sort((a, b) => (b._ts || 0) - (a._ts || 0));
+      // Prompt the worker to rate the job poster once their submission is approved (peer-posted jobs only).
+      S.myTaskSubmissions.forEach(s => {
+        if ((s.status === 'approved' || s.status === 'completed') && s.jobPosterId && s.jobPosterId !== 'admin' && s.jobId !== 'spin') {
+          maybePromptReview(s.id, s.jobPosterId, s.jobPosterName || '', s.jobTitle || '');
+        }
+      });
       onChange && onChange(S.myTaskSubmissions);
     },
     e => { console.warn('listenSubmissions:', e); onChange && onChange(S.myTaskSubmissions, e); }
@@ -1807,8 +2059,8 @@ async function submitProofTask(jobId, job, proofText, imageFiles, user, userData
     proofText: proofText || '', proofType: job.type,
     proofImageUrl: proofImageUrls[0] || '',
     proofImageUrls,
-    status: 'pending', jobPosterId,
-    category: job.category || '', country: job.country || 'Global',
+    status: 'pending', jobPosterId, jobPosterName: job.postedByName || '',
+    category: job.category || '', subcategory: job.subcategory || '', country: job.country || 'Global',
     date: new Date().toLocaleString('en-US'),
     _ts: Date.now(), createdAt: fb.serverTimestamp()
   });
@@ -2318,20 +2570,45 @@ function renderLeaderboard(lbData) {
 // ══════ js/screens/tasks.js ══════
 let _activeCategoryChip = 'All';
 function renderTaskCategories() {
-  const cats = ['All', ...new Set(S.approvedJobs.map(t => t.category).filter(Boolean))];
+  // Prefer the dynamic Firestore categories collection; fall back to categories present on live jobs.
+  const dynamicNames = S.categories.map(c => c.name);
+  const jobNames = [...new Set(S.approvedJobs.map(t => t.category).filter(Boolean))];
+  const merged = dynamicNames.length ? [...new Set([...dynamicNames, ...jobNames])] : jobNames;
+  const cats = ['All', ...merged];
   const el = document.getElementById('categoryChips'); if (!el) return;
   el.innerHTML = cats.map(c => `<div class="chip ${c === _activeCategoryChip ? 'active' : ''}" onclick="filterTaskCategory(this,'${escHtml(c)}')">${escHtml(c)}</div>`).join('');
+  renderSubcategoryChips();
+  renderAllTasks(_activeCategoryChip);
+}
+function renderSubcategoryChips() {
+  const wrap = document.getElementById('subcategoryChips'); if (!wrap) return;
+  const cat = findCategory(_activeCategoryChip);
+  if (!cat || !Array.isArray(cat.subcategories) || !cat.subcategories.length) {
+    wrap.style.display = 'none'; wrap.innerHTML = ''; S.activeSubChip = 'All';
+    return;
+  }
+  wrap.style.display = 'flex';
+  const subs = ['All', ...cat.subcategories];
+  wrap.innerHTML = subs.map(s => `<div class="chip ${s === S.activeSubChip ? 'active' : ''}" style="font-size:10.5px;padding:5px 11px" onclick="filterTaskSubcategory(this,'${escHtml(s)}')">${escHtml(s)}</div>`).join('');
+}
+function filterTaskSubcategory(el, sub) {
+  S.activeSubChip = sub;
+  document.querySelectorAll('#subcategoryChips .chip').forEach(c => c.classList.remove('active'));
+  if (el && el.classList) el.classList.add('active');
   renderAllTasks(_activeCategoryChip);
 }
 function filterTaskCategory(el, cat) {
   _activeCategoryChip = cat;
+  S.activeSubChip = 'All';
   document.querySelectorAll('#categoryChips .chip').forEach(c => c.classList.remove('active'));
   if (el && el.classList) el.classList.add('active');
+  renderSubcategoryChips();
   renderAllTasks(cat);
 }
 function renderAllTasks(cat) {
   if (cat === '__current__') cat = _activeCategoryChip;
-  const list = (cat === 'All') ? S.approvedJobs : S.approvedJobs.filter(t => t.category === cat);
+  let list = (cat === 'All') ? S.approvedJobs : S.approvedJobs.filter(t => t.category === cat);
+  if (S.activeSubChip && S.activeSubChip !== 'All') list = list.filter(t => t.subcategory === S.activeSubChip);
   const badge = document.getElementById('taskCountBadge'); if (badge) badge.textContent = list.length + ' tasks';
   const listEl = document.getElementById('taskListFull');
   if (listEl) listEl.innerHTML = list.length ? list.map(t => taskCardHtml(t, false)).join('') : '<div class="history-empty"><div class="big">🔍</div>No tasks in this category.</div>';
@@ -2565,9 +2842,30 @@ function applySiteSettingsToPost(SITE_) {
   updatePostBudgetPreview();
 }
 function populateCategorySelect() {
-  const sel = document.getElementById('postCategory'); if (!sel || sel.dataset.filled) return;
-  sel.dataset.filled = '1';
-  sel.innerHTML = '<option value="">— Category বেছে নিন —</option>' + Object.keys(catGradients).filter(c => c !== 'Other').map(c => `<option>${escHtml(c)}</option>`).join('') + '<option>Other</option>';
+  const sel = document.getElementById('postCategory'); if (!sel) return;
+  const prev = sel.value;
+  if (S.categories.length) {
+    sel.innerHTML = '<option value="">— Category বেছে নিন —</option>' + S.categories.map(c => `<option>${escHtml(c.name)}</option>`).join('');
+  } else {
+    // fallback while categories collection loads or if empty
+    sel.innerHTML = '<option value="">— Category বেছে নিন —</option>' + Object.keys(catGradients).filter(c => c !== 'Other').map(c => `<option>${escHtml(c)}</option>`).join('') + '<option>Other</option>';
+  }
+  if (prev && Array.from(sel.options).some(o => o.value === prev)) sel.value = prev;
+  onPostCategoryChange();
+}
+function onPostCategoryChange() {
+  const catName = document.getElementById('postCategory')?.value;
+  const cat = findCategory(catName);
+  const subField = document.getElementById('postSubcategoryField');
+  const subSel = document.getElementById('postSubcategory');
+  if (!subField || !subSel) return;
+  if (cat && Array.isArray(cat.subcategories) && cat.subcategories.length) {
+    subField.style.display = 'block';
+    subSel.innerHTML = '<option value="">— সাব-ক্যাটাগরি (ঐচ্ছিক) —</option>' + cat.subcategories.map(s => `<option>${escHtml(s)}</option>`).join('');
+  } else {
+    subField.style.display = 'none';
+    subSel.innerHTML = '';
+  }
 }
 function switchPostTab(tab) {
   document.getElementById('postTabPost')?.classList.toggle('active', tab === 'post');
@@ -2626,6 +2924,7 @@ async function approveJobSubmission(subId) {
   try {
     await approveMySubmission(sub);
     showToast(`✅ Approved! ${fmtUSD(sub.reward||0)} credited to ${sub.workerName||'worker'}.`);
+    if (sub.workerId) maybePromptReview(sub.id, sub.workerId, sub.workerName || '', sub.jobTitle || '');
   } catch (e) { console.error(e); showToast(e.message === 'ALREADY_REVIEWED' ? 'ইতিমধ্যে রিভিউ করা হয়েছে' : '❌ Approve failed', 'error'); }
 }
 function rejectJobSubmission(subId) {
@@ -2714,6 +3013,7 @@ async function submitJobPost() {
   const payload = {
     title: document.getElementById('postTitle').value,
     category: document.getElementById('postCategory').value,
+    subcategory: document.getElementById('postSubcategory')?.value || '',
     type: S.postSelectedType,
     reward: document.getElementById('postReward').value,
     limit: document.getElementById('postSlots').value,
@@ -2728,6 +3028,7 @@ async function submitJobPost() {
     showToast(`✅ জব পোস্ট জমা হয়েছে! ${fmtUSD(budget.grandTotal)} ব্যালেন্স থেকে হোল্ড করা হয়েছে — এডমিন রিভিউ করার পর লাইভ হবে।`, 'info');
     ['postTitle', 'postInstructions', 'postLink'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     document.getElementById('postCategory').value = '';
+    onPostCategoryChange();
     document.getElementById('postReward').value = '';
     document.getElementById('postSlots').value = '';
     updatePostBudgetPreview();
@@ -2901,6 +3202,7 @@ function filterHistory(type, el) { S.historyFilter = type; document.querySelecto
 // ══════ js/screens/notifications.js ══════
 function updateNotifCount() {
   const cnt = S.notifications.filter(n => n.unread).length;
+  updateSidebarNotifBadge(cnt);
   const el = document.getElementById('notifCount'); if (!el) return;
   if (cnt > 0) { el.textContent = cnt; el.style.display = 'block'; } else el.style.display = 'none';
 }
@@ -2996,6 +3298,182 @@ function showRefUserProfile(data) {
   openOverlay('refUserOverlay');
 }
 function closeRefUserModal() { closeOverlay('refUserOverlay'); }
+
+// ══════ js/screens/publicProfile.js ══════
+let _ppTab = 'freelancer';
+function starsHtml(rating, size) {
+  const full = Math.round(rating || 0);
+  let s = '';
+  for (let i = 1; i <= 5; i++) s += i <= full ? '★' : '☆';
+  return s;
+}
+async function openPublicProfile(uid) {
+  if (!uid) return;
+  const isSelf = window._currentUser && window._currentUser.uid === uid;
+  document.getElementById('publicProfileContent').innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--text3)"><div style="font-size:30px;margin-bottom:10px">⏳</div>Loading profile...</div>`;
+  openOverlay('publicProfileOverlay');
+  try {
+    const [userSnap, following, stats, reviews] = await Promise.all([
+      fb.getDoc(fb.doc(db, 'users', uid)),
+      isSelf ? Promise.resolve(false) : isFollowing(window._currentUser?.uid, uid),
+      getUserProfileStats(uid),
+      getUserReviews(uid),
+    ]);
+    if (!userSnap.exists()) { document.getElementById('publicProfileContent').innerHTML = `<div class="history-empty"><div class="big">🙈</div>User not found.</div>`; return; }
+    const u = userSnap.data();
+    S.publicProfile = { uid, data: u, stats, reviews, following };
+    _ppTab = 'freelancer';
+    renderPublicProfile();
+  } catch (e) {
+    console.error('openPublicProfile:', e);
+    document.getElementById('publicProfileContent').innerHTML = `<div class="history-empty"><div class="big">⚠️</div>Could not load this profile.</div>`;
+  }
+}
+function closePublicProfile() { closeOverlay('publicProfileOverlay'); S.publicProfile = null; }
+function renderPublicProfile() {
+  const p = S.publicProfile; if (!p) return;
+  const { uid, data: u, stats, reviews, following } = p;
+  const isSelf = window._currentUser && window._currentUser.uid === uid;
+  const name = u.name || 'WorkHive User';
+  const initial = (name || '?').charAt(0).toUpperCase();
+  const joined = u.createdAt?.toDate ? u.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—';
+  const verified = (u.kycStatus === 'verified');
+  const avgRating = u.avgRating || 0, reviewCount = u.reviewCount || reviews.length || 0;
+
+  const breakdown = [5, 4, 3, 2, 1].map(star => {
+    const cnt = reviews.filter(r => Math.round(r.rating) === star).length;
+    const pct = reviewCount ? Math.round((cnt / reviewCount) * 100) : 0;
+    return `<div class="pp-rbar-row"><span style="width:10px">${star}</span><div class="pp-rbar-track"><div class="pp-rbar-fill" style="width:${pct}%"></div></div><span style="width:22px;text-align:right">${cnt}</span></div>`;
+  }).join('');
+
+  const reviewsHtml = reviews.length ? reviews.slice(0, 20).map(r => `
+    <div class="pp-review-item">
+      <div class="pp-review-ava">${(r.fromUserName || '?').charAt(0).toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div class="pp-review-name">${escHtml(r.fromUserName || 'WorkHive User')}</div>
+        <div class="pp-review-stars">${starsHtml(r.rating)}</div>
+        ${r.comment ? `<div class="pp-review-comment">${escHtml(r.comment)}</div>` : ''}
+        <div class="pp-review-meta">${escHtml(r.jobTitle || '')}</div>
+      </div>
+    </div>`).join('') : `<div class="history-empty" style="padding:20px 0"><div class="big">📝</div>No reviews yet.</div>`;
+
+  const statsHtml = _ppTab === 'client' ? `
+    <div class="pp-stats-grid">
+      <div class="pp-stat-card"><div class="v" style="color:var(--blue)">${stats.client.jobsPosted}</div><div class="l">Jobs Posted</div></div>
+      <div class="pp-stat-card"><div class="v" style="color:var(--green)">${stats.client.activeJobs}</div><div class="l">Active Jobs</div></div>
+      <div class="pp-stat-card"><div class="v" style="color:var(--purple)">${stats.client.submissionsReceived}</div><div class="l">Submissions Received</div></div>
+      <div class="pp-stat-card"><div class="v" style="color:var(--gold)">${fmtUSD(stats.client.totalSpent)}</div><div class="l">Total Spent</div></div>
+    </div>` : `
+    <div class="pp-stats-grid">
+      <div class="pp-stat-card"><div class="v">${stats.freelancer.totalSubmissions}</div><div class="l">Submissions</div></div>
+      <div class="pp-stat-card"><div class="v" style="color:var(--green)">${stats.freelancer.approved}</div><div class="l">Approved</div></div>
+      <div class="pp-stat-card"><div class="v" style="color:var(--red)">${stats.freelancer.rejected}</div><div class="l">Rejected</div></div>
+      <div class="pp-stat-card"><div class="v" style="color:var(--blue)">${stats.freelancer.approvalRate}%</div><div class="l">Approval Rate</div></div>
+      <div class="pp-stat-card" style="grid-column:span 2"><div class="v" style="color:var(--gold)">${fmtUSD(stats.freelancer.totalEarned)}</div><div class="l">Total Earned</div></div>
+    </div>`;
+
+  document.getElementById('publicProfileContent').innerHTML = `
+    <div class="pp-hero">
+      <div class="pp-avatar">${u.photoURL ? `<img src="${escHtml(u.photoURL)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">` : initial}</div>
+      <div class="pp-name-row"><span class="pp-name">${escHtml(name)}</span>${verified ? verifiedTickSvg(16) : ''}</div>
+      ${u.username ? `<div class="pp-username">@${escHtml(u.username)}</div>` : ''}
+      <div class="pp-joined">Joined ${joined}</div>
+      <div class="pp-follow-row">
+        <div class="pp-follow-stat"><div class="v">${u.followersCount || 0}</div><div class="l">Followers</div></div>
+        <div class="pp-follow-stat"><div class="v">${u.followingCount || 0}</div><div class="l">Following</div></div>
+        <div class="pp-follow-stat"><div class="v" style="color:var(--gold)">${avgRating ? avgRating.toFixed(1) : '—'}</div><div class="l">★ Rating</div></div>
+      </div>
+      ${!isSelf ? `<div class="pp-actions">
+        <button class="btn-follow ${following ? 'following' : ''}" id="ppFollowBtn" onclick="togglePublicFollow('${uid}')">${following ? '✓ Following' : '+ Follow'}</button>
+        <button class="btn-report" title="Report user" onclick="showToast('🚩 রিপোর্ট পাঠানো হয়েছে — এডমিন রিভিউ করবে','info')">🚩</button>
+      </div>` : ''}
+    </div>
+    <div class="pp-tabs">
+      <div class="pp-tab ${_ppTab === 'freelancer' ? 'active' : ''}" onclick="switchPublicProfileTab('freelancer')">As a Freelancer</div>
+      <div class="pp-tab ${_ppTab === 'client' ? 'active' : ''}" onclick="switchPublicProfileTab('client')">As a Client</div>
+    </div>
+    ${statsHtml}
+    <div class="sec-title" style="margin-top:6px"><h3>⭐ Reviews (${reviewCount})</h3></div>
+    <div class="pp-review-summary">
+      <div class="pp-review-avg"><div class="n">${avgRating ? avgRating.toFixed(1) : '0.0'}</div><div class="stars">${starsHtml(avgRating)}</div><div class="cnt">${reviewCount} reviews</div></div>
+      <div class="pp-rbar-wrap">${breakdown}</div>
+    </div>
+    <div>${reviewsHtml}</div>
+  `;
+}
+function switchPublicProfileTab(tab) { _ppTab = tab; renderPublicProfile(); }
+async function togglePublicFollow(uid) {
+  if (S._publicFollowBusy) return;
+  const user = window._currentUser;
+  if (!user) { showToast('আগে লগইন করুন', 'error'); return; }
+  const btn = document.getElementById('ppFollowBtn');
+  S._publicFollowBusy = true;
+  if (btn) btn.disabled = true;
+  try {
+    const nowFollowing = await toggleFollow(user.uid, uid);
+    if (S.publicProfile && S.publicProfile.uid === uid) {
+      S.publicProfile.following = nowFollowing;
+      S.publicProfile.data.followersCount = (S.publicProfile.data.followersCount || 0) + (nowFollowing ? 1 : -1);
+      renderPublicProfile();
+    }
+    showToast(nowFollowing ? '✅ Followed!' : 'Unfollowed', nowFollowing ? 'success' : 'info');
+  } catch (e) { console.error('togglePublicFollow:', e); showToast('❌ Failed — try again', 'error'); }
+  finally { S._publicFollowBusy = false; if (btn) btn.disabled = false; }
+}
+
+// ══════ js/screens/reviewPrompt.js ══════
+const _reviewedSubmissionsShown = new Set();
+let _reviewSelectedStars = 5;
+async function maybePromptReview(submissionId, toUserId, toUserName, jobTitle) {
+  const me = window._currentUser;
+  if (!me || !toUserId || toUserId === me.uid || toUserId === 'admin') return;
+  if (_reviewedSubmissionsShown.has(submissionId)) return;
+  _reviewedSubmissionsShown.add(submissionId);
+  try {
+    const already = await hasReviewedSubmission(me.uid, submissionId);
+    if (already) return;
+  } catch (e) { return; }
+  openReviewPrompt(submissionId, toUserId, toUserName, jobTitle);
+}
+function openReviewPrompt(submissionId, toUserId, toUserName, jobTitle) {
+  S._reviewCtx = { submissionId, toUserId, toUserName, jobTitle };
+  _reviewSelectedStars = 5;
+  renderReviewPromptStars();
+  document.getElementById('reviewPromptContent').innerHTML = `
+    <div class="modal-handle"></div>
+    <div style="text-align:center;padding:6px 0 4px">
+      <div style="font-size:34px;margin-bottom:8px">⭐</div>
+      <div class="modal-title">${escHtml(toUserName || 'তাকে')}-কে রেট করুন</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">"${escHtml(jobTitle || '')}"</div>
+    </div>
+    <div class="star-input" id="reviewStarInput"></div>
+    <div class="field"><textarea id="reviewComment" rows="2" placeholder="একটা মন্তব্য লিখুন (ঐচ্ছিক)..."></textarea></div>
+    <div style="display:flex;gap:9px">
+      <button class="btn-ghost" style="flex:1" onclick="skipReviewPrompt()">Skip</button>
+      <button class="btn-primary" style="flex:1" onclick="submitReviewPrompt()">Submit Rating</button>
+    </div>`;
+  renderReviewPromptStars();
+  openOverlay('reviewPromptOverlay');
+}
+function renderReviewPromptStars() {
+  const el = document.getElementById('reviewStarInput'); if (!el) return;
+  el.innerHTML = [1, 2, 3, 4, 5].map(n => `<span class="st ${n <= _reviewSelectedStars ? 'active' : ''}" onclick="setReviewStars(${n})">★</span>`).join('');
+}
+function setReviewStars(n) { _reviewSelectedStars = n; renderReviewPromptStars(); }
+async function submitReviewPrompt() {
+  const ctx = S._reviewCtx; if (!ctx) return;
+  const user = window._currentUser; if (!user) return;
+  const comment = document.getElementById('reviewComment')?.value || '';
+  closeOverlay('reviewPromptOverlay');
+  try {
+    await submitReview({ fromUserId: user.uid, toUserId: ctx.toUserId, rating: _reviewSelectedStars, comment, jobTitle: ctx.jobTitle, submissionId: ctx.submissionId });
+    showToast('✅ ধন্যবাদ! আপনার রেটিং সাবমিট হয়েছে', 'success');
+  } catch (e) {
+    if (e.message !== 'ALREADY_REVIEWED') { console.error('submitReviewPrompt:', e); showToast('❌ রেটিং সাবমিট ব্যর্থ হয়েছে', 'error'); }
+  }
+  S._reviewCtx = null;
+}
+function skipReviewPrompt() { closeOverlay('reviewPromptOverlay'); S._reviewCtx = null; }
 function copyRef() {
   const code = document.getElementById('refCodePage')?.textContent || document.getElementById('refCode')?.textContent; if (!code) return;
   navigator.clipboard.writeText(code).then(() => showToast('✅ Referral code copied!')).catch(() => showToast('Code: ' + code));
@@ -3060,6 +3538,7 @@ function updateProfileUI(data, user) {
   set('homeAccuracy', acc + '%');
   updateJobsPostedStat();
   updateAvatarDisplay(name, data.photoURL || '');
+  updateSidebarProfile(data, u);
 }
 
 let _pendingAvatarFile = null;
@@ -3352,12 +3831,15 @@ document.addEventListener('DOMContentLoaded', () => {
 Object.assign(window, {
   goTab, nextOnboard, closeOnboard, closeConfirm,
   copyInstructionLink, copyDailyLink, showToast,
+  openSidebar, closeSidebar, sbGoTab, updateSidebarProfile, updateSidebarNotifBadge,
+  openPublicProfile, closePublicProfile, togglePublicFollow, switchPublicProfileTab,
+  openReviewPrompt, submitReviewPrompt, skipReviewPrompt, setReviewStars,
   AuthService,
   initAuthScreenBindings, switchAuthTab, togglePass, checkStrength, doLogin, doForgotPassword,
   doGoogle, doRegister, openChangePassword, submitChangePassword, doLogout, doLogoutConfirm,
   confirmDeleteAccount, reallyDeleteAccount, resendVerifyEmail,
   updateGreeting, refreshWalletUI, renderHomeTasks, renderRecentActivity, renderLeaderboard,
-  renderTaskCategories, filterTaskCategory, renderAllTasks, openTaskModal, closeTaskModal,
+  renderTaskCategories, filterTaskCategory, filterTaskSubcategory, onPostCategoryChange, renderAllTasks, openTaskModal, closeTaskModal,
   visitLink, startDailyLinkTask, handleProofFileSelect, removeProofImage, submitTaskProof,
   renderMyTasks, filterMyTasks,
   onEnterPostScreen, applySiteSettingsToPost, switchPostTab, selectPostType,
@@ -3449,6 +3931,7 @@ async function bootstrapApp(user, ref, data) {
   );
 
   listenApprovedJobs(() => { renderHomeTasks(); renderAllTasks('__current__'); renderTaskCategories(); });
+  listenCategories(() => { renderTaskCategories(); populateCategorySelect(); });
   listenMyTaskSubmissions(user.uid, () => {
     renderMyTasks(); renderHistory(); renderRecentActivity();
     renderHomeTasks(); renderAllTasks('__current__'); rebuildAndRenderTx();

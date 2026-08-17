@@ -705,6 +705,106 @@ html[data-env="telegram"] nav.tabbar{padding-bottom:calc(20px + var(--tg-safe-bo
 .post-type-pill .ptp-ico{font-size:18px;margin-bottom:5px}
 .post-type-pill .ptp-label{font-size:10.5px;font-weight:700;color:var(--text2)}
 .post-type-pill.active .ptp-label{color:var(--green)}
+.post-type-pill .ptp-ico{display:flex;align-items:center;justify-content:center;margin-bottom:5px}
+.post-type-pill .ptp-ico svg{width:19px;height:19px;stroke:var(--text2)}
+.post-type-pill.active .ptp-ico svg{stroke:var(--green)}
+
+/* ── Post Wizard (4-step) ── */
+.wiz-stepper{display:flex;align-items:center;margin-bottom:18px;padding:0 2px}
+.wiz-step-node{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0}
+.wiz-step-circle{width:30px;height:30px;border-radius:50%;background:var(--bg4);border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800;color:var(--text3);transition:all .2s;flex-shrink:0}
+.wiz-step-circle svg{width:14px;height:14px;stroke:#001a0a}
+.wiz-step-node.done .wiz-step-circle{background:var(--green);border-color:var(--green);color:#001a0a}
+.wiz-step-node.current .wiz-step-circle{background:var(--bg3);border-color:var(--blue);color:var(--blue);box-shadow:0 0 0 3px rgba(68,138,255,.15)}
+.wiz-step-label{font-size:8.5px;font-weight:700;color:var(--text3);text-align:center;white-space:nowrap}
+.wiz-step-node.current .wiz-step-label{color:var(--blue)}
+.wiz-step-node.done .wiz-step-label{color:var(--green)}
+.wiz-step-line{flex:1;height:2px;background:var(--border2);margin:0 4px;margin-bottom:16px;border-radius:2px;transition:background .2s}
+.wiz-step-line.done{background:var(--green)}
+
+.wiz-panel{display:none}
+.wiz-panel.active{display:block;animation:fadeUp .25s ease}
+.wiz-step-title{font-size:15px;font-weight:800;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+.wiz-step-title svg{width:18px;height:18px;stroke:var(--green)}
+.wiz-step-sub{font-size:11.5px;color:var(--text3);margin-bottom:14px}
+
+.wiz-footer{display:flex;gap:10px;margin-top:18px}
+.wiz-footer .btn-ghost,.wiz-footer .btn-primary{flex:1}
+
+/* Step 1 — location targeting */
+.loc-tile-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.loc-tile{border-radius:var(--r-lg);padding:16px 12px;text-align:center;cursor:pointer;background:var(--bg3);border:1.5px solid var(--border);transition:all .2s}
+.loc-tile.active{border-color:var(--green);background:var(--green-dim)}
+.loc-tile svg{width:24px;height:24px;stroke:var(--text2);margin-bottom:8px}
+.loc-tile.active svg{stroke:var(--green)}
+.loc-tile-label{font-size:12.5px;font-weight:800;margin-bottom:3px}
+.loc-tile.active .loc-tile-label{color:var(--green)}
+.loc-tile-desc{font-size:9.5px;color:var(--text3);line-height:1.4}
+.continent-block{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:9px;overflow:hidden}
+.continent-hd{display:flex;align-items:center;gap:9px;padding:12px 13px;cursor:pointer}
+.continent-hd svg{width:15px;height:15px;stroke:var(--text3);transition:transform .2s;flex-shrink:0}
+.continent-hd.open svg{transform:rotate(180deg)}
+.continent-name{flex:1;font-size:12.5px;font-weight:700}
+.continent-count{font-size:10px;font-weight:800;color:var(--green);background:var(--green-dim);padding:2px 8px;border-radius:20px}
+.continent-body{display:none;padding:0 13px 12px}
+.continent-body.open{display:block}
+.continent-selectall{font-size:10.5px;font-weight:700;color:var(--blue);cursor:pointer;margin-bottom:8px;display:inline-block}
+.country-pill-grid{display:flex;flex-wrap:wrap;gap:6px}
+.country-pill{font-size:10.5px;font-weight:700;padding:5px 11px;border-radius:20px;background:var(--bg4);border:1px solid var(--border2);color:var(--text2);cursor:pointer;transition:all .15s}
+.country-pill.active{background:var(--green);color:#001a0a;border-color:transparent}
+.loc-summary-bar{display:flex;align-items:center;gap:9px;background:var(--bg3);border:1px solid var(--green-border);border-radius:var(--r-md);padding:11px 14px;margin-top:12px;font-size:12px;color:var(--text2);font-weight:600}
+.loc-summary-bar svg{width:16px;height:16px;stroke:var(--green);flex-shrink:0}
+.loc-summary-bar b{color:var(--green)}
+
+/* Step 2 — category rows */
+.cat-row-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+.cat-row{display:flex;align-items:center;gap:11px;padding:12px 13px;border-radius:var(--r-md);background:var(--bg3);border:1.5px solid var(--border);cursor:pointer;transition:all .15s}
+.cat-row.active{border-color:var(--green);background:var(--green-dim)}
+.cat-row-emoji{width:32px;height:32px;border-radius:9px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.cat-row-name{flex:1;font-size:12.5px;font-weight:700}
+.cat-row.active .cat-row-name{color:var(--green)}
+.cat-row-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0}
+.cat-row.active .cat-row-check{background:var(--green);border-color:var(--green);position:relative}
+.cat-row.active .cat-row-check::after{content:'';position:absolute;left:5px;top:2px;width:4px;height:8px;border:solid #001a0a;border-width:0 2px 2px 0;transform:rotate(45deg)}
+
+/* Step 3 — proof requirements builder */
+.proof-req-item{display:flex;align-items:center;gap:9px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px;margin-bottom:8px}
+.proof-req-item select{width:110px;flex-shrink:0;padding:8px 9px;font-size:11.5px}
+.proof-req-item input{flex:1;padding:8px 10px;font-size:12px}
+.proof-req-remove{width:30px;height:30px;border-radius:9px;background:var(--red-dim);border:1px solid rgba(255,82,82,.2);color:var(--red);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.proof-req-remove svg{width:14px;height:14px;stroke:var(--red)}
+.char-cnt{font-size:9.5px;color:var(--text3);font-weight:600;float:right}
+.wiz-attach-thumb{position:relative;border-radius:9px;overflow:hidden;background:var(--bg3);border:1px solid var(--border)}
+.wiz-attach-thumb img{width:100%;height:78px;object-fit:cover;display:block}
+.wiz-attach-remove{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.wiz-attach-remove svg{width:11px;height:11px;stroke:#fff}
+
+/* Small switch toggle (reused across the wizard, not the whole site) */
+.wiz-switch{position:relative;width:40px;height:22px;flex-shrink:0}
+.wiz-switch input{opacity:0;width:0;height:0;position:absolute}
+.wiz-switch-track{position:absolute;inset:0;border-radius:22px;background:var(--bg4);border:1px solid var(--border2);transition:.2s}
+.wiz-switch input:checked + .wiz-switch-track{background:var(--green);border-color:transparent}
+.wiz-switch-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.wiz-switch input:checked ~ .wiz-switch-thumb{transform:translateX(18px)}
+.wiz-switch-row{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 14px;margin-bottom:12px}
+.wiz-switch-row-text{font-size:12px;font-weight:700}
+.wiz-switch-row-sub{font-size:10px;color:var(--text3);font-weight:600;margin-top:2px}
+
+/* Step 4 — quick-add slots */
+.qa-slot-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.qa-slot-pill{font-size:11px;font-weight:700;padding:6px 12px;border-radius:20px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);cursor:pointer}
+.qa-slot-pill:active{transform:scale(.94)}
+
+/* Success screen */
+.wiz-success{display:flex;flex-direction:column;align-items:center;text-align:center;padding:40px 18px}
+.wiz-success-ico{width:70px;height:70px;border-radius:50%;background:var(--green-dim);border:1.5px solid var(--green-border);display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+.wiz-success-ico svg{width:32px;height:32px;stroke:var(--green)}
+.wiz-success-title{font-size:17px;font-weight:900;margin-bottom:6px}
+.wiz-success-sub{font-size:12px;color:var(--text3)}
+
+/* Task-card country targeting badge */
+.country-target-badge{display:inline-flex;align-items:center;gap:3px}
+.country-target-badge svg{width:11px;height:11px;stroke:currentColor}
 
 .myjob-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px;margin-bottom:10px}
 .myjob-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
@@ -840,7 +940,23 @@ function applyTelegramSafeArea(tg) {
     <div class="sb-item" data-sb="history" onclick="sbGoTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 5-8"/></svg><span>Wallet / Task Statement</span></div>
 
     <div class="sb-section-lbl">Account</div>
-    <div class="sb-item" data-sb="referral" onclick="sbGoTab('referral')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Refer &amp; Earn</span></div>
+    <div class="sb-item" data-sb="referral" onclick="sbGoTab('referral')" style="flex-direction:column;align-items:stretch;gap:8px">
+      <div style="display:flex;gap:13px;align-items:center"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Refer &amp; Earn</span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:0 6px 6px">
+        <div style="text-align:center;background:var(--green-dim);border:1px solid var(--green-border);border-radius:8px;padding:5px">
+          <div style="font-size:10px;font-weight:800;color:var(--green)" id="sbRefGen1">$0.50</div>
+          <div style="font-size:7px;color:var(--text3)">GEN 1</div>
+        </div>
+        <div style="text-align:center;background:var(--blue-dim);border:1px solid rgba(68,138,255,.2);border-radius:8px;padding:5px">
+          <div style="font-size:10px;font-weight:800;color:var(--blue)" id="sbRefGen2">$0.25</div>
+          <div style="font-size:7px;color:var(--text3)">GEN 2</div>
+        </div>
+        <div style="text-align:center;background:var(--gold-dim);border:1px solid rgba(255,179,0,.2);border-radius:8px;padding:5px">
+          <div style="font-size:10px;font-weight:800;color:var(--gold)" id="sbRefGen3">$0.10</div>
+          <div style="font-size:7px;color:var(--text3)">GEN 3</div>
+        </div>
+      </div>
+    </div>
     <div class="sb-item" data-sb="spin" onclick="sbGoTab('spin')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><span>Lucky Spin</span></div>
     <div class="sb-item" data-sb="notifications" onclick="sbGoTab('notifications')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Notifications</span><span class="sb-badge" id="sbNotifBadge" style="display:none">0</span></div>
     <div class="sb-item" data-sb="kyc" onclick="sbGoTab('kyc')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M15 8h3M15 12h3M6 17h12"/></svg><span>KYC Verification</span></div>
@@ -970,45 +1086,120 @@ function applyTelegramSafeArea(tg) {
         </div>
 
         <div id="postFormPane">
-          <div class="post-limit-banner" id="postApprovalNote">জব পোস্ট করার পর এডমিন রিভিউ করে অনুমোদন দিলে এটি Tasks তালিকায় দেখা যাবে। বাজেট সমপরিমাণ ব্যালেন্স আপনার ওয়ালেট থেকে সাথে সাথে হোল্ড করা হবে।</div>
+          <!-- Stepper header -->
+          <div class="wiz-stepper" id="wizStepper"></div>
 
-          <div class="field"><label>জব টাইটেল</label><input type="text" id="postTitle" placeholder="e.g. Follow our Facebook Page"></div>
-          <div class="field"><label>ক্যাটাগরি</label><select id="postCategory" onchange="onPostCategoryChange()"></select></div>
-          <div class="field" id="postSubcategoryField" style="display:none"><label>সাব-ক্যাটাগরি</label><select id="postSubcategory"></select></div>
-
-          <div class="field"><label>টাস্ক টাইপ</label></div>
-          <div class="post-type-grid">
-            <div class="post-type-pill active" onclick="selectPostType(this,'proof')"><div class="ptp-ico">📸</div><div class="ptp-label">Proof Upload</div></div>
-            <div class="post-type-pill" onclick="selectPostType(this,'link')"><div class="ptp-ico">🔗</div><div class="ptp-label">Visit Link</div></div>
-            <div class="post-type-pill" onclick="selectPostType(this,'dailylink')"><div class="ptp-ico">🔁</div><div class="ptp-label">Daily Repeat</div></div>
+          <!-- STEP 1: Location Targeting -->
+          <div class="wiz-panel" id="wizStep1">
+            <div class="wiz-step-title"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg> লোকেশন টার্গেটিং</div>
+            <div class="wiz-step-sub">কোন দেশের ওয়ার্কাররা এই জব দেখতে পাবে তা বেছে নিন</div>
+            <div class="loc-tile-row">
+              <div class="loc-tile" id="locTileIntl" onclick="wizSetLocationMode('international')"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18"/></svg><div class="loc-tile-label">International</div><div class="loc-tile-desc">সব দেশের ওয়ার্কার দেখতে পাবে</div></div>
+              <div class="loc-tile" id="locTileSpecific" onclick="wizSetLocationMode('specific')"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><div class="loc-tile-label">নির্দিষ্ট দেশসমূহ</div><div class="loc-tile-desc">শুধু নির্বাচিত দেশের ওয়ার্কার দেখবে</div></div>
+            </div>
+            <div id="continentAccordionWrap" style="display:none"></div>
+            <div class="loc-summary-bar" id="locSummaryBar" style="display:none"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span id="locSummaryText"></span></div>
           </div>
 
-          <div class="field" id="postLinkField" style="display:none"><label>লিংক</label><input type="url" id="postLink" placeholder="https://..."></div>
-          <div class="field" id="postShotField"><label>কতটি স্ক্রিনশট লাগবে</label><input type="number" id="postShotCount" min="1" max="5" value="1"></div>
-
-          <div class="field"><label>নির্দেশনা (Instructions)</label><textarea id="postInstructions" rows="3" placeholder="ওয়ার্কারকে ধাপে ধাপে কী করতে হবে লিখুন..."></textarea></div>
-
-          <div class="field">
-            <label id="postRewardHint">প্রতি ওয়ার্কারের রিওয়ার্ড</label>
-            <input type="number" id="postReward" step="0.01" placeholder="0.05" oninput="updatePostBudgetPreview()">
+          <!-- STEP 2: Category & Task Type -->
+          <div class="wiz-panel" id="wizStep2">
+            <div class="wiz-step-title"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> ক্যাটাগরি ও টাস্ক টাইপ</div>
+            <div class="wiz-step-sub">জবটি কোন ক্যাটাগরির এবং কী ধরনের টাস্ক তা বেছে নিন</div>
+            <div class="cat-row-list" id="wizCatRowList"></div>
+            <div class="chip-row" id="wizSubcatChips" style="display:none"></div>
+            <div class="field"><label>টাস্ক টাইপ</label></div>
+            <div class="post-type-grid">
+              <div class="post-type-pill active" onclick="selectPostType(this,'proof')"><div class="ptp-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><div class="ptp-label">Proof Upload</div></div>
+              <div class="post-type-pill" onclick="selectPostType(this,'link')"><div class="ptp-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div><div class="ptp-label">Visit Link</div></div>
+              <div class="post-type-pill" onclick="selectPostType(this,'dailylink')"><div class="ptp-ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></div><div class="ptp-label">Daily Repeat</div></div>
+            </div>
           </div>
-          <div class="field">
-            <label id="postSlotsHint">মোট স্লট (কতজন করবে)</label>
-            <input type="number" id="postSlots" placeholder="50" oninput="updatePostBudgetPreview()">
-          </div>
-          <div class="field"><label>দেশ</label><select id="postCountry"><option value="Global">Global</option><option>Bangladesh</option><option>India</option><option>Pakistan</option><option>Nepal</option><option>Philippines</option><option>Indonesia</option><option>Nigeria</option><option>USA</option><option>UK</option></select></div>
 
-          <div class="post-budget-card">
-            <div class="pbc-row"><span>প্রতি ওয়ার্কার</span><span class="v" id="postPreviewPerWorker">$0.00</span></div>
-            <div class="pbc-row"><span>ওয়ার্কার পেমেন্ট মোট</span><span class="v" id="postPreviewWorkerTotal">$0.00</span></div>
-            <div class="pbc-row"><span>প্ল্যাটফর্ম ফি</span><span class="v" id="postPreviewPlatformFee">$0.00</span></div>
-            <div class="pbc-row total"><span>সর্বমোট বাজেট</span><span class="v" id="postPreviewGrandTotal">$0.00</span></div>
-            <div class="pbc-row balance-row" id="postPreviewBalanceRow"><span>আপনার ব্যালেন্স</span><span class="v" id="postPreviewBalance">$0.00</span></div>
-          </div>
-          <div class="info-banner" id="postInsufficientWarning" style="display:none;background:var(--red-dim);color:var(--red);border-color:rgba(255,82,82,.25)">⚠️ আপনার ব্যালেন্স যথেষ্ট নয়। জব পোস্ট করার আগে ব্যালেন্স যোগ করুন (Deposit) অথবা স্লট/রিওয়ার্ড কমান।</div>
+          <!-- STEP 3: Job Details -->
+          <div class="wiz-panel" id="wizStep3">
+            <div class="wiz-step-title"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> জব ডিটেইলস</div>
+            <div class="wiz-step-sub">টাইটেল, নির্দেশনা এবং প্রুফ রিকোয়্যারমেন্ট দিন</div>
+            <div class="field"><label>জব টাইটেল</label><input type="text" id="postTitle" placeholder="e.g. Follow our Facebook Page"></div>
+            <div class="field" id="postLinkField" style="display:none"><label>লিংক</label><input type="url" id="postLink" placeholder="https://..."></div>
+            <div class="field" id="postShotField"><label>কতটি স্ক্রিনশট লাগবে</label><input type="number" id="postShotCount" min="1" max="5" value="1"></div>
+            <div class="field"><label>নির্দেশনা (Instructions) <span class="char-cnt" id="postInstrCharCnt">0/500</span></label><textarea id="postInstructions" rows="3" maxlength="500" oninput="wizUpdateInstrCount()" placeholder="ওয়ার্কারকে ধাপে ধাপে কী করতে হবে লিখুন..."></textarea></div>
 
-          <button class="btn-primary" id="postSubmitBtn" onclick="submitJobPost()">📤 রিভিউয়ের জন্য পাঠান</button>
+            <div class="field"><label>প্রুফ রিকোয়্যারমেন্ট (ঐচ্ছিক, সর্বোচ্চ ৫টি)</label></div>
+            <div id="proofReqList"></div>
+            <button type="button" class="btn-ghost" style="margin-bottom:14px" onclick="wizAddProofReq()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> প্রুফ স্লট যোগ করুন</button>
+
+            <div class="field"><label>অ্যাটাচমেন্ট (ঐচ্ছিক, সর্বোচ্চ ১০টি ফাইল, প্রতিটি সর্বোচ্চ 10MB)</label></div>
+            <div class="proof-upload-area" id="wizAttachDropArea" onclick="document.getElementById('wizAttachInput').click()">
+              <div class="pua-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
+              <div class="pua-text">ফাইল যোগ করতে ট্যাপ করুন</div>
+              <div class="pua-sub">ছবি বা ডকুমেন্ট — একাধিক নির্বাচন করা যাবে</div>
+            </div>
+            <input type="file" id="wizAttachInput" accept="image/*" multiple style="display:none" onchange="handleWizAttachFiles(this)">
+            <div id="wizAttachGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin:10px 0"></div>
+
+            <div class="wiz-switch-row">
+              <div><div class="wiz-switch-row-text">Auto-Verification</div><div class="wiz-switch-row-sub">শীঘ্রই আসছে — এখনো অ্যাক্টিভ না</div></div>
+              <label class="wiz-switch"><input type="checkbox" disabled><div class="wiz-switch-track"></div><div class="wiz-switch-thumb"></div></label>
+            </div>
+          </div>
+
+          <!-- STEP 4: Budget & Publish -->
+          <div class="wiz-panel" id="wizStep4">
+            <div class="wiz-step-title"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2z"/><path d="M16 3H4a2 2 0 0 0-2 2v2h18"/><circle cx="17" cy="14" r="1.5"/></svg> বাজেট ও পাবলিশ</div>
+            <div class="wiz-step-sub">ওয়ার্কার সংখ্যা, রিওয়ার্ড ও মেয়াদ ঠিক করুন</div>
+
+            <div class="field">
+              <label id="postSlotsHint">মোট স্লট (কতজন করবে)</label>
+              <input type="number" id="postSlots" placeholder="50" oninput="updatePostBudgetPreview()">
+              <div class="qa-slot-row">
+                <div class="qa-slot-pill" onclick="wizQuickAddSlots(10)">+10</div>
+                <div class="qa-slot-pill" onclick="wizQuickAddSlots(25)">+25</div>
+                <div class="qa-slot-pill" onclick="wizQuickAddSlots(50)">+50</div>
+                <div class="qa-slot-pill" onclick="wizQuickAddSlots(100)">+100</div>
+                <div class="qa-slot-pill" onclick="wizQuickAddSlots(500)">+500</div>
+              </div>
+            </div>
+            <div class="field">
+              <label id="postRewardHint">প্রতি ওয়ার্কারের রিওয়ার্ড</label>
+              <input type="number" id="postReward" step="0.01" placeholder="0.05" oninput="updatePostBudgetPreview()">
+            </div>
+            <div class="field"><label>জব মেয়াদ (Expiry)</label>
+              <select id="postExpiryDays">
+                <option value="3">৩ দিন</option>
+                <option value="7" selected>৭ দিন</option>
+                <option value="14">১৪ দিন</option>
+                <option value="30">৩০ দিন</option>
+              </select>
+              <div class="lf-hint" style="font-size:10px;color:var(--text3);margin-top:5px">মেয়াদ শেষ হলে জবটি নতুন Task তালিকা থেকে সরে যাবে — কিন্তু ইতিমধ্যে অনুমোদিত সাবমিশনগুলো ঠিকই থাকবে।</div>
+            </div>
+
+            <div class="post-budget-card">
+              <div class="pbc-row"><span>প্রতি ওয়ার্কার</span><span class="v" id="postPreviewPerWorker">$0.00</span></div>
+              <div class="pbc-row"><span>ওয়ার্কার পেমেন্ট মোট</span><span class="v" id="postPreviewWorkerTotal">$0.00</span></div>
+              <div class="pbc-row"><span>প্ল্যাটফর্ম ফি</span><span class="v" id="postPreviewPlatformFee">$0.00</span></div>
+              <div class="pbc-row total"><span>সর্বমোট বাজেট</span><span class="v" id="postPreviewGrandTotal">$0.00</span></div>
+              <div class="pbc-row balance-row" id="postPreviewBalanceRow"><span>আপনার ব্যালেন্স</span><span class="v" id="postPreviewBalance">$0.00</span></div>
+              <div class="pbc-row balance-row" id="wizDiffRow" style="display:none"><span id="wizDiffLabel">পার্থক্য</span><span class="v" id="wizDiffValue">$0.00</span></div>
+            </div>
+            <div class="info-banner" id="postInsufficientWarning" style="display:none;background:var(--red-dim);color:var(--red);border-color:rgba(255,82,82,.25)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> আপনার ব্যালেন্স যথেষ্ট নয়। জব পোস্ট করার আগে ব্যালেন্স যোগ করুন (Deposit) অথবা স্লট/রিওয়ার্ড কমান।</div>
+            <div class="info-banner" id="wizSlotGuardWarning" style="display:none;background:var(--red-dim);color:var(--red);border-color:rgba(255,82,82,.25)"></div>
+          </div>
+
+          <!-- SUCCESS SCREEN -->
+          <div class="wiz-panel" id="wizSuccess">
+            <div class="wiz-success">
+              <div class="wiz-success-ico"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+              <div class="wiz-success-title" id="wizSuccessTitle">জব সাবমিট হয়েছে!</div>
+              <div class="wiz-success-sub" id="wizSuccessSub">এডমিন রিভিউ করার পর এটি লাইভ হবে।</div>
+            </div>
+          </div>
+
+          <div class="wiz-footer" id="wizFooter">
+            <button class="btn-ghost" id="wizPrevBtn" onclick="wizPrevStep()" style="display:none">Previous</button>
+            <button class="btn-primary" id="wizNextBtn" onclick="wizNextStep()">Next</button>
+          </div>
         </div>
+
 
         <div id="postMinePane" style="display:none">
           <div class="mytask-filter history-filter">
@@ -1092,25 +1283,36 @@ function applyTelegramSafeArea(tg) {
 
       <div class="tx-section-header">
         <h3>Transaction History</h3>
-        <div class="tx-filter-btns">
+        <a onclick="goTab('history')" style="font-size:11.5px;color:var(--green);font-weight:700;cursor:pointer">সম্পূর্ণ Statement দেখুন →</a>
+      </div>
+    </section>
+
+    <!-- HISTORY (merged "Statement": Wallet Transactions + Task History) -->
+    <section class="screen" id="screen-history">
+      <div class="sec-title" style="margin-top:13px"><h3>📜 Statement</h3></div>
+      <div class="post-tabs" id="statementTabs">
+        <div class="post-tab active" id="stmtTabWallet" onclick="switchStatementTab('wallet')">💳 Wallet Transactions</div>
+        <div class="post-tab" id="stmtTabTask" onclick="switchStatementTab('task')">📋 Task History</div>
+      </div>
+
+      <div id="stmtWalletPane">
+        <div class="tx-filter-btns" style="margin-bottom:12px">
           <div class="tx-filter-btn active" onclick="filterTx('all',this)">All</div>
           <div class="tx-filter-btn" onclick="filterTx('pos',this)">Income</div>
           <div class="tx-filter-btn" onclick="filterTx('neg',this)">Expense</div>
         </div>
+        <div id="txList" style="padding:0 2px"></div>
       </div>
-      <div id="txList" style="padding:0 2px"></div>
-    </section>
 
-    <!-- HISTORY -->
-    <section class="screen" id="screen-history">
-      <div class="sec-title" style="margin-top:13px"><h3>📜 Task History</h3></div>
-      <div class="history-filter">
-        <div class="h-chip active" onclick="filterHistory('all',this)">All</div>
-        <div class="h-chip" onclick="filterHistory('completed',this)">Completed</div>
-        <div class="h-chip" onclick="filterHistory('pending',this)">Pending</div>
-        <div class="h-chip" onclick="filterHistory('spin',this)">Spin</div>
+      <div id="stmtTaskPane" style="display:none">
+        <div class="history-filter">
+          <div class="h-chip active" onclick="filterHistory('all',this)">All</div>
+          <div class="h-chip" onclick="filterHistory('completed',this)">Completed</div>
+          <div class="h-chip" onclick="filterHistory('pending',this)">Pending</div>
+          <div class="h-chip" onclick="filterHistory('spin',this)">Spin</div>
+        </div>
+        <div id="historyList"></div>
       </div>
-      <div id="historyList"></div>
     </section>
 
     <!-- NOTIFICATIONS -->
@@ -1465,6 +1667,41 @@ const catSvg = {
 };
 const avatarColors = ['#00E676', '#448AFF', '#E040FB', '#FFB300', '#FF5252', '#00BCD4'];
 
+// ══════ js/data/countries.js (Post Wizard — Step 1 location targeting) ══════
+const CONTINENTS = [
+  { name: 'Asia', countries: ['Bangladesh', 'India', 'Pakistan', 'Nepal', 'Sri Lanka', 'Philippines', 'Indonesia', 'Malaysia', 'Vietnam', 'Thailand', 'Bhutan', 'Myanmar'] },
+  { name: 'Africa', countries: ['Nigeria', 'Kenya', 'Ghana', 'Egypt', 'South Africa', 'Ethiopia', 'Tanzania', 'Uganda', 'Morocco', 'Algeria'] },
+  { name: 'Europe', countries: ['UK', 'Germany', 'France', 'Spain', 'Italy', 'Netherlands', 'Poland', 'Portugal', 'Sweden', 'Romania'] },
+  { name: 'North America', countries: ['USA', 'Canada', 'Mexico', 'Guatemala', 'Honduras', 'Cuba', 'Jamaica', 'Panama'] },
+  { name: 'South America', countries: ['Brazil', 'Argentina', 'Colombia', 'Peru', 'Chile', 'Venezuela', 'Ecuador', 'Bolivia'] },
+  { name: 'Oceania', countries: ['Australia', 'New Zealand', 'Fiji', 'Papua New Guinea'] },
+];
+
+// ══════ js/data/wizIcons.js (Post Wizard — inline SVG line-icons, no emoji) ══════
+const WIZ_ICONS = {
+  post: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18"/>',
+  pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+  folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  folderOpen: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H7l-3 8V7z"/><path d="M3 18l3-8h15l-3 8H3z"/>',
+  camera: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+  refresh: '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+  paperclip: '<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',
+  wallet: '<path d="M20 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2z"/><path d="M16 3H4a2 2 0 0 0-2 2v2h18"/><circle cx="17" cy="14" r="1.5"/>',
+  alertTriangle: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  checkCircle: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+  inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+  check: '<polyline points="20 6 9 17 4 12"/>',
+  x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  chevronDown: '<polyline points="6 9 12 15 18 9"/>',
+  calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+};
+function wizIcon(name, size) {
+  size = size || 18;
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${WIZ_ICONS[name] || ''}</svg>`;
+}
+
 // ══════ js/core/utils.js ══════
 const fmtUSD = n => '$' + Math.abs(n || 0).toFixed(2);
 const escHtml = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -1516,6 +1753,14 @@ function verifiedTickSvg(size = 13) {
 }
 const isJobAdmin = t => t.postedByAdmin !== false;
 const jobPosterName = t => t.postedByName || (isJobAdmin(t) ? 'WorkHive Admin' : 'WorkHive User');
+function countryBadgeHtml(t) {
+  if (t.locationMode === 'specific' && Array.isArray(t.targetCountries) && t.targetCountries.length) {
+    const names = t.targetCountries;
+    const label = names.length > 2 ? `${escHtml(names[0])}, ${escHtml(names[1])} +${names.length - 2}` : names.map(escHtml).join(', ');
+    return `<span class="country-target-badge">${wizIcon('pin', 11)} ${label}</span>`;
+  }
+  return `<span class="country-target-badge">${wizIcon('globe', 11)} International</span>`;
+}
 
 function posterRowHtml(t, compact) {
   const admin = isJobAdmin(t);
@@ -1759,7 +2004,7 @@ function taskCardHtml(t, compact = false) {
           ${taskIcoHtml(t)}
           <div class="task-body">
             <div class="task-top"><div class="task-title">${escHtml(t.title)}</div><div class="task-reward-pill"><span>+${fmtUSD(t.reward || 0)}</span></div></div>
-            <div class="task-meta">${badge}<span>${escHtml(t.category || '')}${t.subcategory ? ' · ' + escHtml(t.subcategory) : ''}</span><span>🌍 ${escHtml(t.country || 'Global')}</span></div>
+            <div class="task-meta">${badge}<span>${escHtml(t.category || '')}${t.subcategory ? ' · ' + escHtml(t.subcategory) : ''}</span>${countryBadgeHtml(t)}</div>
           </div>
         </div>
         <div class="task-bottom-row">
@@ -1806,7 +2051,7 @@ function taskCardHtml(t, compact = false) {
           <div class="task-top"><div class="task-title">${escHtml(t.title)}</div><div class="task-reward-pill"><span>+${fmtUSD(t.reward || 0)}</span></div></div>
           <div class="task-meta">
             <span class="badge ${t.type === 'link' ? 'type-link' : 'type-proof'}">${t.type === 'link' ? '🔗 Link' : '📸 Proof'}</span>
-            <span>${escHtml(t.category || '')}${t.subcategory ? ' · ' + escHtml(t.subcategory) : ''}</span><span>🌍 ${escHtml(t.country || 'Global')}</span>
+            <span>${escHtml(t.category || '')}${t.subcategory ? ' · ' + escHtml(t.subcategory) : ''}</span>${countryBadgeHtml(t)}
           </div>
         </div>
       </div>
@@ -1877,13 +2122,24 @@ function listenSiteSettings(onChange) {
 
 // ══════ js/services/jobs.js ══════
 let _unsubJobs = null;
+function isJobVisibleToUser(job) {
+  if (job.expiresAt) {
+    const exp = job.expiresAt.toDate ? job.expiresAt.toDate() : new Date(job.expiresAt);
+    if (!isNaN(exp) && exp < new Date()) return false;
+  }
+  if (job.locationMode === 'specific' && Array.isArray(job.targetCountries) && job.targetCountries.length) {
+    const myCountry = window._userData?.country || '';
+    if (!myCountry || !job.targetCountries.includes(myCountry)) return false;
+  }
+  return true;
+}
 function listenApprovedJobs(onChange) {
   if (_unsubJobs) _unsubJobs();
   _unsubJobs = fb.onSnapshot(
     fb.query(fb.collection(db, 'jobs'), fb.where('status', '==', 'approved')),
     snap => {
       S.approvedJobs = [];
-      snap.forEach(d => S.approvedJobs.push({ id: d.id, ...d.data() }));
+      snap.forEach(d => { const job = { id: d.id, ...d.data() }; if (isJobVisibleToUser(job)) S.approvedJobs.push(job); });
       S.approvedJobs.sort((a, b) => (b._ts || 0) - (a._ts || 0));
       onChange && onChange(S.approvedJobs);
     },
@@ -1999,7 +2255,7 @@ function computeJobBudget(reward, slots) {
   return { reward, slots, workerTotal, platformFee: parseFloat(platformFee.toFixed(2)), grandTotal: parseFloat(grandTotal.toFixed(2)) };
 }
 
-async function createJobPost({ title, category, subcategory, type, reward, limit, country, instructions, link, screenshotCount }, user, userData, userRef) {
+async function createJobPost({ title, category, subcategory, type, reward, limit, country, instructions, link, screenshotCount, locationMode, targetCountries, proofRequirements, expiryDays, attachmentUrls }, user, userData, userRef) {
   if (!SITE.postFeatureEnabled) throw new Error('POST_DISABLED');
   reward = Number(reward); limit = Number(limit);
   if (!title || title.trim().length < 5) throw new Error('TITLE_SHORT');
@@ -2007,12 +2263,14 @@ async function createJobPost({ title, category, subcategory, type, reward, limit
   if (!instructions || instructions.trim().length < 10) throw new Error('INSTR_SHORT');
   if (!reward || reward < SITE.postMinReward || reward > SITE.postMaxReward) throw new Error('REWARD_RANGE');
   if (!limit || limit < SITE.postMinSlots || limit > SITE.postMaxSlots) throw new Error('SLOTS_RANGE');
-  if (type === 'link' && !link) throw new Error('LINK_REQUIRED');
+  if ((type === 'link' || type === 'dailylink') && !link) throw new Error('LINK_REQUIRED');
   if (!userRef) throw new Error('NO_USER_REF');
 
   const budget = computeJobBudget(reward, limit);
   const nowTs = Date.now();
   const newJobRef = fb.doc(fb.collection(db, 'jobs'));
+  const expDays = Number(expiryDays) || 7;
+  const expiresAt = new Date(Date.now() + expDays * 86400000);
 
   await fb.runTransaction(db, async (tx) => {
     const uSnap = await tx.get(userRef);
@@ -2029,6 +2287,11 @@ async function createJobPost({ title, category, subcategory, type, reward, limit
       title: title.trim(), category, subcategory: subcategory || '', type, reward, limit, filled: 0,
       country: country || 'Global', instructions: instructions.trim(),
       link: link || '', screenshotCount: type === 'proof' ? Math.max(1, Number(screenshotCount) || 1) : 0,
+      locationMode: locationMode || 'international',
+      targetCountries: locationMode === 'specific' && Array.isArray(targetCountries) ? targetCountries : [],
+      proofRequirements: Array.isArray(proofRequirements) ? proofRequirements.slice(0, 5) : [],
+      attachmentUrls: Array.isArray(attachmentUrls) ? attachmentUrls.slice(0, 10) : [],
+      expiryDays: expDays, expiresAt,
       status: 'pending_review',
       postedByAdmin: false,
       postedById: user.uid,
@@ -2044,6 +2307,59 @@ async function createJobPost({ title, category, subcategory, type, reward, limit
   });
 
   return newJobRef.id;
+}
+
+async function saveWizardJobEdit(jobId, payload, user, userData, userRef) {
+  const reward = Number(payload.reward) || 0;
+  const limit = Number(payload.limit) || 0;
+  if (!payload.title || payload.title.trim().length < 5) throw new Error('TITLE_SHORT');
+  if (!payload.category) throw new Error('NO_CATEGORY');
+  if (!payload.instructions || payload.instructions.trim().length < 10) throw new Error('INSTR_SHORT');
+  if (!reward || reward < SITE.postMinReward || reward > SITE.postMaxReward) throw new Error('REWARD_RANGE');
+  if (!limit || limit < SITE.postMinSlots || limit > SITE.postMaxSlots) throw new Error('SLOTS_RANGE');
+  if ((payload.type === 'link' || payload.type === 'dailylink') && !payload.link) throw new Error('LINK_REQUIRED');
+  if (!userRef) throw new Error('NO_USER_REF');
+
+  const jobRef = fb.doc(db, 'jobs', jobId);
+  const newBudget = computeJobBudget(reward, limit);
+  const expDays = Number(payload.expiryDays) || 7;
+  const expiresAt = new Date(Date.now() + expDays * 86400000);
+
+  await fb.runTransaction(db, async (tx) => {
+    const jSnap = await tx.get(jobRef);
+    if (!jSnap.exists()) throw new Error('JOB_NOT_FOUND');
+    const jData = jSnap.data();
+    if (jData.filled && limit < jData.filled) throw new Error('SLOT_BELOW_FILLED');
+
+    const uSnap = await tx.get(userRef);
+    if (!uSnap.exists()) throw new Error('USER_NOT_FOUND');
+    const bal = uSnap.data().balance || 0;
+    const oldHeld = jData.budgetHeld || 0;
+    const diff = newBudget.grandTotal - oldHeld;
+
+    if (diff > 0.0001) {
+      if (diff > bal) throw new Error('INSUFFICIENT_BALANCE');
+      tx.update(userRef, { balance: bal - diff, postingHold: fb.increment(diff) });
+    } else if (diff < -0.0001) {
+      tx.update(userRef, { balance: fb.increment(-diff), postingHold: fb.increment(diff) });
+    }
+
+    const wasApproved = jData.status === 'approved';
+    tx.update(jobRef, {
+      title: payload.title.trim(), category: payload.category, subcategory: payload.subcategory || '',
+      type: payload.type, reward, limit, country: payload.country || 'Global',
+      locationMode: payload.locationMode || 'international',
+      targetCountries: payload.locationMode === 'specific' && Array.isArray(payload.targetCountries) ? payload.targetCountries : [],
+      instructions: payload.instructions.trim(), link: payload.link || '',
+      screenshotCount: payload.type === 'proof' ? Math.max(1, Number(payload.screenshotCount) || 1) : 0,
+      proofRequirements: Array.isArray(payload.proofRequirements) ? payload.proofRequirements.slice(0, 5) : [],
+      attachmentUrls: Array.isArray(payload.attachmentUrls) && payload.attachmentUrls.length ? payload.attachmentUrls.slice(0, 10) : (jData.attachmentUrls || []),
+      expiryDays: expDays, expiresAt,
+      budgetHeld: newBudget.grandTotal, workerTotal: newBudget.workerTotal, platformFee: newBudget.platformFee,
+      status: wasApproved ? 'pending_reapproval' : jData.status,
+      editedAt: fb.serverTimestamp(),
+    });
+  });
 }
 
 function listenMyPostedJobs(uid, onChange) {
@@ -2755,7 +3071,7 @@ function openTaskModal(jobId) {
     submissionHtml = `${shotsHtml}<div class="field"><label>Proof / Note (Optional)</label><textarea id="proofText${jobId}" placeholder="e.g. Liked and commented. My username: @yourname" rows="3"></textarea></div><button class="btn-primary" id="submitProofBtn${jobId}" data-shots="${shotCount}" onclick="submitTaskProof('${jobId}',document.getElementById('proofText${jobId}').value)">📤 Submit Proof for Review${shotCount > 1 ? ' (0/' + shotCount + ' uploaded)' : ''}</button>`;
   }
   document.getElementById('modalContent').innerHTML = `
-    <div class="modal-task-header" style="background:${grad}">${(function(){ const logo = getPlatformLogo(t); return logo ? `<div class="mth-ico" style="background:#fff"><img src="${logo}" style="width:60%;height:60%;object-fit:contain" onerror="this.parentElement.style.background='rgba(255,255,255,.18)';this.remove()"></div>` : `<div class="mth-ico" style="background:rgba(255,255,255,.18)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></div>`; })()}<div><div class="mth-title">${escHtml(t.title)}</div><div class="mth-cat">${escHtml(t.category)} · ${escHtml(t.country || 'Global')}</div></div></div>
+    <div class="modal-task-header" style="background:${grad}">${(function(){ const logo = getPlatformLogo(t); return logo ? `<div class="mth-ico" style="background:#fff"><img src="${logo}" style="width:60%;height:60%;object-fit:contain" onerror="this.parentElement.style.background='rgba(255,255,255,.18)';this.remove()"></div>` : `<div class="mth-ico" style="background:rgba(255,255,255,.18)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ico}</svg></div>`; })()}<div><div class="mth-title">${escHtml(t.title)}</div><div class="mth-cat">${escHtml(t.category)} · ${countryBadgeHtml(t)}</div></div></div>
     ${modalPosterRowHtml(t)}
     <div class="modal-stats-row"><div class="msr-cell"><div class="msr-val" style="color:var(--gold)">+${fmtUSD(t.reward || 0)}</div><div class="msr-lbl">Reward</div></div><div class="msr-cell"><div class="msr-val">${lim - filled}</div><div class="msr-lbl">Slots Left</div></div><div class="msr-cell"><div class="msr-val" style="color:var(--gold)">⏳ Pending</div><div class="msr-lbl">After Submit</div></div></div>
     <div class="modal-instructions"><div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📋 Task Instructions</div>${stepsHtml}${directLinkHtml}</div>
@@ -2916,10 +3232,395 @@ function filterMyTasks(status, el) {
 // ══════ js/screens/post.js ══════
 const TYPE_LABELS = { proof: ['📸', 'Proof Upload'], link: ['🔗', 'Visit Link'], dailylink: ['🔁', 'Daily Repeat'] };
 
+const ERR_MSGS = {
+  POST_DISABLED: 'এডমিন এই মুহূর্তে জব পোস্টিং বন্ধ রেখেছেন।',
+  TITLE_SHORT: 'টাইটেল অন্তত ৫ অক্ষরের হতে হবে।',
+  NO_CATEGORY: 'একটি Category বেছে নিন।',
+  INSTR_SHORT: 'নির্দেশনা অন্তত ১০ অক্ষরের হতে হবে।',
+  REWARD_RANGE: `রিওয়ার্ড $${SITE.postMinReward.toFixed(2)} থেকে $${SITE.postMaxReward.toFixed(2)}-এর মধ্যে হতে হবে।`,
+  SLOTS_RANGE: `স্লট সংখ্যা ${SITE.postMinSlots} থেকে ${SITE.postMaxSlots}-এর মধ্যে হতে হবে।`,
+  LINK_REQUIRED: 'এই টাস্ক টাইপের জন্য একটি লিংক দিতে হবে।',
+  NO_USER_REF: 'দয়া করে আবার লগইন করুন।',
+  USER_NOT_FOUND: 'ইউজার তথ্য পাওয়া যায়নি — আবার লগইন করুন।',
+  INSUFFICIENT_BALANCE: 'আপনার ওয়ালেট ব্যালেন্স যথেষ্ট নয়। জব পোস্ট করার আগে ব্যালেন্স যোগ করুন (Deposit)।',
+};
+
+// ── Post Wizard controller (4-step) ──
+S.wiz = {
+  mode: 'create', editJobId: null, step: 1,
+  locationMode: 'international', targetCountries: [], openContinents: {},
+  category: '', subcategory: '',
+  proofRequirements: [], attachments: [],
+};
+const WIZ_STEP_LABELS = ['লোকেশন', 'ক্যাটাগরি', 'ডিটেইলস', 'বাজেট'];
+const WIZ_ERR_MSGS = Object.assign({}, ERR_MSGS, {
+  SLOT_BELOW_FILLED: 'ইতিমধ্যে কিছু ওয়ার্কার এই জব সম্পন্ন করেছে — স্লট সংখ্যা তার চেয়ে কম করা যাবে না।',
+  JOB_NOT_FOUND: 'জবটি খুঁজে পাওয়া যায়নি।',
+});
+
+function wizResetState() {
+  S.wiz = {
+    mode: 'create', editJobId: null, step: 1,
+    locationMode: 'international', targetCountries: [], openContinents: {},
+    category: '', subcategory: '',
+    proofRequirements: [], attachments: [],
+  };
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  setVal('postTitle', ''); setVal('postLink', ''); setVal('postShotCount', 1);
+  setVal('postInstructions', ''); setVal('postSlots', ''); setVal('postReward', '');
+  setVal('postExpiryDays', '7');
+  const attachInput = document.getElementById('wizAttachInput'); if (attachInput) attachInput.value = '';
+  const grid = document.getElementById('wizAttachGrid'); if (grid) grid.innerHTML = '';
+  wizUpdateInstrCount();
+  S.postSelectedType = 'proof';
+  document.querySelectorAll('.post-type-pill').forEach((p, i) => p.classList.toggle('active', i === 0));
+  const linkField = document.getElementById('postLinkField'); if (linkField) linkField.style.display = 'none';
+  const shotField = document.getElementById('postShotField'); if (shotField) shotField.style.display = 'block';
+}
+
+function openPostWizard(opts) {
+  opts = opts || { mode: 'create' };
+  if (opts.mode === 'edit' && opts.jobId) { wizOpenEdit(opts.jobId); return; }
+  wizResetState();
+  switchPostTab('post');
+  wizGoStep(1);
+}
+
+function wizOpenEdit(jobId) {
+  const j = S.myPostedJobs.find(x => x.id === jobId); if (!j) { showToast('জবটি খুঁজে পাওয়া যায়নি', 'error'); return; }
+  if (j.postedBy === 'admin' || j.postedByAdmin !== false) { /* still allowed for own posted job only, guarded by caller */ }
+  wizResetState();
+  S.wiz.mode = 'edit';
+  S.wiz.editJobId = jobId;
+  S.wiz.locationMode = j.locationMode || 'international';
+  S.wiz.targetCountries = Array.isArray(j.targetCountries) ? [...j.targetCountries] : [];
+  S.wiz.category = j.category || '';
+  S.wiz.subcategory = j.subcategory || '';
+  S.wiz.proofRequirements = Array.isArray(j.proofRequirements) ? j.proofRequirements.map(p => ({ ...p })) : [];
+  CONTINENTS.forEach(c => { if (c.countries.some(cn => S.wiz.targetCountries.includes(cn))) S.wiz.openContinents[c.name] = true; });
+
+  switchPostTab('post');
+  wizGoStep(1);
+
+  // Prefill step 2 (needs categories loaded)
+  setTimeout(() => {
+    document.querySelectorAll('.post-type-pill').forEach(p => {
+      const match = p.getAttribute('onclick') && p.getAttribute('onclick').includes(`'${j.type}'`);
+      p.classList.toggle('active', !!match);
+    });
+    S.postSelectedType = j.type || 'proof';
+    const linkField = document.getElementById('postLinkField'); if (linkField) linkField.style.display = (j.type === 'link' || j.type === 'dailylink') ? 'block' : 'none';
+    const shotField = document.getElementById('postShotField'); if (shotField) shotField.style.display = j.type === 'proof' ? 'block' : 'none';
+  }, 0);
+
+  // Prefill step 3
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  setVal('postTitle', j.title || '');
+  setVal('postLink', j.link || '');
+  setVal('postShotCount', j.screenshotCount || 1);
+  setVal('postInstructions', j.instructions || '');
+  wizUpdateInstrCount();
+  renderProofReqBuilder();
+
+  // Prefill step 4
+  setVal('postSlots', j.limit || '');
+  setVal('postReward', j.reward || '');
+  setVal('postExpiryDays', String(j.expiryDays || 7));
+  updatePostBudgetPreview();
+}
+
+function wizGoStep(n) {
+  S.wiz.step = Math.max(1, Math.min(4, n));
+  document.querySelectorAll('.wiz-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('wizStep' + S.wiz.step);
+  if (panel) panel.classList.add('active');
+  renderWizStepper();
+  const prevBtn = document.getElementById('wizPrevBtn'), nextBtn = document.getElementById('wizNextBtn');
+  if (prevBtn) prevBtn.style.display = S.wiz.step === 1 ? 'none' : 'block';
+  if (nextBtn) nextBtn.textContent = S.wiz.step === 4 ? (S.wiz.mode === 'edit' ? 'সংরক্ষণ করুন ও পুনরায় জমা দিন' : 'রিভিউয়ের জন্য পাঠান') : 'Next';
+  const footer = document.getElementById('wizFooter'); if (footer) footer.style.display = 'flex';
+  if (S.wiz.step === 1) { wizSetLocationMode(S.wiz.locationMode, true); }
+  if (S.wiz.step === 2) { renderWizCatRowList(); }
+  if (S.wiz.step === 3) { renderProofReqBuilder(); wizRenderAttachGrid(); }
+  if (S.wiz.step === 4) { updatePostBudgetPreview(); }
+  document.getElementById('mainScroll')?.scrollTo(0, 0);
+}
+function wizPrevStep() { wizGoStep(S.wiz.step - 1); }
+function wizNextStep() {
+  if (!wizValidateStep(S.wiz.step)) return;
+  if (S.wiz.step === 4) { wizSubmitJob(); return; }
+  wizGoStep(S.wiz.step + 1);
+}
+function wizValidateStep(step) {
+  if (step === 1) {
+    if (S.wiz.locationMode === 'specific' && !S.wiz.targetCountries.length) { showToast('অন্তত একটি দেশ নির্বাচন করুন, অথবা International বেছে নিন', 'error'); return false; }
+    return true;
+  }
+  if (step === 2) {
+    if (!S.wiz.category) { showToast(WIZ_ERR_MSGS.NO_CATEGORY, 'error'); return false; }
+    return true;
+  }
+  if (step === 3) {
+    const title = document.getElementById('postTitle')?.value.trim() || '';
+    const instructions = document.getElementById('postInstructions')?.value.trim() || '';
+    const link = document.getElementById('postLink')?.value.trim() || '';
+    if (title.length < 5) { showToast(WIZ_ERR_MSGS.TITLE_SHORT, 'error'); return false; }
+    if (instructions.length < 10) { showToast(WIZ_ERR_MSGS.INSTR_SHORT, 'error'); return false; }
+    if ((S.postSelectedType === 'link' || S.postSelectedType === 'dailylink') && !link) { showToast(WIZ_ERR_MSGS.LINK_REQUIRED, 'error'); return false; }
+    return true;
+  }
+  return true;
+}
+
+function renderWizStepper() {
+  const el = document.getElementById('wizStepper'); if (!el) return;
+  let html = '';
+  for (let i = 1; i <= 4; i++) {
+    const state = i < S.wiz.step ? 'done' : i === S.wiz.step ? 'current' : '';
+    html += `<div class="wiz-step-node ${state}"><div class="wiz-step-circle">${i < S.wiz.step ? wizIcon('check', 14) : i}</div><div class="wiz-step-label">${WIZ_STEP_LABELS[i - 1]}</div></div>`;
+    if (i < 4) html += `<div class="wiz-step-line ${i < S.wiz.step ? 'done' : ''}"></div>`;
+  }
+  el.innerHTML = html;
+}
+
+// Step 1 — Location targeting
+function wizSetLocationMode(mode, silent) {
+  S.wiz.locationMode = mode;
+  document.getElementById('locTileIntl')?.classList.toggle('active', mode === 'international');
+  document.getElementById('locTileSpecific')?.classList.toggle('active', mode === 'specific');
+  const wrap = document.getElementById('continentAccordionWrap');
+  if (wrap) {
+    wrap.style.display = mode === 'specific' ? 'block' : 'none';
+    if (mode === 'specific') renderContinentAccordion();
+  }
+  updateLocSummary();
+}
+function renderContinentAccordion() {
+  const wrap = document.getElementById('continentAccordionWrap'); if (!wrap) return;
+  wrap.innerHTML = CONTINENTS.map(c => {
+    const open = !!S.wiz.openContinents[c.name];
+    const selCount = c.countries.filter(cn => S.wiz.targetCountries.includes(cn)).length;
+    return `<div class="continent-block">
+      <div class="continent-hd ${open ? 'open' : ''}" onclick="wizToggleContinent('${escHtml(c.name)}')">
+        <div class="continent-name">${escHtml(c.name)}</div>
+        ${selCount ? `<span class="continent-count">${selCount}</span>` : ''}
+        ${wizIcon('chevronDown', 15)}
+      </div>
+      <div class="continent-body ${open ? 'open' : ''}">
+        <span class="continent-selectall" onclick="wizSelectAllContinent('${escHtml(c.name)}')">${selCount === c.countries.length ? 'সব বাদ দিন' : 'সব সিলেক্ট করুন'}</span>
+        <div class="country-pill-grid">${c.countries.map(cn => `<div class="country-pill ${S.wiz.targetCountries.includes(cn) ? 'active' : ''}" onclick="wizToggleCountry('${escHtml(cn)}')">${escHtml(cn)}</div>`).join('')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function wizToggleContinent(name) { S.wiz.openContinents[name] = !S.wiz.openContinents[name]; renderContinentAccordion(); }
+function wizToggleCountry(country) {
+  const idx = S.wiz.targetCountries.indexOf(country);
+  if (idx === -1) S.wiz.targetCountries.push(country); else S.wiz.targetCountries.splice(idx, 1);
+  renderContinentAccordion();
+  updateLocSummary();
+}
+function wizSelectAllContinent(name) {
+  const c = CONTINENTS.find(x => x.name === name); if (!c) return;
+  const allSelected = c.countries.every(cn => S.wiz.targetCountries.includes(cn));
+  if (allSelected) S.wiz.targetCountries = S.wiz.targetCountries.filter(cn => !c.countries.includes(cn));
+  else c.countries.forEach(cn => { if (!S.wiz.targetCountries.includes(cn)) S.wiz.targetCountries.push(cn); });
+  renderContinentAccordion();
+  updateLocSummary();
+}
+function updateLocSummary() {
+  const bar = document.getElementById('locSummaryBar'), txt = document.getElementById('locSummaryText');
+  if (!bar || !txt) return;
+  if (S.wiz.locationMode === 'specific' && S.wiz.targetCountries.length) {
+    bar.style.display = 'flex';
+    txt.innerHTML = `<b>${S.wiz.targetCountries.length}টি দেশ</b> নির্বাচিত — শুধু এই দেশগুলোর ওয়ার্কাররা জবটি দেখবে`;
+  } else { bar.style.display = 'none'; }
+}
+
+// Step 2 — Category / subcategory / task type
+function renderWizCatRowList() {
+  const el = document.getElementById('wizCatRowList'); if (!el) return;
+  const list = S.categories.length ? S.categories : Object.keys(catGradients).filter(c => c !== 'Other').map(name => ({ name, emoji: '' }));
+  el.innerHTML = list.map(c => `<div class="cat-row ${S.wiz.category === c.name ? 'active' : ''}" onclick="wizSelectCategory('${escHtml(c.name)}')">
+    <div class="cat-row-emoji">${c.emoji ? escHtml(c.emoji) : wizIcon('folder', 16)}</div>
+    <div class="cat-row-name">${escHtml(c.name)}</div>
+    <div class="cat-row-check"></div>
+  </div>`).join('');
+  renderWizSubcatChips();
+}
+function wizSelectCategory(name) {
+  S.wiz.category = name;
+  if (findCategory(name)?.name !== name || !findCategory(name)) S.wiz.subcategory = '';
+  else if (S.wiz.subcategory && !(findCategory(name)?.subcategories || []).includes(S.wiz.subcategory)) S.wiz.subcategory = '';
+  renderWizCatRowList();
+}
+function renderWizSubcatChips() {
+  const wrap = document.getElementById('wizSubcatChips'); if (!wrap) return;
+  const cat = findCategory(S.wiz.category);
+  if (!cat || !Array.isArray(cat.subcategories) || !cat.subcategories.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+  wrap.style.display = 'flex';
+  wrap.innerHTML = cat.subcategories.map(s => `<div class="chip ${S.wiz.subcategory === s ? 'active' : ''}" onclick="wizSelectSubcat('${escHtml(s)}')">${escHtml(s)}</div>`).join('');
+}
+function wizSelectSubcat(s) { S.wiz.subcategory = (S.wiz.subcategory === s) ? '' : s; renderWizSubcatChips(); }
+
+// Step 3 — job details helpers
+function wizUpdateInstrCount() {
+  const ta = document.getElementById('postInstructions'), cnt = document.getElementById('postInstrCharCnt');
+  if (ta && cnt) cnt.textContent = `${ta.value.length}/500`;
+}
+function renderProofReqBuilder() {
+  const el = document.getElementById('proofReqList'); if (!el) return;
+  el.innerHTML = S.wiz.proofRequirements.map((r, i) => `<div class="proof-req-item">
+    <select onchange="wizUpdateProofReqField(${i},'type',this.value)">
+      <option value="screenshot" ${r.type === 'screenshot' ? 'selected' : ''}>স্ক্রিনশট</option>
+      <option value="text" ${r.type === 'text' ? 'selected' : ''}>টেক্সট</option>
+    </select>
+    <input type="text" value="${escHtml(r.label || '')}" placeholder="যেমন: Before screenshot" onchange="wizUpdateProofReqField(${i},'label',this.value)">
+    <div class="proof-req-remove" onclick="wizRemoveProofReq(${i})">${wizIcon('x', 14)}</div>
+  </div>`).join('');
+}
+function wizAddProofReq() {
+  if (S.wiz.proofRequirements.length >= 5) { showToast('সর্বোচ্চ ৫টি প্রুফ স্লট যোগ করা যাবে', 'error'); return; }
+  S.wiz.proofRequirements.push({ type: 'screenshot', label: '' });
+  renderProofReqBuilder();
+}
+function wizRemoveProofReq(i) { S.wiz.proofRequirements.splice(i, 1); renderProofReqBuilder(); }
+function wizUpdateProofReqField(i, field, val) { if (S.wiz.proofRequirements[i]) S.wiz.proofRequirements[i][field] = val; }
+
+function handleWizAttachFiles(input) {
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+  if (S.wiz.attachments.length + files.length > 10) { showToast('সর্বোচ্চ ১০টি ফাইল যোগ করা যাবে', 'error'); input.value = ''; return; }
+  for (const file of files) {
+    if (!file.type.startsWith('image/')) { showToast('শুধু ছবি ফাইল সাপোর্টেড', 'error'); continue; }
+    if (file.size > 10 * 1024 * 1024) { showToast(`"${file.name}" খুব বড় (সর্বোচ্চ 10MB)`, 'error'); continue; }
+    S.wiz.attachments.push({ file, previewUrl: null });
+  }
+  input.value = '';
+  wizRenderAttachGrid();
+}
+function wizRenderAttachGrid() {
+  const grid = document.getElementById('wizAttachGrid'); if (!grid) return;
+  grid.innerHTML = S.wiz.attachments.map((a, i) => `<div class="wiz-attach-thumb" id="wizAttachThumb${i}"><img src="${a.previewUrl || ''}"><div class="wiz-attach-remove" onclick="removeWizAttach(${i})">${wizIcon('x', 11)}</div></div>`).join('');
+  S.wiz.attachments.forEach((a, i) => {
+    if (a.previewUrl) return;
+    const reader = new FileReader();
+    reader.onload = e => { a.previewUrl = e.target.result; const img = document.querySelector('#wizAttachThumb' + i + ' img'); if (img) img.src = e.target.result; };
+    reader.readAsDataURL(a.file);
+  });
+}
+function removeWizAttach(i) { S.wiz.attachments.splice(i, 1); wizRenderAttachGrid(); }
+
+// Step 4 — budget helpers
+function wizQuickAddSlots(n) {
+  const el = document.getElementById('postSlots'); if (!el) return;
+  el.value = (Number(el.value) || 0) + n;
+  updatePostBudgetPreview();
+}
+function updatePostBudgetPreview() {
+  const reward = Number(document.getElementById('postReward')?.value) || 0;
+  const slots = Number(document.getElementById('postSlots')?.value) || 0;
+  const budget = computeJobBudget(reward, slots);
+  const balance = (window._userData?.balance) || 0;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('postPreviewPerWorker', fmtUSD(budget.reward));
+  set('postPreviewWorkerTotal', fmtUSD(budget.workerTotal));
+  set('postPreviewPlatformFee', fmtUSD(budget.platformFee) + ` (${SITE.postPlatformFeePct}%)`);
+  set('postPreviewGrandTotal', fmtUSD(budget.grandTotal));
+  set('postPreviewBalance', fmtUSD(balance));
+  const warnBox = document.getElementById('postInsufficientWarning');
+  const nextBtn = document.getElementById('wizNextBtn');
+  const diffRow = document.getElementById('wizDiffRow'), diffLabel = document.getElementById('wizDiffLabel'), diffValue = document.getElementById('wizDiffValue');
+  const slotGuard = document.getElementById('wizSlotGuardWarning');
+  let insufficient = false;
+
+  if (S.wiz.mode === 'edit') {
+    const job = S.myPostedJobs.find(x => x.id === S.wiz.editJobId);
+    const oldHeld = job?.budgetHeld || 0;
+    const diff = budget.grandTotal - oldHeld;
+    if (diffRow) diffRow.style.display = 'flex';
+    if (diffLabel) diffLabel.textContent = diff >= 0 ? 'অতিরিক্ত প্রয়োজন' : 'ফেরত পাবেন';
+    if (diffValue) { diffValue.textContent = fmtUSD(Math.abs(diff)); diffValue.style.color = diff > 0 ? 'var(--red)' : 'var(--green)'; }
+    if (diff > 0.0001 && diff > balance) insufficient = true;
+    if (slotGuard) {
+      if (job && job.filled && slots < job.filled) {
+        slotGuard.style.display = 'block';
+        slotGuard.innerHTML = `${wizIcon('alertTriangle', 14)} ইতিমধ্যে ${job.filled} জন worker সম্পন্ন করেছে — স্লট এর চেয়ে কম করা যাবে না।`;
+        insufficient = true;
+      } else { slotGuard.style.display = 'none'; }
+    }
+  } else {
+    if (diffRow) diffRow.style.display = 'none';
+    if (slotGuard) slotGuard.style.display = 'none';
+    insufficient = budget.grandTotal > 0 && balance < budget.grandTotal;
+  }
+  if (warnBox) warnBox.style.display = insufficient ? 'flex' : 'none';
+  if (nextBtn && S.wiz.step === 4) nextBtn.disabled = insufficient;
+}
+
+async function wizSubmitJob() {
+  const user = window._currentUser, userData = window._userData, userRef = window._userRef;
+  if (!user || !userRef) { showToast('Please login again', 'error'); return; }
+  if (!user.emailVerified) { showToast('⚠️ Job Post করতে আগে ইমেইল ভেরিফাই করুন', 'error'); return; }
+
+  const nextBtn = document.getElementById('wizNextBtn');
+  const country = S.wiz.locationMode === 'specific' && S.wiz.targetCountries.length === 1 ? S.wiz.targetCountries[0] : 'Global';
+  let attachmentUrls = [];
+  try {
+    if (nextBtn) { nextBtn.disabled = true; nextBtn.textContent = '⏳ পাঠানো হচ্ছে...'; }
+    if (S.wiz.attachments.length) {
+      showToast(`⬆ Uploading ${S.wiz.attachments.length} attachment(s)...`, 'info');
+      for (const a of S.wiz.attachments) {
+        const url = await uploadProofToCloudinary(a.file, 'workhive_job_attachments');
+        attachmentUrls.push(url);
+      }
+    }
+    const payload = {
+      title: document.getElementById('postTitle').value,
+      category: S.wiz.category,
+      subcategory: S.wiz.subcategory,
+      type: S.postSelectedType,
+      reward: document.getElementById('postReward').value,
+      limit: document.getElementById('postSlots').value,
+      country,
+      instructions: document.getElementById('postInstructions').value,
+      link: document.getElementById('postLink')?.value || '',
+      screenshotCount: document.getElementById('postShotCount')?.value || 1,
+      locationMode: S.wiz.locationMode,
+      targetCountries: S.wiz.targetCountries,
+      proofRequirements: S.wiz.proofRequirements.filter(r => r.label && r.label.trim()),
+      expiryDays: document.getElementById('postExpiryDays')?.value || 7,
+      attachmentUrls,
+    };
+    if (S.wiz.mode === 'edit') {
+      await saveWizardJobEdit(S.wiz.editJobId, payload, user, userData, userRef);
+      wizShowSuccess(true);
+    } else {
+      await createJobPost(payload, user, userData, userRef);
+      wizShowSuccess(false);
+    }
+  } catch (e) {
+    console.error('wizSubmitJob:', e);
+    showToast('❌ ' + (WIZ_ERR_MSGS[e.message] || 'ব্যর্থ হয়েছে, আবার চেষ্টা করুন।'), 'error');
+  } finally {
+    if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = S.wiz.step === 4 ? (S.wiz.mode === 'edit' ? 'সংরক্ষণ করুন ও পুনরায় জমা দিন' : 'রিভিউয়ের জন্য পাঠান') : 'Next'; }
+  }
+}
+function wizShowSuccess(isEdit) {
+  document.querySelectorAll('.wiz-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('wizSuccess')?.classList.add('active');
+  const footer = document.getElementById('wizFooter'); if (footer) footer.style.display = 'none';
+  const title = document.getElementById('wizSuccessTitle'), sub = document.getElementById('wizSuccessSub');
+  if (title) title.textContent = isEdit ? 'জব আপডেট হয়েছে!' : 'জব সাবমিট হয়েছে!';
+  if (sub) sub.textContent = isEdit ? 'পরিবর্তনগুলো এডমিন আবার রিভিউ করার পর লাইভ হবে।' : 'এডমিন রিভিউ করার পর এটি লাইভ হবে।';
+  setTimeout(() => { switchPostTab('mine'); wizResetState(); wizGoStep(1); }, 2400);
+}
+
+
 function onEnterPostScreen() {
-  populateCategorySelect();
   applySiteSettingsToPost(SITE);
   switchPostTab('post');
+  if (S.wiz.mode !== 'edit') { wizResetState(); wizGoStep(1); }
 }
 function applySiteSettingsToPost(SITE_) {
   const wrap = document.getElementById('postDisabledWrap'), formWrap = document.getElementById('postActiveWrap');
@@ -3044,95 +3745,6 @@ function selectPostType(el, type) {
   if (shotField) shotField.style.display = type === 'proof' ? 'block' : 'none';
 }
 
-function updatePostBudgetPreview() {
-  const reward = Number(document.getElementById('postReward')?.value) || 0;
-  const slots = Number(document.getElementById('postSlots')?.value) || 0;
-  const budget = computeJobBudget(reward, slots);
-  const balance = (window._userData?.balance) || 0;
-  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  set('postPreviewPerWorker', fmtUSD(budget.reward));
-  set('postPreviewWorkerTotal', fmtUSD(budget.workerTotal));
-  set('postPreviewPlatformFee', fmtUSD(budget.platformFee) + ` (${SITE.postPlatformFeePct}%)`);
-  set('postPreviewGrandTotal', fmtUSD(budget.grandTotal));
-  set('postPreviewBalance', fmtUSD(balance));
-  const balRow = document.getElementById('postPreviewBalanceRow');
-  const warnBox = document.getElementById('postInsufficientWarning');
-  const submitBtn = document.getElementById('postSubmitBtn');
-  const insufficient = budget.grandTotal > 0 && balance < budget.grandTotal;
-  if (balRow) balRow.classList.toggle('insufficient', insufficient);
-  if (warnBox) warnBox.style.display = insufficient ? 'flex' : 'none';
-  if (submitBtn) submitBtn.disabled = insufficient;
-}
-
-const ERR_MSGS = {
-  POST_DISABLED: 'এডমিন এই মুহূর্তে জব পোস্টিং বন্ধ রেখেছেন।',
-  TITLE_SHORT: 'টাইটেল অন্তত ৫ অক্ষরের হতে হবে।',
-  NO_CATEGORY: 'একটি Category বেছে নিন।',
-  INSTR_SHORT: 'নির্দেশনা অন্তত ১০ অক্ষরের হতে হবে।',
-  REWARD_RANGE: `রিওয়ার্ড $${SITE.postMinReward.toFixed(2)} থেকে $${SITE.postMaxReward.toFixed(2)}-এর মধ্যে হতে হবে।`,
-  SLOTS_RANGE: `স্লট সংখ্যা ${SITE.postMinSlots} থেকে ${SITE.postMaxSlots}-এর মধ্যে হতে হবে।`,
-  LINK_REQUIRED: 'এই টাস্ক টাইপের জন্য একটি লিংক দিতে হবে।',
-  NO_USER_REF: 'দয়া করে আবার লগইন করুন।',
-  USER_NOT_FOUND: 'ইউজার তথ্য পাওয়া যায়নি — আবার লগইন করুন।',
-  INSUFFICIENT_BALANCE: 'আপনার ওয়ালেট ব্যালেন্স যথেষ্ট নয়। জব পোস্ট করার আগে ব্যালেন্স যোগ করুন (Deposit)।',
-};
-
-async function submitJobPost() {
-  const user = window._currentUser, userData = window._userData, userRef = window._userRef;
-  if (!user || !userRef) { showToast('Please login again', 'error'); return; }
-  if (!user.emailVerified) { showToast('⚠️ Job Post করতে আগে ইমেইল ভেরিফাই করুন', 'error'); return; }
-
-  const reward = Number(document.getElementById('postReward').value) || 0;
-  const slots = Number(document.getElementById('postSlots').value) || 0;
-  const budget = computeJobBudget(reward, slots);
-  const balance = userData?.balance || 0;
-
-  if (budget.grandTotal > 0 && balance < budget.grandTotal) {
-    showConfirmHtml(`<div style="text-align:center;padding:10px 0 18px">
-      <div style="font-size:38px;margin-bottom:11px">💰</div>
-      <div class="modal-title">অপর্যাপ্ত ব্যালেন্স</div>
-      <div style="font-size:12.5px;color:var(--text2);margin-bottom:6px">প্রয়োজনীয় বাজেট: <b style="color:var(--text)">${fmtUSD(budget.grandTotal)}</b></div>
-      <div style="font-size:12.5px;color:var(--text2);margin-bottom:18px">আপনার ব্যালেন্স: <b style="color:var(--red)">${fmtUSD(balance)}</b></div>
-      <div style="font-size:11.5px;color:var(--text3);margin-bottom:16px">জব পোস্ট করার আগে দয়া করে ব্যালেন্স যোগ করুন (Deposit), অথবা রিওয়ার্ড/স্লট সংখ্যা কমান।</div>
-      <div style="display:flex;gap:9px">
-        <button class="btn-ghost" style="flex:1" onclick="closeConfirm()">ঠিক আছে</button>
-        <button class="btn-primary" style="flex:1" onclick="closeConfirm();goTab('support');openSupport('bn')">📞 Support</button>
-      </div>
-    </div>`);
-    return;
-  }
-
-  const btn = document.getElementById('postSubmitBtn');
-  const payload = {
-    title: document.getElementById('postTitle').value,
-    category: document.getElementById('postCategory').value,
-    subcategory: document.getElementById('postSubcategory')?.value || '',
-    type: S.postSelectedType,
-    reward: document.getElementById('postReward').value,
-    limit: document.getElementById('postSlots').value,
-    country: document.getElementById('postCountry').value,
-    instructions: document.getElementById('postInstructions').value,
-    link: document.getElementById('postLink')?.value || '',
-    screenshotCount: document.getElementById('postShotCount')?.value || 1,
-  };
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ পাঠানো হচ্ছে...'; }
-  try {
-    await createJobPost(payload, user, userData, userRef);
-    showToast(`✅ জব পোস্ট জমা হয়েছে! ${fmtUSD(budget.grandTotal)} ব্যালেন্স থেকে হোল্ড করা হয়েছে — এডমিন রিভিউ করার পর লাইভ হবে।`, 'info');
-    ['postTitle', 'postInstructions', 'postLink'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-    document.getElementById('postCategory').value = '';
-    onPostCategoryChange();
-    document.getElementById('postReward').value = '';
-    document.getElementById('postSlots').value = '';
-    updatePostBudgetPreview();
-    switchPostTab('mine');
-  } catch (e) {
-    showToast('❌ ' + (ERR_MSGS[e.message] || 'জব পোস্ট ব্যর্থ হয়েছে, আবার চেষ্টা করুন।'), 'error');
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '📤 রিভিউয়ের জন্য পাঠান'; updatePostBudgetPreview(); }
-  }
-}
-
 const STATUS_LABEL = { pending_review: ['⏳ Review Pending', 'type-pending'], approved: ['✓ Live', 'type-done'], rejected: ['❌ Rejected', 'type-rejected'], pending_reapproval: ['🔄 Needs Re-Approval', 'type-pending'] };
 
 function renderMyPostedJobs() {
@@ -3155,7 +3767,7 @@ function renderMyPostedJobs() {
       ${heldNote}
       ${j.status === 'rejected' && j.rejectReason ? `<div class="myjob-reject-box">💬 <div><strong>এডমিনের কারণ:</strong> ${escHtml(j.rejectReason)}</div></div>` : ''}
       ${j.status === 'pending_reapproval' ? `<div class="myjob-reject-box" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(224,64,251,.2)">🔄 <div>আপনি এই জব এডিট করেছেন — এডমিন আবার রিভিউ করার পর এটি লাইভ হবে।</div></div>` : ''}
-      ${(j.status === 'approved' || j.status === 'pending_reapproval') ? `<button class="btn-ghost" style="margin-top:9px" onclick="openEditJobModal('${j.id}')">✏️ Edit This Job</button>` : ''}
+      ${(j.status === 'approved' || j.status === 'pending_reapproval') ? `<button class="btn-ghost" style="margin-top:9px" onclick="openPostWizard({mode:'edit',jobId:'${j.id}'})">${wizIcon('paperclip', 14)} Edit This Job</button>` : ''}
     </div>`;
   }).join('');
 }
@@ -3164,49 +3776,6 @@ function filterMyPostedJobs(status, el) {
   document.querySelectorAll('#screen-post .mytask-filter .h-chip').forEach(c => c.classList.remove('active'));
   if (el) el.classList.add('active');
   renderMyPostedJobs();
-}
-
-// ══════ Job Edit → Re-approval ══════
-function openEditJobModal(jobId) {
-  const j = S.myPostedJobs.find(x => x.id === jobId); if (!j) return;
-  S._editingJobId = jobId;
-  showConfirmHtml(`
-    <div class="modal-title">✏️ জব এডিট করুন</div>
-    <div style="font-size:11.5px;color:var(--text3);margin-bottom:12px;line-height:1.6">রিওয়ার্ড ও স্লট সংখ্যা এখান থেকে পরিবর্তন করা যাবে না (বাজেট হোল্ডের কারণে)। জবটি বর্তমানে <b>Approved</b> থাকলে, Save করলে এটি আবার Admin রিভিউতে যাবে এবং অনুমোদন না হওয়া পর্যন্ত Worker-দের কাছ থেকে অস্থায়ীভাবে লুকানো থাকবে।</div>
-    <div class="field"><label>জব টাইটেল</label><input type="text" id="editJobTitle" value="${escHtml(j.title || '')}"></div>
-    <div class="field"><label>নির্দেশনা</label><textarea id="editJobInstructions" rows="3">${escHtml(j.instructions || '')}</textarea></div>
-    ${j.type !== 'proof' ? `<div class="field"><label>লিংক</label><input type="url" id="editJobLink" value="${escHtml(j.link || '')}"></div>` : ''}
-    <div class="field"><label>দেশ</label><input type="text" id="editJobCountry" value="${escHtml(j.country || 'Global')}"></div>
-    <div class="auth-error" id="editJobErr"></div>
-    <div style="display:flex;gap:9px">
-      <button class="btn-ghost" style="flex:1" onclick="closeConfirm()">Cancel</button>
-      <button class="btn-primary" style="flex:1" onclick="saveJobEdit()">Save &amp; Resubmit</button>
-    </div>`);
-}
-async function saveJobEdit() {
-  const jobId = S._editingJobId; if (!jobId) return;
-  const j = S.myPostedJobs.find(x => x.id === jobId); if (!j) return;
-  const errEl = document.getElementById('editJobErr');
-  const title = document.getElementById('editJobTitle').value.trim();
-  const instructions = document.getElementById('editJobInstructions').value.trim();
-  const linkEl = document.getElementById('editJobLink');
-  const link = linkEl ? linkEl.value.trim() : (j.link || '');
-  const country = document.getElementById('editJobCountry').value.trim() || 'Global';
-  if (!title || title.length < 5) { errEl.textContent = '❌ টাইটেল অন্তত ৫ অক্ষরের হতে হবে'; return; }
-  if (!instructions || instructions.length < 10) { errEl.textContent = '❌ নির্দেশনা অন্তত ১০ অক্ষরের হতে হবে'; return; }
-  try {
-    const wasApproved = j.status === 'approved';
-    await fb.updateDoc(fb.doc(db, 'jobs', jobId), {
-      title, instructions, link, country,
-      status: wasApproved ? 'pending_reapproval' : j.status,
-      editedAt: fb.serverTimestamp(),
-    });
-    closeConfirm();
-    showToast(wasApproved ? '✅ আপডেট হয়েছে — এডমিন আবার রিভিউ করার পর লাইভ হবে' : '✅ জব আপডেট হয়েছে', 'info');
-  } catch (e) {
-    console.error(e);
-    showToast('❌ আপডেট ব্যর্থ হয়েছে, আবার চেষ্টা করুন', 'error');
-  }
 }
 
 // ══════ js/screens/deposit.js ══════
@@ -3354,6 +3923,14 @@ function renderHistory() {
   }).join('');
 }
 function filterHistory(type, el) { S.historyFilter = type; document.querySelectorAll('.history-filter .h-chip').forEach(c => c.classList.remove('active')); if (el) el.classList.add('active'); renderHistory(); }
+function switchStatementTab(tab) {
+  document.getElementById('stmtTabWallet')?.classList.toggle('active', tab === 'wallet');
+  document.getElementById('stmtTabTask')?.classList.toggle('active', tab === 'task');
+  const wp = document.getElementById('stmtWalletPane'), tp = document.getElementById('stmtTaskPane');
+  if (wp) wp.style.display = tab === 'wallet' ? 'block' : 'none';
+  if (tp) tp.style.display = tab === 'task' ? 'block' : 'none';
+  if (tab === 'wallet') renderTxList(); else renderHistory();
+}
 
 // ══════ js/screens/notifications.js ══════
 function updateNotifCount() {
@@ -3391,6 +3968,9 @@ function applySiteSettingsToReferral(SITE_) {
   set('refGen1Amount', '$' + SITE_.refGen1.toFixed(2));
   set('refGen2Amount', '$' + SITE_.refGen2.toFixed(2));
   set('refGen3Amount', '$' + SITE_.refGen3.toFixed(2));
+  set('sbRefGen1', '$' + SITE_.refGen1.toFixed(2));
+  set('sbRefGen2', '$' + SITE_.refGen2.toFixed(2));
+  set('sbRefGen3', '$' + SITE_.refGen3.toFixed(2));
   const h2 = document.getElementById('howtoStep2'), h3 = document.getElementById('howtoStep3'), h4 = document.getElementById('howtoStep4');
   if (h2) h2.innerHTML = `<b>Gen 1 earns $${SITE_.refGen1.toFixed(2)}</b> — When your direct referral joins.`;
   if (h3) h3.innerHTML = `<b>Gen 2 earns $${SITE_.refGen2.toFixed(2)}</b> — When your referral's referral joins.`;
@@ -3999,13 +4579,17 @@ Object.assign(window, {
   visitLink, startDailyLinkTask, handleProofFileSelect, removeProofImage, submitTaskProof,
   renderMyTasks, filterMyTasks,
   onEnterPostScreen, applySiteSettingsToPost, switchPostTab, selectPostType,
-  updatePostBudgetPreview, submitJobPost, renderMyPostedJobs, filterMyPostedJobs,
+  updatePostBudgetPreview, renderMyPostedJobs, filterMyPostedJobs,
   filterMyJobSubmissions, renderMyJobSubmissions, approveJobSubmission, rejectJobSubmission, confirmRejectJobSubmission,
-  openEditJobModal, saveJobEdit,
+  openPostWizard, wizOpenEdit, wizGoStep, wizPrevStep, wizNextStep,
+  wizSetLocationMode, wizToggleContinent, wizToggleCountry, wizSelectAllContinent,
+  wizSelectCategory, wizSelectSubcat, wizUpdateInstrCount,
+  wizAddProofReq, wizRemoveProofReq, wizUpdateProofReqField,
+  handleWizAttachFiles, removeWizAttach, wizQuickAddSlots, wizSubmitJob,
   selectDepAmt, onDepositCustomAmt, selectDepMethod, submitDepositRequest, renderDepositHistory,
   applySiteSettingsToWallet, renderWithdrawMethodGrid, selectWithdrawMethod, updateWithdrawPreview,
   rebuildAndRenderTx, renderTxList, filterTx, doWithdraw,
-  renderHistory, filterHistory,
+  renderHistory, filterHistory, switchStatementTab,
   updateNotifCount, renderNotifications, markAllRead, markNotifRead,
   onEnterReferralScreen, applySiteSettingsToReferral, updateReferralUI, switchGenTab,
   renderGenTree, showRefUserProfile, closeRefUserModal, copyRef, shareRef,
@@ -4019,10 +4603,10 @@ Object.assign(window, {
 onEnterScreen('tasks', () => renderAllTasks('__current__'));
 onEnterScreen('mytasks', () => renderMyTasks());
 onEnterScreen('post', () => onEnterPostScreen());
-onEnterScreen('history', () => renderHistory());
+onEnterScreen('history', () => { renderTxList(); renderHistory(); });
 onEnterScreen('referral', () => onEnterReferralScreen());
 onEnterScreen('deposit', () => { renderDepAmtGrid(); renderDepMethodGrid(); updateDepPreview(); renderDepositHistory(); });
-onEnterScreen('wallet', () => renderTxList());
+onEnterScreen('wallet', () => {});
 onEnterScreen('kyc', () => onEnterKycScreen());
 onEnterScreen('home', () => updateEmailVerifyBanner());
 
@@ -4089,7 +4673,7 @@ async function bootstrapApp(user, ref, data) {
   );
 
   listenApprovedJobs(() => { renderHomeTasks(); renderAllTasks('__current__'); renderTaskCategories(); });
-  listenCategories(() => { renderTaskCategories(); populateCategorySelect(); });
+  listenCategories(() => { renderTaskCategories(); populateCategorySelect(); if (document.getElementById('screen-post')?.classList.contains('active') && S.wiz.step === 2) renderWizCatRowList(); });
   listenMyTaskSubmissions(user.uid, () => {
     renderMyTasks(); renderHistory(); renderRecentActivity();
     renderHomeTasks(); renderAllTasks('__current__'); rebuildAndRenderTx();

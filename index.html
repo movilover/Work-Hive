@@ -34,7 +34,7 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{height:100%}
-body{font-family:'Inter','Noto Sans Bengali',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px 12px}
+body{font-family:'Inter','Noto Sans Bengali',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px 12px;overflow:hidden}
 ::-webkit-scrollbar{width:0}
 
 /* LOADING */
@@ -89,7 +89,7 @@ body{font-family:'Inter','Noto Sans Bengali',sans-serif;background:var(--bg);col
 .icon-btn:active{transform:scale(.9)}
 .icon-btn svg{width:17px;height:17px;stroke:var(--text3)}
 .notif-count{position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:8px;font-weight:900;border-radius:10px;padding:1px 4px;min-width:14px;text-align:center;border:1.5px solid var(--bg2)}
-main{flex:1;overflow-y:auto;padding:4px 16px 110px;scroll-behavior:smooth}
+main{flex:1;overflow-y:auto;padding:4px 16px 110px;scroll-behavior:smooth;overscroll-behavior-y:contain}
 .screen{display:none;animation:fadeUp .3s ease}
 .screen.active{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
@@ -451,7 +451,7 @@ main{flex:1;overflow-y:auto;padding:4px 16px 110px;scroll-behavior:smooth}
 .link-visit-btn{width:100%;padding:12px;border-radius:var(--r-md);border:1.5px solid var(--border2);background:var(--bg3);color:var(--text2);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;transition:border-color .2s,background .2s}
 .link-visit-btn.visited{border-color:var(--green);background:var(--green-dim);color:var(--green)}
 
-nav.tabbar{position:absolute;bottom:0;left:0;right:0;display:flex;background:rgba(8,8,8,0.97);backdrop-filter:blur(28px);border-top:1px solid rgba(255,255,255,0.05);padding:10px 4px 20px;gap:0;align-items:center}
+nav.tabbar{position:absolute;bottom:0;left:0;right:0;display:flex;background:rgba(8,8,8,0.97);backdrop-filter:blur(28px);border-top:1px solid rgba(255,255,255,0.05);padding:10px 4px 20px;gap:0;align-items:center;overscroll-behavior:none}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 0;cursor:pointer;color:var(--text3);transition:color .2s;min-width:0;position:relative}
 .tab svg{width:19px;height:19px;stroke:var(--text3);transition:stroke .2s}
 .tab span{font-size:8.5px;font-weight:700;transition:color .2s;white-space:nowrap;letter-spacing:.3px}
@@ -562,7 +562,7 @@ nav.tabbar{position:absolute;bottom:0;left:0;right:0;display:flex;background:rgb
 
 @media(max-width:480px){
   body{padding:0;align-items:stretch;justify-content:stretch}
-  #appShell{width:100vw;max-width:100vw;height:100vh;max-height:100vh;border-radius:0;border:none;box-shadow:none}
+  #appShell{width:100vw;max-width:100vw;height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;border-radius:0;border:none;box-shadow:none}
   #authScreen{width:100vw;max-width:100vw;min-height:100vh;height:100vh;border-radius:0;border:none;box-shadow:none;justify-content:center}
   .status-bar{display:none}
   main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
@@ -574,7 +574,7 @@ nav.tabbar{position:absolute;bottom:0;left:0;right:0;display:flex;background:rgb
 html[data-env="app"] body,
 html[data-env="telegram"] body{padding:0;align-items:stretch;justify-content:stretch}
 html[data-env="app"] #appShell,
-html[data-env="telegram"] #appShell{width:100vw;max-width:100vw;height:100vh;max-height:100vh;border-radius:0;border:none;box-shadow:none}
+html[data-env="telegram"] #appShell{width:100vw;max-width:100vw;height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;border-radius:0;border:none;box-shadow:none}
 html[data-env="app"] #authScreen,
 html[data-env="telegram"] #authScreen{width:100vw;max-width:100vw;min-height:100vh;height:100vh;border-radius:0;border:none;box-shadow:none;justify-content:center}
 html[data-env="app"] .status-bar,
@@ -583,6 +583,33 @@ html[data-env="app"] .overlay,
 html[data-env="telegram"] .overlay{border-radius:0}
 html[data-env="telegram"] .topbar{padding-top:calc(10px + var(--tg-safe-top,0px))}
 html[data-env="telegram"] nav.tabbar{padding-bottom:calc(20px + var(--tg-safe-bottom,0px) + env(safe-area-inset-bottom))}
+
+/* DESKTOP LAYOUT (≥1024px) — real responsive layout, not a scaled-up phone card */
+@media(min-width:1024px){
+  body{padding:0;align-items:stretch;justify-content:stretch}
+  #appShell{
+    grid-template-columns:280px 1fr;
+    grid-template-rows:auto 1fr;
+    grid-template-areas:"sidebar topbar" "sidebar main";
+    width:100vw;max-width:100%;height:100vh;height:100dvh;max-height:100%;
+    border-radius:0;border:none;box-shadow:none;
+  }
+  .status-bar{display:none !important}
+  #hamburgerBtn{display:none !important}
+  .sidebar-overlay{display:none !important}
+  .sidebar-panel{
+    grid-area:sidebar;position:relative;top:auto;left:auto;bottom:auto;
+    width:280px;max-width:280px;transform:none !important;
+    border-radius:0;border-right:1px solid var(--border2);
+  }
+  .topbar{grid-area:topbar}
+  main{grid-area:main;padding-bottom:24px;overscroll-behavior-y:contain}
+  #mainScroll > .screen{max-width:720px;margin:0 auto}
+  nav.tabbar{display:none !important}
+  #taskListFull,#homeTaskList,#myTasksList{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .overlay{align-items:center;justify-content:center;border-radius:0}
+  .modal-sheet{max-width:480px;width:90%;border-radius:24px;margin:auto;max-height:85vh}
+}
 
 #helpFab{position:absolute;right:16px;bottom:96px;z-index:70;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
 .fab-tile{width:56px;height:56px;border-radius:18px;background:linear-gradient(155deg,#0f140f,#0a0a0a);border:1px solid rgba(0,230,118,.18);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;box-shadow:0 10px 30px rgba(0,0,0,.6);transition:transform .2s}
@@ -1566,7 +1593,7 @@ import {
 import {
   getFirestore, doc, setDoc, getDoc, updateDoc, increment,
   collection, addDoc, getDocs, query, orderBy, where,
-  serverTimestamp, deleteDoc, onSnapshot, limit, writeBatch, runTransaction
+  serverTimestamp, deleteDoc, onSnapshot, limit, writeBatch, runTransaction, deleteField
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getStorage, ref as fbStorageRef, uploadBytes, getDownloadURL
@@ -1596,7 +1623,7 @@ const fb = {
   signInAnonymously, sendEmailVerification, reload,
   doc, setDoc, getDoc, updateDoc, increment,
   collection, addDoc, getDocs, query, orderBy, where,
-  serverTimestamp, deleteDoc, onSnapshot, limit, writeBatch, runTransaction,
+  serverTimestamp, deleteDoc, onSnapshot, limit, writeBatch, runTransaction, deleteField,
   fbStorageRef, uploadBytes, getDownloadURL
 };
 
@@ -2500,7 +2527,15 @@ function listenSubmissionsToMyJobs(uid, onChange) {
 async function approveMySubmission(sub) {
   if (!sub || sub.status !== 'pending') throw new Error('ALREADY_REVIEWED');
   const subRef = fb.doc(db, 'taskSubmissions', sub.id);
-  await fb.updateDoc(subRef, { status: 'approved' });
+  // Combined into one write: status change + heavy-field cleanup must happen atomically,
+  // since the security rules only permit the job-poster to write while status is still
+  // 'pending' — a second follow-up write would be rejected once status has moved on.
+  await fb.updateDoc(subRef, {
+    status: 'approved',
+    proofText: fb.deleteField(),
+    proofImageUrl: fb.deleteField(),
+    proofImageUrls: fb.deleteField(),
+  });
   if (sub.workerId) {
     await fb.updateDoc(fb.doc(db, 'users', sub.workerId), {
       balance: fb.increment(sub.reward || 0), totalEarned: fb.increment(sub.reward || 0),
@@ -2519,7 +2554,12 @@ async function approveMySubmission(sub) {
 async function rejectMySubmission(sub, reason) {
   if (!sub || sub.status !== 'pending') throw new Error('ALREADY_REVIEWED');
   const subRef = fb.doc(db, 'taskSubmissions', sub.id);
-  await fb.updateDoc(subRef, { status: 'rejected', rejectReason: reason || '' });
+  await fb.updateDoc(subRef, {
+    status: 'rejected', rejectReason: reason || '',
+    proofText: fb.deleteField(),
+    proofImageUrl: fb.deleteField(),
+    proofImageUrls: fb.deleteField(),
+  });
   if (sub.workerId) {
     await fb.addDoc(fb.collection(db, 'users', sub.workerId, 'notifications'), {
       title: '❌ Task Rejected', msg: `"${sub.jobTitle || 'Your task'}" was rejected. Reason: ${reason || '—'}`,
@@ -4641,7 +4681,8 @@ async function bootstrapApp(user, ref, data) {
   if (ls && ls.style.display !== 'none') { ls.style.opacity = '0'; ls.style.transition = 'opacity .4s'; setTimeout(() => ls.style.display = 'none', 400); }
   document.getElementById('authScreen').style.display = 'none';
   const shell = document.getElementById('appShell');
-  shell.style.display = 'flex'; shell.style.flexDirection = 'column';
+  if (window.innerWidth >= 1024) { shell.style.display = 'grid'; }
+  else { shell.style.display = 'flex'; shell.style.flexDirection = 'column'; }
   window._lastKnownBalance = data?.balance || 0;
 
   prefillEditProfileFields(data, user);
@@ -4708,6 +4749,16 @@ async function bootstrapApp(user, ref, data) {
     setInterval(() => tickDailyCountdowns(() => { renderAllTasks('__current__'); renderHomeTasks(); renderMyTasks(); }), 1000);
     if (data?.isNewUser) setTimeout(() => showOnboarding(), 1500);
     if (data?.isNewUser) fb.updateDoc(ref, { isNewUser: false }).catch(() => {});
+    let _resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(_resizeTimer);
+      _resizeTimer = setTimeout(() => {
+        const shellEl = document.getElementById('appShell');
+        if (!shellEl || shellEl.style.display === 'none' || !window._currentUser) return;
+        if (window.innerWidth >= 1024) { shellEl.style.display = 'grid'; shellEl.style.flexDirection = ''; }
+        else { shellEl.style.display = 'flex'; shellEl.style.flexDirection = 'column'; }
+      }, 150);
+    });
   }
 }
 

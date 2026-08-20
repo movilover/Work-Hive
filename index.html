@@ -951,7 +951,7 @@ function applyTelegramSafeArea(tg) {
       <div class="sb-avatar" id="sbAvatar"><span id="sbAvatarLetter">?</span></div>
       <div class="sb-profile-info">
         <div class="sb-profile-name" id="sbProfileName">Loading...</div>
-        <div class="sb-profile-sub" id="sbProfileSub">🐝 Worker L1</div>
+        <div class="sb-profile-sub" id="sbProfileSub"><span class="emoji">🐝</span> Worker L1</div>
       </div>
       <div class="sb-close" onclick="event.stopPropagation();closeSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
     </div>
@@ -1457,7 +1457,7 @@ function applyTelegramSafeArea(tg) {
         <div style="font-size:10.5px;color:var(--text3);font-weight:600;margin-bottom:2px">Member ID: <span id="profileMemberId">WH000000</span></div>
         <div class="profile-email" id="profileEmail">—</div>
         <div id="profileBio" style="font-size:11.5px;color:var(--text2);margin-bottom:9px;text-align:center;display:none"></div>
-        <div class="profile-badges" id="profileBadges"><span class="p-badge worker">🐝 Worker L1</span><span class="p-badge unverified">⚠ KYC Pending</span></div>
+        <div class="profile-badges" id="profileBadges"><span class="p-badge worker"><span class="emoji">🐝</span> Worker L1</span><span class="p-badge unverified"><span class="emoji">⚠</span> KYC Pending</span></div>
       </div>
 
       <div class="level-bar-card">
@@ -1668,6 +1668,7 @@ const SITE = {
   postPlatformFeePct: 10,
   postApprovalNote: 'জব পোস্ট করার পর এডমিন রিভিউ করে অনুমোদন দিলে এটি Tasks তালিকায় দেখা যাবে। বাজেট সমপরিমাণ ব্যালেন্স আপনার ওয়ালেট থেকে সাথে সাথে হোল্ড করা হবে।',
   kycEnabled: true,
+  cloudinaryCloudName: '', cloudinaryUploadPreset: '',
 };
 
 const catGradients = {
@@ -1948,7 +1949,7 @@ function updateSidebarProfile(data, user) {
   const letter = (name || '?').charAt(0).toUpperCase();
   const nameEl = document.getElementById('sbProfileName'); if (nameEl) nameEl.textContent = name;
   const subEl = document.getElementById('sbProfileSub');
-  if (subEl) subEl.innerHTML = `🐝 Worker L${data.workerLevel || 1}${(data.kycStatus === 'verified') ? ' · ' + verifiedTickSvg(11) + ' Verified' : ''}`;
+  if (subEl) subEl.innerHTML = `<span class="emoji">🐝</span> Worker L${data.workerLevel || 1}${(data.kycStatus === 'verified') ? ' · ' + verifiedTickSvg(11) + ' Verified' : ''}`;
   const av = document.getElementById('sbAvatar');
   if (av) {
     if (data.photoURL) av.innerHTML = `<img src="${data.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">`;
@@ -2092,15 +2093,21 @@ function taskCardHtml(t, compact = false) {
 }
 
 // ══════ js/services/cloudinary.js ══════
-const CLOUDINARY_CLOUD_NAME = 'paqs4n2j';
-const CLOUDINARY_UPLOAD_PRESET = 'ml_default';
+// Fallback defaults — used until siteSettings/global loads (or if the admin never
+// changes them). SITE.cloudinaryCloudName/cloudinaryUploadPreset (see listenSiteSettings)
+// take priority once available, so the whole app can be pointed at a new Cloudinary
+// account from the Admin Panel without touching any code.
+const CLOUDINARY_CLOUD_NAME_DEFAULT = 'paqs4n2j';
+const CLOUDINARY_UPLOAD_PRESET_DEFAULT = 'ml_default';
 
 async function uploadProofToCloudinary(file, folder = 'workhive_proofs') {
+  const cloudName = SITE.cloudinaryCloudName || CLOUDINARY_CLOUD_NAME_DEFAULT;
+  const uploadPreset = SITE.cloudinaryUploadPreset || CLOUDINARY_UPLOAD_PRESET_DEFAULT;
   const form = new FormData();
   form.append('file', file);
-  form.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+  form.append('upload_preset', uploadPreset);
   form.append('folder', folder);
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: form });
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: form });
   if (!res.ok) {
     let detail = '';
     try { detail = (await res.json())?.error?.message || ''; } catch (e) {}
@@ -2141,6 +2148,8 @@ function listenSiteSettings(onChange) {
       if (d.postPlatformFeePct !== undefined) SITE.postPlatformFeePct = d.postPlatformFeePct;
       if (d.postApprovalNote) SITE.postApprovalNote = d.postApprovalNote;
       if (d.kycEnabled !== undefined) SITE.kycEnabled = d.kycEnabled;
+      if (d.cloudinaryCloudName) SITE.cloudinaryCloudName = d.cloudinaryCloudName;
+      if (d.cloudinaryUploadPreset) SITE.cloudinaryUploadPreset = d.cloudinaryUploadPreset;
       onChange && onChange(SITE);
     },
     e => console.warn('siteSettings:', e)
@@ -2733,10 +2742,30 @@ async function deleteAccount(user) {
   await fb.deleteUser(user);
 }
 
+// ══════ js/services/deviceFingerprint.js ══════
+let _fpCache = null;
+async function getDeviceFingerprint() {
+  if (_fpCache) return _fpCache;
+  let deviceId = '', ipAddress = '';
+  try {
+    const { default: FingerprintJS } = await import('https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4/dist/fp.esm.min.js');
+    const fp = await FingerprintJS.load();
+    const result = await fp.get();
+    deviceId = result.visitorId || '';
+  } catch (e) { console.warn('device fingerprint unavailable:', e); }
+  try {
+    const res = await fetch('https://api.ipify.org?format=json');
+    ipAddress = (await res.json()).ip || '';
+  } catch (e) { console.warn('ip lookup unavailable:', e); }
+  _fpCache = { deviceId, ipAddress };
+  return _fpCache;
+}
+
 async function registerUser({ name, username, email, phone, country, pass, ref }) {
   const cred = await fb.createUserWithEmailAndPassword(auth, email, pass);
   await fb.updateProfile(cred.user, { displayName: name }).catch(() => {});
   const refCode = 'WH' + Math.random().toString(36).substr(2, 6).toUpperCase();
+  const { deviceId, ipAddress } = await getDeviceFingerprint();
   const userData = {
     name, username, email, country, phone, bio: '', photoURL: '',
     balance: 0, totalEarned: 0, totalWithdrawn: 0, pendingAmount: 0, postingHold: 0,
@@ -2745,7 +2774,7 @@ async function registerUser({ name, username, email, phone, country, pass, ref }
     referralCode: refCode, referredBy: ref || '', referralCount: 0, referralEarned: 0,
     gen2Count: 0, gen3Count: 0, gen2Earned: 0, gen3Earned: 0,
     spinLastUsed: null, isNewUser: true, status: 'active', role: 'user',
-    deviceInfo: navigator.userAgent || '', loginCount: 1,
+    deviceInfo: navigator.userAgent || '', loginCount: 1, deviceId, ipAddress,
     createdAt: fb.serverTimestamp(), lastActive: fb.serverTimestamp(), lastLoginAt: fb.serverTimestamp()
   };
   await fb.setDoc(fb.doc(db, 'users', cred.user.uid), userData);
@@ -2779,6 +2808,7 @@ async function applyReferralCascade(refCode, newUserName) {
 async function ensureUserDoc(user) {
   const ref = fb.doc(db, 'users', user.uid);
   const snap = await fb.getDoc(ref);
+  const { deviceId, ipAddress } = await getDeviceFingerprint();
   if (!snap.exists()) {
     const refCode = 'WH' + Math.random().toString(36).substr(2, 6).toUpperCase();
     const data = {
@@ -2791,13 +2821,13 @@ async function ensureUserDoc(user) {
       gen2Count: 0, gen3Count: 0, gen2Earned: 0, gen3Earned: 0,
       spinLastUsed: null, isNewUser: true, status: 'active', role: 'user',
       createdAt: fb.serverTimestamp(), lastActive: fb.serverTimestamp(),
-      deviceInfo: navigator.userAgent || '', loginCount: 1, lastLoginAt: fb.serverTimestamp()
+      deviceInfo: navigator.userAgent || '', loginCount: 1, deviceId, ipAddress, lastLoginAt: fb.serverTimestamp()
     };
     await fb.setDoc(ref, data);
     return { ref, data: { ...data, createdAt: new Date() } };
   }
   const data = snap.data();
-  fb.updateDoc(ref, { lastActive: fb.serverTimestamp(), lastLoginAt: fb.serverTimestamp(), loginCount: fb.increment(1) }).catch(() => {});
+  fb.updateDoc(ref, { lastActive: fb.serverTimestamp(), lastLoginAt: fb.serverTimestamp(), loginCount: fb.increment(1), deviceId, ipAddress }).catch(() => {});
   return { ref, data };
 }
 
@@ -4298,13 +4328,13 @@ function updateProfileUI(data, user) {
   if (data.bio) { const b = document.getElementById('profileBio'); if (b) { b.textContent = data.bio; b.style.display = 'block'; } }
   const kycStatus = data.kycStatus || 'none';
   const kycBadgeMap = {
-    verified: '<span class="p-badge worker" style="background:var(--green-dim);color:var(--green);border-color:var(--green-border)">✅ KYC Verified</span>',
-    pending: '<span class="p-badge unverified" style="background:var(--gold-dim);color:var(--gold);border-color:rgba(255,179,0,.2)">⏳ KYC Pending</span>',
-    rejected: '<span class="p-badge unverified">❌ KYC Rejected</span>',
-    none: '<span class="p-badge unverified">⚠ KYC Not Submitted</span>',
+    verified: '<span class="p-badge worker" style="background:var(--green-dim);color:var(--green);border-color:var(--green-border)"><span class="emoji">✅</span> KYC Verified</span>',
+    pending: '<span class="p-badge unverified" style="background:var(--gold-dim);color:var(--gold);border-color:rgba(255,179,0,.2)"><span class="emoji">⏳</span> KYC Pending</span>',
+    rejected: '<span class="p-badge unverified"><span class="emoji">❌</span> KYC Rejected</span>',
+    none: '<span class="p-badge unverified"><span class="emoji">⚠</span> KYC Not Submitted</span>',
   };
   const badgesEl = document.getElementById('profileBadges');
-  if (badgesEl) badgesEl.innerHTML = `<span class="p-badge worker">🐝 Worker L${wLv}</span>${kycBadgeMap[kycStatus] || kycBadgeMap.none}`;
+  if (badgesEl) badgesEl.innerHTML = `<span class="p-badge worker"><span class="emoji">🐝</span> Worker L${wLv}</span>${kycBadgeMap[kycStatus] || kycBadgeMap.none}`;
   const kycSub = document.getElementById('kycMenuSub');
   if (kycSub) kycSub.textContent = kycStatus === 'verified' ? 'ভেরিফাইড ✅' : kycStatus === 'pending' ? 'রিভিউ চলছে...' : kycStatus === 'rejected' ? 'আবার জমা দিন' : 'আপনার পরিচয় যাচাই করুন';
   set('workerLevelLabel', `Level ${wLv} / 5`);

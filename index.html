@@ -898,6 +898,17 @@ function applyTelegramSafeArea(tg) {
   <div class="load-bar"><div class="load-fill"></div></div>
 </div>
 
+<!-- SUSPENDED ACCOUNT -->
+<div id="suspendedScreen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:998;align-items:center;justify-content:center;padding:24px">
+  <div style="max-width:360px;width:100%;text-align:center">
+    <div style="width:80px;height:80px;border-radius:24px;background:var(--red-dim);border:1.5px solid rgba(255,82,82,.25);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px"><span class="emoji">⛔</span></div>
+    <div style="font-size:20px;font-weight:900;margin-bottom:10px" id="suspendedTitle">অ্যাকাউন্ট সাসপেন্ড করা হয়েছে</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:24px" id="suspendedBody">আপনার অ্যাকাউন্টটি এডমিন কর্তৃক সাসপেন্ড করা হয়েছে। আপনি আর নতুন টাস্ক, জব পোস্ট, ডিপোজিট বা উইথড্র করতে পারবেন না।</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:20px">যদি মনে করেন এটা ভুল হয়েছে, সাপোর্টে যোগাযোগ করুন: <span id="suspendedSupportEmail" style="color:var(--green);font-weight:700">support@workhive.app</span></div>
+    <button class="btn-ghost" style="width:100%" onclick="suspendedLogout()">লগ আউট</button>
+  </div>
+</div>
+
 <!-- AUTH -->
 <div id="authScreen">
   <div class="auth-logo">🐝</div>
@@ -4641,6 +4652,7 @@ Object.assign(window, {
   openPublicProfile, closePublicProfile, togglePublicFollow, switchPublicProfileTab,
   openReviewPrompt, submitReviewPrompt, skipReviewPrompt, setReviewStars,
   AuthService,
+  suspendedLogout,
   initAuthScreenBindings, switchAuthTab, togglePass, checkStrength, doLogin, doForgotPassword,
   doGoogle, doRegister, openChangePassword, submitChangePassword, doLogout, doLogoutConfirm,
   confirmDeleteAccount, reallyDeleteAccount, resendVerifyEmail,
@@ -4690,6 +4702,22 @@ function showAuthScreen() {
   document.getElementById('authScreen').style.display = 'flex';
   document.getElementById('appShell').style.display = 'none';
 }
+function showSuspendedScreen(data) {
+  const ls = document.getElementById('loadingScreen');
+  if (ls && ls.style.display !== 'none') { ls.style.opacity = '0'; ls.style.transition = 'opacity .4s'; setTimeout(() => ls.style.display = 'none', 400); }
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('appShell').style.display = 'none';
+  if (data && data.deleted === true) {
+    document.getElementById('suspendedTitle').textContent = 'অ্যাকাউন্ট নিষ্ক্রিয় করা হয়েছে';
+    document.getElementById('suspendedBody').textContent = 'আপনার অ্যাকাউন্টটি স্থায়ীভাবে নিষ্ক্রিয় করা হয়েছে। আপনি আর লগইন করে কোনো কাজ করতে পারবেন না।';
+  }
+  if (SITE.supportEmail) document.getElementById('suspendedSupportEmail').textContent = SITE.supportEmail;
+  document.getElementById('suspendedScreen').style.display = 'flex';
+}
+function suspendedLogout() {
+  document.getElementById('suspendedScreen').style.display = 'none';
+  doLogout();
+}
 
 function onesignalLogin(uid) {
   if (window.Capacitor?.Plugins?.OneSignal) {
@@ -4706,6 +4734,13 @@ function onesignalLogout() {
 
 async function bootstrapApp(user, ref, data) {
   window._currentUser = user; window._userRef = ref; window._userData = data;
+
+  // Banned/deleted accounts are blocked from all writes by Firestore Rules already —
+  // this is just a clear, honest UI instead of letting them poke around a half-working app.
+  if (data && (data.status === 'banned' || data.deleted === true)) {
+    showSuspendedScreen(data);
+    return;
+  }
 
   const ls = document.getElementById('loadingScreen');
   if (ls && ls.style.display !== 'none') { ls.style.opacity = '0'; ls.style.transition = 'opacity .4s'; setTimeout(() => ls.style.display = 'none', 400); }

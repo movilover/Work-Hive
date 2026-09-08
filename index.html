@@ -31,7 +31,7 @@
 html[data-theme="light"]{
   --bg:#f4f6f5;--bg2:#ffffff;--bg3:#eef1f0;--bg4:#e6e9e8;
   --card:#ffffff;--border:#e2e5e4;--border2:#d7dbda;
-  --text:#101312;--text2:#5b6260;--text3:#9aa19f;
+  --text:#101312;--text2:#5b6260;--text3:#6b726f;
   --green-dim:#e3faee;--gold-dim:#fff6e0;--blue-dim:#e9f0ff;--red-dim:#ffecec;--purple-dim:#f6e9fc;--cyan-dim:#e3f7fa;
   --tabbar-bg:rgba(255,255,255,0.92);
   --hero-grad:linear-gradient(155deg,#eafaf0,#f2f5f4 60%);
@@ -282,7 +282,7 @@ main{flex:1;overflow-y:auto;padding:4px 16px 110px;scroll-behavior:smooth;oversc
 .spin-hist-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:11.5px}
 .spin-hist-row:last-child{border-bottom:none}
 
-.wallet-hero{background:linear-gradient(135deg,rgba(0,230,118,.08) 0%,rgba(0,230,118,.03) 100%);border:1px solid rgba(0,230,118,.18);border-radius:var(--r-xl);padding:22px 18px;margin-bottom:14px;position:relative;overflow:hidden}
+.wallet-hero{background:linear-gradient(135deg,rgba(0,230,118,.08) 0%,rgba(0,230,118,.03) 100%);border:1px solid rgba(0,230,118,.18);border-radius:var(--r-xl);padding:26px 22px;margin-bottom:18px;position:relative;overflow:hidden}
 .wallet-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(0,230,118,.08) 0%,transparent 70%)}
 .wallet-hero-label{font-size:10px;font-weight:700;color:rgba(0,230,118,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
 .wallet-hero-balance{font-size:38px;font-weight:900;color:var(--green);line-height:1;margin-bottom:4px;font-variant-numeric:tabular-nums}
@@ -292,7 +292,7 @@ main{flex:1;overflow-y:auto;padding:4px 16px 110px;scroll-behavior:smooth;oversc
 .wallet-stat-cell .wsc-v{font-size:13.5px;font-weight:800;font-variant-numeric:tabular-nums}
 .wallet-stat-cell .wsc-l{font-size:8.5px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
 
-.withdraw-form-card{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r-xl);padding:18px;margin-bottom:16px}
+.withdraw-form-card{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r-xl);padding:22px;margin-bottom:20px}
 .wfc-title{font-size:13.5px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .method-selector{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:16px}
 .method-pill{border-radius:var(--r-md);padding:10px 3px 8px;text-align:center;cursor:pointer;background:var(--bg4);border:1.5px solid var(--border);font-size:9.5px;font-weight:700;color:var(--text3);transition:all .2s;position:relative}
@@ -422,8 +422,8 @@ main{flex:1;overflow-y:auto;padding:4px 16px 110px;scroll-behavior:smooth;oversc
 .p-badge.unverified{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,82,82,.15)}
 .level-bar-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:12px}
 .level-top{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin-bottom:7px}
-.prog-track{height:4px;border-radius:4px;background:var(--border);overflow:hidden}
-.prog-fill{height:100%;border-radius:3px}
+.prog-track{height:9px;border-radius:6px;background:var(--border);overflow:hidden}
+.prog-fill{height:100%;border-radius:6px;background-image:linear-gradient(90deg,var(--green),#00c853)}
 .profile-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:12px}
 .profile-stat-cell{background:var(--bg3);padding:14px 7px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px}
 .psc-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px}
@@ -1205,6 +1205,10 @@ function applyTelegramSafeArea(tg) {
     <section class="screen" id="screen-tasks">
       <div class="sec-title" style="margin-top:13px"><h3>Micro Tasks</h3><span id="taskCountBadge" style="font-size:11.5px;color:var(--text3);font-weight:700"></span></div>
       <div class="demo-banner">📌 Only admin-approved tasks shown. Submit proof — admin verifies and credits your balance.</div>
+      <div style="position:relative;margin-bottom:9px">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="categorySearchInput" placeholder="ক্যাটাগরি খুঁজুন..." oninput="filterCategorySearch(this.value)" style="width:100%;padding:9px 14px 9px 34px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit;font-size:12px;font-weight:600;outline:none">
+      </div>
       <div class="chip-row" id="categoryChips"></div>
       <div class="chip-row" id="subcategoryChips" style="display:none"></div>
       <div id="taskListFull"></div>
@@ -1251,6 +1255,10 @@ function applyTelegramSafeArea(tg) {
             <div class="loc-tile-row">
               <div class="loc-tile" id="locTileIntl" onclick="wizSetLocationMode('international')"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18"/></svg><div class="loc-tile-label">International</div><div class="loc-tile-desc">সব দেশের ওয়ার্কার দেখতে পাবে</div></div>
               <div class="loc-tile" id="locTileSpecific" onclick="wizSetLocationMode('specific')"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><div class="loc-tile-label">নির্দিষ্ট দেশসমূহ</div><div class="loc-tile-desc">শুধু নির্বাচিত দেশের ওয়ার্কার দেখবে</div></div>
+            </div>
+            <div id="locCountrySearchWrap" style="position:relative;display:none;margin-bottom:10px">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="locCountrySearchInput" placeholder="দেশ খুঁজুন..." oninput="wizFilterCountrySearch(this.value)" style="width:100%;padding:9px 14px 9px 34px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit;font-size:12px;font-weight:600;outline:none">
             </div>
             <div id="continentAccordionWrap" style="display:none"></div>
             <div class="loc-summary-bar" id="locSummaryBar" style="display:none"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span id="locSummaryText"></span></div>
@@ -1592,7 +1600,7 @@ function applyTelegramSafeArea(tg) {
 
       <div class="level-bar-card">
         <div class="level-top"><span>Worker Level</span><span style="color:var(--green);font-weight:900" id="workerLevelLabel">Level 1 / 5</span></div>
-        <div class="prog-track"><div class="prog-fill" id="workerLevelFill" style="width:10%;background:var(--green)"></div></div>
+        <div class="prog-track"><div class="prog-fill" id="workerLevelFill" style="width:10%"></div></div>
         <div style="font-size:10.5px;color:var(--text3);margin-top:5px" id="workerLevelHint">Complete 50 more tasks to reach Level 2</div>
       </div>
 
@@ -2425,16 +2433,16 @@ async function getUserReviews(uid) {
   list.sort((a, b) => (b._ts || 0) - (a._ts || 0));
   return list;
 }
-async function hasReviewedSubmission(fromUserId, submissionId) {
-  const snap = await fb.getDocs(fb.query(fb.collection(db, 'reviews'), fb.where('fromUserId', '==', fromUserId), fb.where('submissionId', '==', submissionId))).catch(() => null);
-  if (!snap) return false;
-  return !snap.empty;
+async function hasReviewedUser(fromUserId, toUserId) {
+  const snap = await fb.getDoc(fb.doc(db, 'reviews', fromUserId + '_' + toUserId)).catch(() => null);
+  return !!(snap && snap.exists && snap.exists());
 }
 async function submitReview({ fromUserId, toUserId, rating, comment, jobTitle, submissionId }) {
   if (!fromUserId || !toUserId || fromUserId === toUserId) throw new Error('INVALID_REVIEW');
-  const already = await hasReviewedSubmission(fromUserId, submissionId);
+  const reviewRef = fb.doc(db, 'reviews', fromUserId + '_' + toUserId);
+  const already = await hasReviewedUser(fromUserId, toUserId);
   if (already) throw new Error('ALREADY_REVIEWED');
-  await fb.addDoc(fb.collection(db, 'reviews'), {
+  await fb.setDoc(reviewRef, {
     fromUserId, toUserId, rating: Math.max(1, Math.min(5, Number(rating) || 5)),
     comment: (comment || '').trim(), jobTitle: jobTitle || '', submissionId: submissionId || '',
     _ts: Date.now(), createdAt: fb.serverTimestamp(),
@@ -3240,10 +3248,10 @@ async function doLogout() {
   }
 }
 function doLogoutConfirm() {
-  showConfirmHtml(`<div style="text-align:center;padding:10px 0 18px"><div style="font-size:38px;margin-bottom:11px">🚪</div><div class="modal-title">Log out?</div><div style="font-size:12.5px;color:var(--text2);margin-bottom:18px">You can log back in anytime.</div><div style="display:flex;gap:9px"><button class="btn-ghost" onclick="closeConfirm()" style="flex:1">Cancel</button><button class="btn-primary" onclick="closeConfirm();doLogout()" style="flex:1">Logout</button></div></div>`);
+  showConfirmHtml(`<div style="text-align:center;padding:10px 0 18px"><div style="font-size:38px;margin-bottom:11px">🚪</div><div class="modal-title">লগ আউট করবেন?</div><div style="font-size:12.5px;color:var(--text2);margin-bottom:18px">আপনি যেকোনো সময় আবার লগইন করতে পারবেন — এতে আপনার ব্যালেন্স, টাস্ক হিস্টোরি বা কোনো ডেটা মুছে যাবে না।</div><div style="display:flex;gap:9px"><button class="btn-ghost" onclick="closeConfirm()" style="flex:1">Cancel</button><button class="btn-primary" onclick="closeConfirm();doLogout()" style="flex:1">Logout</button></div></div>`);
 }
 function confirmDeleteAccount() {
-  showConfirmHtml(`<div style="text-align:center;padding:10px 0 18px"><div style="font-size:38px;margin-bottom:11px">⚠️</div><div class="modal-title">Delete Account?</div><div style="font-size:12.5px;color:var(--text2);margin-bottom:18px">All data will be permanently lost.</div><div style="display:flex;gap:9px"><button class="btn-ghost" onclick="closeConfirm()" style="flex:1">Cancel</button><button class="btn-primary" style="flex:1;background:var(--red);color:#fff" onclick="reallyDeleteAccount()">Delete</button></div></div>`);
+  showConfirmHtml(`<div style="text-align:center;padding:10px 0 18px"><div style="font-size:40px;margin-bottom:11px">⚠️</div><div class="modal-title" style="color:var(--red)">অ্যাকাউন্ট ডিলিট করবেন?</div><div style="font-size:12.5px;color:var(--text2);margin-bottom:18px;line-height:1.6">আপনার ব্যালেন্স, টাস্ক হিস্টোরি, রেফারেল ও সমস্ত তথ্য <strong style="color:var(--red)">স্থায়ীভাবে মুছে যাবে — এটা আর কখনো ফেরানো যাবে না।</strong></div><div style="display:flex;gap:9px"><button class="btn-ghost" onclick="closeConfirm()" style="flex:1">Cancel</button><button class="btn-primary" style="flex:1;background:var(--red);color:#fff" onclick="reallyDeleteAccount()">⚠️ Delete Permanently</button></div></div>`);
 }
 async function reallyDeleteAccount() {
   closeConfirm();
@@ -3311,16 +3319,26 @@ function renderLeaderboard(lbData) {
 
 // ══════ js/screens/tasks.js ══════
 let _activeCategoryChip = 'All';
+let _categorySearchTerm = '';
 function renderTaskCategories() {
   // Prefer the dynamic Firestore categories collection; fall back to categories present on live jobs.
   const dynamicNames = S.categories.map(c => c.name);
   const jobNames = [...new Set(S.approvedJobs.map(t => t.category).filter(Boolean))];
   const merged = dynamicNames.length ? [...new Set([...dynamicNames, ...jobNames])] : jobNames;
-  const cats = ['All', ...merged];
+  const filtered = _categorySearchTerm ? merged.filter(c => c.toLowerCase().includes(_categorySearchTerm.toLowerCase())) : merged;
+  const cats = ['All', ...filtered];
   const el = document.getElementById('categoryChips'); if (!el) return;
-  el.innerHTML = cats.map(c => `<div class="chip ${c === _activeCategoryChip ? 'active' : ''}" onclick="filterTaskCategory(this,'${escHtml(c)}')">${escHtml(c)}</div>`).join('');
+  if (_categorySearchTerm && !filtered.length) {
+    el.innerHTML = `<div style="font-size:11.5px;color:var(--text3);padding:6px 2px">কোনো ক্যাটাগরি পাওয়া যায়নি</div>`;
+  } else {
+    el.innerHTML = cats.map(c => `<div class="chip ${c === _activeCategoryChip ? 'active' : ''}" onclick="filterTaskCategory(this,'${escHtml(c)}')">${escHtml(c)}</div>`).join('');
+  }
   renderSubcategoryChips();
   renderAllTasks(_activeCategoryChip);
+}
+function filterCategorySearch(term) {
+  _categorySearchTerm = (term || '').trim();
+  renderTaskCategories();
 }
 function renderSubcategoryChips() {
   const wrap = document.getElementById('subcategoryChips'); if (!wrap) return;
@@ -3858,17 +3876,38 @@ function wizSetLocationMode(mode, silent) {
   document.getElementById('locTileIntl')?.classList.toggle('active', mode === 'international');
   document.getElementById('locTileSpecific')?.classList.toggle('active', mode === 'specific');
   const wrap = document.getElementById('continentAccordionWrap');
+  const searchWrap = document.getElementById('locCountrySearchWrap');
+  if (searchWrap) searchWrap.style.display = mode === 'specific' ? 'block' : 'none';
+  if (mode !== 'specific') { _wizCountrySearchTerm = ''; const si = document.getElementById('locCountrySearchInput'); if (si) si.value = ''; }
   if (wrap) {
     wrap.style.display = mode === 'specific' ? 'block' : 'none';
     if (mode === 'specific') renderContinentAccordion();
   }
   updateLocSummary();
 }
+let _wizCountrySearchTerm = '';
+function wizFilterCountrySearch(term) {
+  _wizCountrySearchTerm = (term || '').trim().toLowerCase();
+  if (_wizCountrySearchTerm) {
+    // auto-expand every continent that has a matching country, so results are visible immediately
+    CONTINENTS.forEach(c => {
+      if (c.countries.some(cn => cn.toLowerCase().includes(_wizCountrySearchTerm))) S.wiz.openContinents[c.name] = true;
+    });
+  }
+  renderContinentAccordion();
+}
 function renderContinentAccordion() {
   const wrap = document.getElementById('continentAccordionWrap'); if (!wrap) return;
-  wrap.innerHTML = CONTINENTS.map(c => {
-    const open = !!S.wiz.openContinents[c.name];
+  const term = _wizCountrySearchTerm;
+  const visibleContinents = term ? CONTINENTS.filter(c => c.countries.some(cn => cn.toLowerCase().includes(term))) : CONTINENTS;
+  if (term && !visibleContinents.length) {
+    wrap.innerHTML = `<div style="font-size:11.5px;color:var(--text3);padding:10px 2px;text-align:center">কোনো দেশ পাওয়া যায়নি</div>`;
+    return;
+  }
+  wrap.innerHTML = visibleContinents.map(c => {
+    const open = term ? true : !!S.wiz.openContinents[c.name];
     const selCount = c.countries.filter(cn => S.wiz.targetCountries.includes(cn)).length;
+    const visibleCountries = term ? c.countries.filter(cn => cn.toLowerCase().includes(term)) : c.countries;
     return `<div class="continent-block">
       <div class="continent-hd ${open ? 'open' : ''}" onclick="wizToggleContinent('${escHtml(c.name)}')">
         <div class="continent-name">${escHtml(c.name)}</div>
@@ -3876,8 +3915,8 @@ function renderContinentAccordion() {
         ${wizIcon('chevronDown', 15)}
       </div>
       <div class="continent-body ${open ? 'open' : ''}">
-        <span class="continent-selectall" onclick="wizSelectAllContinent('${escHtml(c.name)}')">${selCount === c.countries.length ? 'সব বাদ দিন' : 'সব সিলেক্ট করুন'}</span>
-        <div class="country-pill-grid">${c.countries.map(cn => `<div class="country-pill ${S.wiz.targetCountries.includes(cn) ? 'active' : ''}" onclick="wizToggleCountry('${escHtml(cn)}')">${escHtml(cn)}</div>`).join('')}</div>
+        ${!term ? `<span class="continent-selectall" onclick="wizSelectAllContinent('${escHtml(c.name)}')">${selCount === c.countries.length ? 'সব বাদ দিন' : 'সব সিলেক্ট করুন'}</span>` : ''}
+        <div class="country-pill-grid">${visibleCountries.map(cn => `<div class="country-pill ${S.wiz.targetCountries.includes(cn) ? 'active' : ''}" onclick="wizToggleCountry('${escHtml(cn)}')">${escHtml(cn)}</div>`).join('')}</div>
       </div>
     </div>`;
   }).join('');
@@ -4584,7 +4623,7 @@ function renderPublicProfile() {
   }).join('');
 
   const reviewsHtml = reviews.length ? reviews.slice(0, 20).map(r => `
-    <div class="pp-review-item">
+    <div class="pp-review-item" style="cursor:pointer" onclick="closePublicProfile();openPublicProfile('${r.fromUserId}')">
       <div class="pp-review-ava">${(r.fromUserName || '?').charAt(0).toUpperCase()}</div>
       <div style="flex:1;min-width:0">
         <div class="pp-review-name">${escHtml(r.fromUserName || 'WorkHive User')}</div>
@@ -4659,15 +4698,15 @@ async function togglePublicFollow(uid) {
 }
 
 // ══════ js/screens/reviewPrompt.js ══════
-const _reviewedSubmissionsShown = new Set();
+const _reviewedTargetsShown = new Set();
 let _reviewSelectedStars = 5;
 async function maybePromptReview(submissionId, toUserId, toUserName, jobTitle) {
   const me = window._currentUser;
   if (!me || !toUserId || toUserId === me.uid || toUserId === 'admin') return;
-  if (_reviewedSubmissionsShown.has(submissionId)) return;
-  _reviewedSubmissionsShown.add(submissionId);
+  if (_reviewedTargetsShown.has(toUserId)) return;
+  _reviewedTargetsShown.add(toUserId);
   try {
-    const already = await hasReviewedSubmission(me.uid, submissionId);
+    const already = await hasReviewedUser(me.uid, toUserId);
     if (already) return;
   } catch (e) { return; }
   openReviewPrompt(submissionId, toUserId, toUserName, jobTitle);
@@ -5077,7 +5116,7 @@ Object.assign(window, {
   doGoogle, doRegister, openChangePassword, submitChangePassword, doLogout, doLogoutConfirm,
   confirmDeleteAccount, reallyDeleteAccount, resendVerifyEmail,
   updateGreeting, refreshWalletUI, renderHomeTasks, renderRecentActivity, renderLeaderboard,
-  renderTaskCategories, filterTaskCategory, filterTaskSubcategory, onPostCategoryChange, renderAllTasks, openTaskModal, closeTaskModal,
+  renderTaskCategories, filterTaskCategory, filterTaskSubcategory, filterCategorySearch, onPostCategoryChange, renderAllTasks, openTaskModal, closeTaskModal,
   visitLink, startDailyLinkTask, handleProofFileSelect, removeProofImage, submitTaskProof, toggleTaskInstrLang, quickFollowFromJob,
   openSubmitWorkScreen, closeSubmitWorkScreen, handleSubmitWorkFile, finalizeSubmitWork,
   renderMyTasks, filterMyTasks,
@@ -5085,7 +5124,7 @@ Object.assign(window, {
   updatePostBudgetPreview, renderMyPostedJobs, filterMyPostedJobs,
   filterMyJobSubmissions, renderMyJobSubmissions, approveJobSubmission, rejectJobSubmission, confirmRejectJobSubmission,
   openPostWizard, wizOpenEdit, wizGoStep, wizPrevStep, wizNextStep,
-  wizSetLocationMode, wizToggleContinent, wizToggleCountry, wizSelectAllContinent,
+  wizSetLocationMode, wizFilterCountrySearch, wizToggleContinent, wizToggleCountry, wizSelectAllContinent,
   wizSelectCategory, wizOpenSubcatOverlay, wizCloseSubcatOverlay, wizPickSubcatOverlay, wizUpdateInstrCount, wizUpdateDescCount,
   wizAddProofReq, wizRemoveProofReq, wizUpdateProofReqField,
   handleWizAttachFiles, removeWizAttach, wizQuickAddSlots, wizSubmitJob,

@@ -1033,7 +1033,7 @@ function applyTelegramSafeArea(tg) {
     <div class="auth-field"><label>Password</label><div class="pass-toggle"><input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password"><span class="pass-eye" onclick="togglePass('loginPass',this)">👁</span></div></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:-5px;margin-bottom:13px">
       <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);font-weight:600;cursor:pointer"><input type="checkbox" id="rememberMe" style="width:14px;height:14px;accent-color:var(--green)">Remember Me</label>
-      <div class="forgot-link" onclick="doForgotPassword()">Forgot password?</div>
+      <div class="forgot-link" onclick="openForgotPassword()">Forgot password?</div>
     </div>
     <div class="auth-error" id="loginErr"></div>
     <button class="btn-auth" id="loginBtn" onclick="doLogin()"><span id="loginBtnText">Login</span></button>
@@ -1715,6 +1715,14 @@ function applyTelegramSafeArea(tg) {
     </div>
   </div>
 
+  <!-- FORGOT PASSWORD OVERLAY -->
+  <div class="overlay" id="forgotPwOverlay" onclick="if(event.target===this)closeForgotPassword()">
+    <div class="modal-sheet" style="max-height:80%">
+      <div class="modal-drag-bar"></div>
+      <div id="fpModalBody"></div>
+    </div>
+  </div>
+
   <!-- MODALS -->
   <div class="overlay" id="taskOverlay" onclick="if(event.target===this)closeTaskModal()">
     <div class="modal-sheet"><span class="close-x" onclick="closeTaskModal()">✕</span><div class="modal-handle"></div><div id="modalContent"></div></div>
@@ -1823,6 +1831,7 @@ const SITE = {
   postApprovalNote: 'জব পোস্ট করার পর এডমিন রিভিউ করে অনুমোদন দিলে এটি Tasks তালিকায় দেখা যাবে। বাজেট সমপরিমাণ ব্যালেন্স আপনার ওয়ালেট থেকে সাথে সাথে হোল্ড করা হবে।',
   kycEnabled: true,
   cloudinaryCloudName: '', cloudinaryUploadPreset: '',
+  emailjsServiceId: '', emailjsTemplateId: '', emailjsPublicKey: '',
 };
 
 const catGradients = {
@@ -2336,6 +2345,9 @@ function listenSiteSettings(onChange) {
       if (d.kycEnabled !== undefined) SITE.kycEnabled = d.kycEnabled;
       if (d.cloudinaryCloudName) SITE.cloudinaryCloudName = d.cloudinaryCloudName;
       if (d.cloudinaryUploadPreset) SITE.cloudinaryUploadPreset = d.cloudinaryUploadPreset;
+      if (d.emailjsServiceId) SITE.emailjsServiceId = d.emailjsServiceId;
+      if (d.emailjsTemplateId) SITE.emailjsTemplateId = d.emailjsTemplateId;
+      if (d.emailjsPublicKey) SITE.emailjsPublicKey = d.emailjsPublicKey;
       onChange && onChange(SITE);
     },
     e => console.warn('siteSettings:', e)
@@ -3153,6 +3165,244 @@ function setAuthLoading(type, loading) {
   btn.disabled = loading;
   txt.textContent = loading ? (type === 'login' ? 'Logging in...' : 'Creating...') : (type === 'login' ? 'Login' : 'Create Account');
 }
+// ══════ EmailJS + OTP Engine ══════
+
+// EmailJS SDK is loaded lazily from CDN the first time it is needed — no
+// extra <script> tag in <head>, no blocking of the initial page load.
+let _emailJsReady = false;
+async function loadEmailJsSdk() {
+  if (_emailJsReady) return;
+  await new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
+    s.onload = () => { emailjs.init(SITE.emailjsPublicKey || ''); _emailJsReady = true; res(); };
+    s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+async function sendEmailJS(templateParams) {
+  if (!SITE.emailjsServiceId || !SITE.emailjsTemplateId || !SITE.emailjsPublicKey) {
+    throw new Error('EMAIL_NOT_CONFIGURED');
+  }
+  await loadEmailJsSdk();
+  emailjs.init(SITE.emailjsPublicKey); // re-init in case key changed since load
+  const res = await emailjs.send(SITE.emailjsServiceId, SITE.emailjsTemplateId, templateParams);
+  if (res.status !== 200) throw new Error('EMAILJS_SEND_FAILED_' + res.status);
+  return res;
+}
+
+// ── OTP helpers ──────────────────────────────────────────────────────────────
+
+// Deterministic emailKey used as Firestore doc ID: lowercase, dots → commas
+// (Firestore forbids dots in doc IDs but commas are fine).
+function otpEmailKey(email) { return email.toLowerCase().replace(/\./g, ','); }
+
+// SHA-256 of a 6-digit string → 64-char hex, computed in the browser.
+async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function genOtpCode() { return String(Math.floor(100000 + Math.random() * 900000)); }
+
+let _otpState = { email: '', code: '', expiresAt: 0, attempts: 0 };
+
+async function sendOtpEmail(email) {
+  const code = genOtpCode();
+  const codeHash = await sha256Hex(code);
+  const now = Date.now();
+  const expiresAt = new Date(now + 15 * 60 * 1000);
+  const emailKey = otpEmailKey(email);
+  const docRef = fb.doc(db, 'otpRequests', emailKey);
+  const existing = await fb.getDoc(docRef).catch(() => null);
+
+  if (existing && existing.exists && existing.exists()) {
+    // Resend: check 45-second cooldown client-side (rules also enforce this)
+    const lastSent = existing.data().lastSentAt?.toDate ? existing.data().lastSentAt.toDate() : (existing.data().createdAt?.toDate ? existing.data().createdAt.toDate() : new Date(0));
+    if ((now - lastSent.getTime()) < 45000) throw new Error('COOLDOWN');
+    await fb.updateDoc(docRef, {
+      codeHash, attempts: 0, verified: false,
+      expiresAt: fb.firestoreTimestamp ? fb.firestoreTimestamp.fromDate(expiresAt) : expiresAt,
+      lastSentAt: fb.serverTimestamp(),
+    });
+  } else {
+    await fb.setDoc(docRef, {
+      email: email.toLowerCase(), codeHash, attempts: 0, verified: false, maxAttempts: 5,
+      expiresAt: fb.firestoreTimestamp ? fb.firestoreTimestamp.fromDate(expiresAt) : expiresAt,
+      lastSentAt: fb.serverTimestamp(),
+    });
+  }
+
+  await sendEmailJS({
+    to_email: email,
+    to_name: email.split('@')[0],
+    otp_code: code,
+    expires_minutes: '15',
+    site_name: SITE.siteName || 'WorkHive',
+  });
+
+  // store locally for attempt tracking (authoritative check stays server-side)
+  _otpState = { email, code, expiresAt: expiresAt.getTime(), attempts: 0 };
+}
+
+async function verifyOtp(email, guessCode) {
+  const emailKey = otpEmailKey(email);
+  const docRef = fb.doc(db, 'otpRequests', emailKey);
+
+  // Step 1: consume one attempt (always — even for wrong guesses)
+  try {
+    const snap = await fb.getDoc(docRef);
+    if (!snap.exists || !snap.exists()) throw new Error('OTP_NOT_FOUND');
+    const d = snap.data();
+    if (d.attempts >= d.maxAttempts) throw new Error('MAX_ATTEMPTS');
+    if (d.expiresAt?.toDate ? d.expiresAt.toDate() < new Date() : false) throw new Error('EXPIRED');
+    await fb.updateDoc(docRef, { attempts: fb.increment(1) });
+  } catch (e) {
+    if (['MAX_ATTEMPTS','EXPIRED','OTP_NOT_FOUND'].includes(e.message)) throw e;
+    throw new Error('OTP_CHECK_FAILED');
+  }
+
+  // Step 2: compute guess hash and attempt the `verified: true` write
+  const guessHash = await sha256Hex(guessCode.trim());
+  try {
+    await fb.updateDoc(docRef, { verified: true, guessHash });
+    return true; // Rules only accept this if guessHash === codeHash
+  } catch (e) {
+    throw new Error('WRONG_CODE');
+  }
+}
+
+// ── Forgot-password UI ────────────────────────────────────────────────────────
+
+let _fpStep = 'email'; // 'email' | 'otp' | 'newpass'
+let _fpEmail = '';
+let _fpResendTimer = null;
+
+function openForgotPassword() {
+  _fpStep = 'email'; _fpEmail = '';
+  clearInterval(_fpResendTimer);
+  renderFpModal();
+  openOverlay('forgotPwOverlay');
+}
+function closeForgotPassword() {
+  closeOverlay('forgotPwOverlay');
+  clearInterval(_fpResendTimer);
+}
+
+function renderFpModal() {
+  const body = document.getElementById('fpModalBody'); if (!body) return;
+  if (_fpStep === 'email') {
+    body.innerHTML = `
+      <div class="modal-title">পাসওয়ার্ড রিসেট</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:16px">আপনার অ্যাকাউন্টের ইমেইল ঠিকানায় একটি ৬-সংখ্যার কোড পাঠানো হবে।</div>
+      <div class="field"><label>ইমেইল</label><input id="fpEmailInput" type="email" placeholder="your@email.com" style="width:100%"></div>
+      <div id="fpErr" style="font-size:12px;color:var(--red);min-height:18px;margin-bottom:8px"></div>
+      <button class="btn-primary" style="width:100%" onclick="fpSendOtp()">📧 কোড পাঠান</button>`;
+  } else if (_fpStep === 'otp') {
+    body.innerHTML = `
+      <div class="modal-title">কোড যাচাই করুন</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px"><b>${escHtml(_fpEmail)}</b>-এ ৬-সংখ্যার কোড পাঠানো হয়েছে। ১৫ মিনিটের মধ্যে দিন।</div>
+      <div class="field"><label>OTP কোড</label><input id="fpOtpInput" type="number" maxlength="6" placeholder="123456" style="width:100%;letter-spacing:6px;font-size:20px;text-align:center;font-weight:900"></div>
+      <div id="fpErr" style="font-size:12px;color:var(--red);min-height:18px;margin-bottom:8px"></div>
+      <button class="btn-primary" style="width:100%;margin-bottom:10px" onclick="fpVerifyOtp()">✅ যাচাই করুন</button>
+      <div style="text-align:center"><span id="fpResendBtn" style="font-size:11.5px;color:var(--text3)">কোড পাননি? <span id="fpResendLink" style="color:var(--green);cursor:pointer;text-decoration:underline" onclick="fpResend()">পুনরায় পাঠান</span></span></div>
+      <div style="text-align:center;margin-top:8px"><span style="font-size:11px;color:var(--text3);cursor:pointer" onclick="() => { _fpStep='email'; renderFpModal(); }">← অন্য ইমেইল ব্যবহার করুন</span></div>`;
+    fpStartResendCountdown();
+  } else if (_fpStep === 'newpass') {
+    body.innerHTML = `
+      <div class="modal-title">নতুন পাসওয়ার্ড</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:16px">Firebase-এর নিরাপদ পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হচ্ছে...</div>
+      <div id="fpErr" style="font-size:12px;color:var(--red);min-height:18px"></div>`;
+    fpSendFirebaseReset();
+  }
+}
+
+async function fpSendOtp() {
+  const email = document.getElementById('fpEmailInput')?.value.trim();
+  const errEl = document.getElementById('fpErr');
+  if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { if(errEl) errEl.textContent = '❌ সঠিক ইমেইল দিন'; return; }
+  if (!SITE.emailjsServiceId) { if(errEl) errEl.textContent = '❌ ইমেইল সার্ভিস কনফিগার করা নেই — Admin-কে জানান'; return; }
+  const btn = document.querySelector('#fpModalBody .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ পাঠানো হচ্ছে...'; }
+  try {
+    await sendOtpEmail(email);
+    _fpEmail = email; _fpStep = 'otp';
+    renderFpModal();
+  } catch (e) {
+    const msg = e.message === 'COOLDOWN' ? '⏳ ৪৫ সেকেন্ড অপেক্ষা করুন, তারপর আবার চেষ্টা করুন'
+      : e.message === 'EMAIL_NOT_CONFIGURED' ? '❌ ইমেইল সার্ভিস কনফিগার করা নেই'
+      : '❌ পাঠানো সম্ভব হয়নি — ইন্টারনেট চেক করুন';
+    if (errEl) errEl.textContent = msg;
+    if (btn) { btn.disabled = false; btn.textContent = '📧 কোড পাঠান'; }
+  }
+}
+
+async function fpVerifyOtp() {
+  const code = document.getElementById('fpOtpInput')?.value.trim();
+  const errEl = document.getElementById('fpErr');
+  if (!code || code.length !== 6) { if(errEl) errEl.textContent = '❌ ৬-সংখ্যার কোড দিন'; return; }
+  const btn = document.querySelector('#fpModalBody .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ যাচাই হচ্ছে...'; }
+  try {
+    await verifyOtp(_fpEmail, code);
+    _fpStep = 'newpass'; renderFpModal();
+  } catch (e) {
+    const msg = e.message === 'WRONG_CODE' ? '❌ ভুল কোড — আবার চেষ্টা করুন'
+      : e.message === 'MAX_ATTEMPTS' ? '❌ সর্বোচ্চ চেষ্টার সীমা পেরিয়ে গেছে। নতুন কোডের জন্য অনুরোধ করুন'
+      : e.message === 'EXPIRED' ? '❌ কোডের মেয়াদ শেষ — নতুন কোড পাঠান'
+      : '❌ যাচাই ব্যর্থ হয়েছে, আবার চেষ্টা করুন';
+    if (errEl) errEl.textContent = msg;
+    if (btn) { btn.disabled = false; btn.textContent = '✅ যাচাই করুন'; }
+  }
+}
+
+async function fpResend() {
+  const errEl = document.getElementById('fpErr');
+  try {
+    await sendOtpEmail(_fpEmail);
+    fpStartResendCountdown();
+    showToast('📧 নতুন কোড পাঠানো হয়েছে', 'success');
+  } catch (e) {
+    if (errEl) errEl.textContent = e.message === 'COOLDOWN' ? '⏳ একটু অপেক্ষা করুন' : '❌ পাঠানো সম্ভব হয়নি';
+  }
+}
+
+function fpStartResendCountdown() {
+  clearInterval(_fpResendTimer);
+  let secs = 45;
+  const link = document.getElementById('fpResendLink');
+  if (link) { link.style.pointerEvents = 'none'; link.style.color = 'var(--text3)'; link.textContent = `পুনরায় পাঠান (${secs}s)`; }
+  _fpResendTimer = setInterval(() => {
+    secs--;
+    const l = document.getElementById('fpResendLink');
+    if (!l) { clearInterval(_fpResendTimer); return; }
+    if (secs <= 0) {
+      clearInterval(_fpResendTimer);
+      l.style.pointerEvents = ''; l.style.color = 'var(--green)'; l.textContent = 'পুনরায় পাঠান';
+    } else {
+      l.textContent = `পুনরায় পাঠান (${secs}s)`;
+    }
+  }, 1000);
+}
+
+async function fpSendFirebaseReset() {
+  try {
+    await fb.sendPasswordResetEmail(auth, _fpEmail);
+    const body = document.getElementById('fpModalBody');
+    if (body) body.innerHTML = `
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:48px;margin-bottom:12px">📬</div>
+        <div class="modal-title">রিসেট লিংক পাঠানো হয়েছে!</div>
+        <div style="font-size:12.5px;color:var(--text2);line-height:1.7;margin-bottom:20px"><b>${escHtml(_fpEmail)}</b>-এ একটি পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে। ইমেইল চেক করুন এবং লিংকে ক্লিক করে নতুন পাসওয়ার্ড সেট করুন।<br><br><span style="color:var(--text3);font-size:11px">ইমেইল না পেলে Spam/Junk ফোল্ডার চেক করুন।</span></div>
+        <button class="btn-primary" style="width:100%" onclick="closeForgotPassword()">Done</button>
+      </div>`;
+  } catch (e) {
+    const errEl = document.getElementById('fpErr');
+    if (errEl) errEl.textContent = '❌ রিসেট লিংক পাঠানো সম্ভব হয়নি — ' + (e.code || e.message);
+  }
+}
+
 async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim(), pass = document.getElementById('loginPass').value, errEl = document.getElementById('loginErr');
   errEl.textContent = '';
@@ -5114,6 +5364,7 @@ Object.assign(window, {
   suspendedLogout,
   initAuthScreenBindings, switchAuthTab, togglePass, checkStrength, doLogin, doForgotPassword,
   doGoogle, doRegister, openChangePassword, submitChangePassword, doLogout, doLogoutConfirm,
+  openForgotPassword, closeForgotPassword, fpSendOtp, fpVerifyOtp, fpResend,
   confirmDeleteAccount, reallyDeleteAccount, resendVerifyEmail,
   updateGreeting, refreshWalletUI, renderHomeTasks, renderRecentActivity, renderLeaderboard,
   renderTaskCategories, filterTaskCategory, filterTaskSubcategory, filterCategorySearch, onPostCategoryChange, renderAllTasks, openTaskModal, closeTaskModal,

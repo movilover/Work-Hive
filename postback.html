@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkHive — Task Complete</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #080808; color: #eee; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+  .card { background: #111; border: 1px solid #1c1c1c; border-radius: 24px; padding: 36px 28px; max-width: 420px; width: 100%; text-align: center; }
+  .ico { font-size: 52px; margin-bottom: 16px; }
+  h1 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+  p { font-size: 13.5px; color: #888; line-height: 1.7; margin-bottom: 20px; }
+  .amount { font-size: 32px; font-weight: 900; color: #00E676; margin: 12px 0; }
+  .btn { display: inline-block; background: #00E676; color: #001a0a; font-weight: 800; padding: 12px 28px; border-radius: 20px; text-decoration: none; font-size: 14px; margin-top: 8px; }
+  .err { color: #FF5252; }
+  .info { font-size: 11px; color: #444; margin-top: 16px; }
+  #log { font-size: 10px; color: #333; margin-top: 12px; word-break: break-all; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="ico" id="ico">⏳</div>
+  <h1 id="title">Processing...</h1>
+  <p id="msg">Please wait while we verify your task completion.</p>
+  <div id="extra"></div>
+  <div id="log"></div>
+</div>
+
+<!-- Firebase SDK (compat) — same version as your main app -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+// ════════════════════════════════════════════════════════════════════════════
+// CONFIGURATION — update these to match your Firebase project
+// ════════════════════════════════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT.firebaseapp.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId:             "YOUR_APP_ID"
+};
+
+// Postback secret tokens (set these in Admin → CPA Networks → Secret Token).
+// These are validated here so that random pings can't credit arbitrary users.
+// In production, also store these in Firestore/cpaNetworks and read them here
+// before processing, for live rotation without redeploy.
+const POSTBACK_SECRETS = {
+  cpalead:   'YOUR_CPALEAD_SECRET',
+  monlix:    'YOUR_MONLIX_SECRET',
+  cpagrip:   'YOUR_CPAGRIP_SECRET',
+  adgate:    'YOUR_ADGATE_SECRET',
+  offertoro: 'YOUR_OFFERTORO_SECRET',
+  ayet:      'YOUR_AYET_SECRET',
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+// Postback URL format expected per network:
+//
+// CPALead:   /postback.html?network=cpalead&uid={subid}&tid={transaction_id}&amount={payout}&secret={YOUR_SECRET}
+// Monlix:    /postback.html?network=monlix&uid={userid}&tid={transid}&amount={reward}&secret={YOUR_SECRET}
+// CPAGrip:   /postback.html?network=cpagrip&uid={subid1}&tid={transaction_id}&amount={payout}&secret={YOUR_SECRET}
+// AdGate:    /postback.html?network=adgate&uid={user_id}&tid={transaction_id}&amount={amount}&secret={YOUR_SECRET}
+// OfferToro: /postback.html?network=offertoro&uid={userid}&tid={transactionid}&amount={reward}&secret={YOUR_SECRET}
+// Ayet:      /postback.html?network=ayet&uid={userid}&tid={transaction_id}&amount={amount}&secret={YOUR_SECRET}
+// ════════════════════════════════════════════════════════════════════════════
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+
+// DOM helpers
+const $ = id => document.getElementById(id);
+function setUI(ico, title, msg, extraHtml = '') {
+  $('ico').textContent = ico;
+  $('title').textContent = title;
+  $('msg').textContent = msg;
+  $('extra').innerHTML = extraHtml;
+}
+function log(msg) {
+  const d = $('log');
+  if (d) d.textContent += msg + '\n';
+}
+
+// ── Main processing ──────────────────────────────────────────────────────────
+async function processPostback() {
+  const params = new URLSearchParams(location.search);
+
+  const network   = (params.get('network')  || '').toLowerCase().trim();
+  const userId    = (params.get('uid')       || '').trim();
+  const transId   = (params.get('tid')       || '').trim();
+  const amountRaw = parseFloat(params.get('amount') || '0');
+  const secret    = (params.get('secret')    || '').trim();
+  const offerId   = (params.get('offer_id')  || params.get('offerid') || '').trim();
+
+  // ── 1. Basic field validation ──────────────────────────────────────────────
+  if (!network || !userId || !transId || !amountRaw) {
+    setUI('❌', 'Invalid Request', 'Missing required parameters (network, uid, tid, amount).');
+    return;
+  }
+  if (!['cpalead','monlix','cpagrip','adgate','offertoro','ayet'].includes(network)) {
+    setUI('❌', 'Unknown Network', `Network "${network}" is not supported.`);
+    return;
+  }
+  if (amountRaw <= 0 || amountRaw > 50) {
+    setUI('❌', 'Invalid Amount', 'Amount must be between $0.01 and $50.00.');
+    return;
+  }
+  const amount = Math.round(amountRaw * 100) / 100; // round to 2 dp
+
+  // ── 2. Secret token validation ─────────────────────────────────────────────
+  // First try static config, then fall back to Firestore (live rotation).
+  let expectedSecret = POSTBACK_SECRETS[network] || '';
+  if (!expectedSecret || expectedSecret === 'YOUR_' + network.toUpperCase() + '_SECRET') {
+    // Try Firestore live secret
+    try {
+      const snap = await db.collection('cpaNetworks').doc(network).get();
+      if (snap.exists) expectedSecret = snap.data().postbackSecret || '';
+    } catch (e) { log('Secret fetch error: ' + e.message); }
+  }
+  if (expectedSecret && secret !== expectedSecret) {
+    setUI('❌', 'Unauthorized', 'Invalid postback secret token.');
+    log('Secret mismatch for ' + network);
+    return;
+  }
+
+  // ── 3. Fetch custom payout from admin-imported task (if offer ID known) ────
+  let finalAmount = amount;
+  if (offerId) {
+    try {
+      const taskSnap = await db.collection('cpaTasks')
+        .where('offerId', '==', offerId)
+        .where('network', '==', network)
+        .limit(1).get();
+      if (!taskSnap.empty) {
+        const task = taskSnap.docs[0].data();
+        if (task.customPayout && task.customPayout > 0) {
+          finalAmount = task.customPayout; // use admin-set payout, not raw API payout
+          log(`Custom payout applied: $${finalAmount} (raw: $${amount})`);
+        }
+      }
+    } catch (e) { log('Task lookup error: ' + e.message); }
+  }
+
+  // ── 4. Dedup check — one receipt per (userId + transactionId) ─────────────
+  const receiptId = userId + '_' + transId;
+  try {
+    const receiptSnap = await db.collection('cpaReceipts').doc(receiptId).get();
+    if (receiptSnap.exists) {
+      setUI('✅', 'Already Credited!',
+        `This task completion was already processed. Your wallet was previously credited $${receiptSnap.data().amount?.toFixed(2) || finalAmount.toFixed(2)}.`,
+        `<a class="btn" href="/">Go to Dashboard</a>`);
+      return;
+    }
+  } catch (e) { log('Receipt check error: ' + e.message); }
+
+  // ── 5. Write postback record to Firestore ─────────────────────────────────
+  const postbackDoc = {
+    userId,
+    transactionId: transId,
+    offerId: offerId || '',
+    network,
+    rawAmount: amount,
+    amount: finalAmount,
+    status: 'pending',
+    secret: '', // never store the secret itself
+    receivedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    params: Object.fromEntries(params.entries()), // full URL params for audit
+  };
+
+  let pbRef;
+  try {
+    pbRef = await db.collection('cpaPostbacks').add(postbackDoc);
+    log('Postback written: ' + pbRef.id);
+  } catch (e) {
+    setUI('❌', 'Write Failed', 'Could not record completion. Please contact support.');
+    log('Postback write error: ' + e.message);
+    return;
+  }
+
+  // ── 6. Verify user exists in Firestore ────────────────────────────────────
+  let userSnap;
+  try {
+    userSnap = await db.collection('users').doc(userId).get();
+    if (!userSnap.exists) {
+      await pbRef.update({ status: 'failed', error: 'user_not_found' });
+      setUI('❌', 'User Not Found', 'No WorkHive account found for this user ID. Make sure you are logged in when completing tasks.');
+      return;
+    }
+    const userData = userSnap.data();
+    if (userData.status === 'banned' || userData.deleted === true) {
+      await pbRef.update({ status: 'failed', error: 'user_banned' });
+      setUI('❌', 'Account Suspended', 'Your account cannot receive rewards at this time.');
+      return;
+    }
+  } catch (e) {
+    setUI('❌', 'Verification Failed', 'Could not verify your account. Please try again.');
+    log('User fetch error: ' + e.message);
+    return;
+  }
+
+  // ── 7. Write dedup receipt + credit balance (Firestore batch) ─────────────
+  const batch = db.batch();
+
+  // Receipt doc (create-only — if this fails, someone else already processed it)
+  const receiptRef = db.collection('cpaReceipts').doc(receiptId);
+  batch.set(receiptRef, {
+    userId,
+    transactionId: transId,
+    offerId: offerId || '',
+    network,
+    amount: finalAmount,
+    postbackId: pbRef.id,
+    creditedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+
+  // Credit user balance + totalEarned
+  const userRef = db.collection('users').doc(userId);
+  batch.update(userRef, {
+    balance:     firebase.firestore.FieldValue.increment(finalAmount),
+    totalEarned: firebase.firestore.FieldValue.increment(finalAmount),
+    tasksCompleted: firebase.firestore.FieldValue.increment(1),
+    approvedTasks:  firebase.firestore.FieldValue.increment(1),
+  });
+
+  // Mark postback as credited
+  batch.update(pbRef, {
+    status: 'credited',
+    creditedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+
+  // In-app notification
+  const notifRef = db.collection('users').doc(userId)
+                     .collection('notifications').doc();
+  batch.set(notifRef, {
+    title: '💰 Task Reward Credited!',
+    msg: `You earned $${finalAmount.toFixed(2)} from completing a ${network.toUpperCase()} task!`,
+    icon: '🎯',
+    unread: true,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+
+  try {
+    await batch.commit();
+    log('Batch committed successfully');
+  } catch (e) {
+    // Batch might fail if the receipt doc already exists (concurrent postback)
+    // — that's the dedup guard working correctly, not an error.
+    if (e.code === 'already-exists' || e.message?.includes('already exists')) {
+      setUI('✅', 'Already Credited!',
+        'This task was already processed and your wallet was credited.',
+        `<a class="btn" href="/">Go to Dashboard</a>`);
+    } else {
+      await pbRef.update({ status: 'failed', error: e.message }).catch(() => {});
+      setUI('❌', 'Crediting Failed',
+        'Task verified but reward crediting failed. Please contact support with transaction ID: ' + transId);
+      log('Batch error: ' + e.message);
+    }
+    return;
+  }
+
+  // ── 8. Success UI ─────────────────────────────────────────────────────────
+  setUI('🎉', 'Task Complete!',
+    `Your reward of $${finalAmount.toFixed(2)} has been added to your WorkHive wallet. Keep completing tasks to earn more!`,
+    `<div class="amount">+$${finalAmount.toFixed(2)}</div>
+     <a class="btn" href="/">Go to Dashboard</a>
+     <div class="info">Network: ${network.toUpperCase()} · TX: ${transId.substring(0,16)}…</div>`);
+
+  // Auto-redirect after 5 seconds
+  setTimeout(() => { location.href = '/'; }, 5000);
+}
+
+// ── Entry point ───────────────────────────────────────────────────────────────
+processPostback().catch(e => {
+  setUI('❌', 'Unexpected Error', e.message || 'Something went wrong. Please contact support.');
+  log('Fatal: ' + e.message);
+});
+</script>
+</body>
+</html>

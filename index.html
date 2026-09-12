@@ -1283,29 +1283,37 @@ function applyTelegramSafeArea(tg) {
           <div class="wiz-panel" id="wizStep3">
             <div class="wiz-step-title"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> জব ডিটেইলস</div>
             <div class="wiz-step-sub">টাইটেল, নির্দেশনা এবং প্রুফ রিকোয়্যারমেন্ট দিন</div>
-            <div class="field"><label>জব টাইটেল</label><input type="text" id="postTitle" placeholder="e.g. Follow our Facebook Page"></div>
+            <div class="field"><label>জব টাইটেল <span style="color:var(--red)">*</span></label><input type="text" id="postTitle" placeholder="Enter a clear and descriptive job title"></div>
             <div class="field" id="postLinkField" style="display:none"><label>লিংক</label><input type="url" id="postLink" placeholder="https://..."></div>
             <div class="field" id="postShotField"><label>কতটি স্ক্রিনশট লাগবে</label><input type="number" id="postShotCount" min="1" max="5" value="1"></div>
-            <div class="field"><label>ছোট বর্ণনা (Description) <span class="char-cnt" id="postDescCharCnt">0/150</span></label><textarea id="postDescription" rows="2" maxlength="150" oninput="wizUpdateDescCount()" placeholder="এই জবটা কী নিয়ে তার এক লাইনের সারাংশ..."></textarea></div>
-            <div class="field"><label>নির্দেশনা (Instructions) <span class="char-cnt" id="postInstrCharCnt">0/500</span></label><textarea id="postInstructions" rows="3" maxlength="500" oninput="wizUpdateInstrCount()" placeholder="ওয়ার্কারকে ধাপে ধাপে কী করতে হবে লিখুন..."></textarea></div>
-            <div class="field"><label>English Instructions (ঐচ্ছিক — না দিলে Translate বাটনে শুধু বাংলাই দেখাবে)</label><textarea id="postInstructionsEn" rows="3" maxlength="500" placeholder="Optional — English version of the instructions..."></textarea></div>
+            <div class="field"><label>Description (বিস্তারিত বিবরণ) <span style="color:var(--red)">*</span> <span class="char-cnt" id="postDescCharCnt">0/3000</span></label><textarea id="postDescription" rows="4" maxlength="3000" oninput="wizUpdateDescCount()" placeholder="Describe exactly what workers need to do, what you're looking for, and any important details..."></textarea></div>
+            <div class="field"><label>Instructions (ধাপে ধাপে নির্দেশনা) <span style="color:var(--red)">*</span> <span class="char-cnt" id="postInstrCharCnt">0/3000</span></label><textarea id="postInstructions" rows="4" maxlength="3000" oninput="wizUpdateInstrCount()" placeholder="Step-by-step instructions for workers to complete this job..."></textarea></div>
+            <div class="field"><label>English Instructions (ঐচ্ছিক)</label><textarea id="postInstructionsEn" rows="3" maxlength="3000" placeholder="Optional — English version of the instructions..."></textarea></div>
 
-            <div class="field"><label>প্রুফ রিকোয়্যারমেন্ট (ঐচ্ছিক, সর্বোচ্চ ৫টি)</label></div>
-            <div id="proofReqList"></div>
-            <button type="button" class="btn-ghost" style="margin-bottom:14px" onclick="wizAddProofReq()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> প্রুফ স্লট যোগ করুন</button>
+            <div class="field">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <label style="margin-bottom:0">Proof Requirements <span style="color:var(--red)">*</span></label>
+                <button type="button" id="wizAddProofBtn" class="btn-ghost" style="font-size:11.5px;padding:5px 12px" onclick="wizAddProofReq()">+ Add Proof (<span id="wizProofCount">0</span>/5)</button>
+              </div>
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.8">
+                💡 Example labels: <span style="color:var(--text2)">Before screenshot</span> · <span style="color:var(--text2)">After screenshot</span> · <span style="color:var(--text2)">Homepage screenshot</span> · <span style="color:var(--text2)">Profile URL</span> · <span style="color:var(--text2)">Your username</span> · <span style="color:var(--text2)">Review text</span>
+              </div>
+              <div id="proofReqList"></div>
+            </div>
 
-            <div class="field"><label>অ্যাটাচমেন্ট (ঐচ্ছিক, সর্বোচ্চ ১০টি ফাইল, প্রতিটি সর্বোচ্চ 10MB)</label></div>
-            <div class="proof-upload-area" id="wizAttachDropArea" onclick="document.getElementById('wizAttachInput').click()">
-              <div class="pua-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
-              <div class="pua-text">ফাইল যোগ করতে ট্যাপ করুন</div>
-              <div class="pua-sub">ছবি বা ডকুমেন্ট — একাধিক নির্বাচন করা যাবে</div>
+            <div class="field"><label>Attachments (ঐচ্ছিক) — সর্বোচ্চ ১০টি ফাইল, প্রতিটি সর্বোচ্চ 10MB</label>
+              <div class="proof-upload-area" id="wizAttachDropArea" onclick="document.getElementById('wizAttachInput').click()">
+                <div class="pua-icon">📎</div>
+                <div class="pua-text" id="wizAttachLabel">Add Files (0/10)</div>
+                <div class="pua-sub">ছবি বা ডকুমেন্ট — একাধিক নির্বাচন করা যাবে</div>
+              </div>
             </div>
             <input type="file" id="wizAttachInput" accept="image/*" multiple style="display:none" onchange="handleWizAttachFiles(this)">
             <div id="wizAttachGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin:10px 0"></div>
 
             <div class="wiz-switch-row">
-              <div><div class="wiz-switch-row-text">Auto-Verification</div><div class="wiz-switch-row-sub">শীঘ্রই আসছে — এখনো অ্যাক্টিভ না</div></div>
-              <label class="wiz-switch"><input type="checkbox" disabled><div class="wiz-switch-track"></div><div class="wiz-switch-thumb"></div></label>
+              <div><div class="wiz-switch-row-text">Auto-Verification Questions</div><div class="wiz-switch-row-sub">Automatically approve submissions that answer your questions correctly</div></div>
+              <label class="wiz-switch"><input type="checkbox" id="postAutoVerify"><div class="wiz-switch-track"></div><div class="wiz-switch-thumb"></div></label>
             </div>
           </div>
 
@@ -1329,24 +1337,21 @@ function applyTelegramSafeArea(tg) {
               <label id="postRewardHint">প্রতি ওয়ার্কারের রিওয়ার্ড</label>
               <input type="number" id="postReward" step="0.01" placeholder="0.05" oninput="updatePostBudgetPreview()">
             </div>
-            <div class="field"><label>জব মেয়াদ (Expiry)</label>
-              <select id="postExpiryDays">
-                <option value="3">৩ দিন</option>
-                <option value="7" selected>৭ দিন</option>
-                <option value="14">১৪ দিন</option>
-                <option value="30">৩০ দিন</option>
-              </select>
-              <div class="lf-hint" style="font-size:10px;color:var(--text3);margin-top:5px">মেয়াদ শেষ হলে জবটি নতুন Task তালিকা থেকে সরে যাবে — কিন্তু ইতিমধ্যে অনুমোদিত সাবমিশনগুলো ঠিকই থাকবে।</div>
+            <div class="field"><label>জব মেয়াদ (Expiry Date) <span style="color:var(--red)">*</span></label>
+              <input type="date" id="postExpiryDate" min="" max="" onchange="wizExpiryDateChanged()" style="width:100%;padding:10px 13px;border-radius:12px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:13px;font-weight:600">
+              <div class="lf-hint" style="font-size:10px;color:var(--text3);margin-top:5px" id="postExpiryHint">৩ থেকে ৩০ দিনের মধ্যে মেয়াদ নির্ধারণ করুন। মেয়াদ শেষ হলে জবটি তালিকা থেকে সরে যাবে।</div>
             </div>
 
             <div class="post-budget-card">
               <div class="pbc-row"><span>প্রতি ওয়ার্কার</span><span class="v" id="postPreviewPerWorker">$0.00</span></div>
               <div class="pbc-row"><span>ওয়ার্কার পেমেন্ট মোট</span><span class="v" id="postPreviewWorkerTotal">$0.00</span></div>
               <div class="pbc-row"><span>প্ল্যাটফর্ম ফি</span><span class="v" id="postPreviewPlatformFee">$0.00</span></div>
-              <div class="pbc-row total"><span>সর্বমোট বাজেট</span><span class="v" id="postPreviewGrandTotal">$0.00</span></div>
-              <div class="pbc-row balance-row" id="postPreviewBalanceRow"><span>আপনার ব্যালেন্স</span><span class="v" id="postPreviewBalance">$0.00</span></div>
+              <div class="pbc-row total"><span>Total Cost</span><span class="v" id="postPreviewGrandTotal">$0.00</span></div>
+              <div class="pbc-row balance-row" id="postPreviewBalanceRow"><span>Your Balance</span><span class="v" id="postPreviewBalance">$0.00</span></div>
+              <div class="pbc-row balance-row"><span>Balance After</span><span class="v" id="postPreviewBalanceAfter" style="color:var(--green)">$0.00</span></div>
               <div class="pbc-row balance-row" id="wizDiffRow" style="display:none"><span id="wizDiffLabel">পার্থক্য</span><span class="v" id="wizDiffValue">$0.00</span></div>
             </div>
+            <div class="info-banner" id="postMinCostWarning" style="display:none;background:var(--gold-dim);color:var(--gold);border-color:rgba(255,179,0,.25)">⚠️ The total cost must be at least $1.00 to publish. Please increase workers or payment per worker.</div>
             <div class="info-banner" id="postInsufficientWarning" style="display:none;background:var(--red-dim);color:var(--red);border-color:rgba(255,82,82,.25)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> আপনার ব্যালেন্স যথেষ্ট নয়। জব পোস্ট করার আগে ব্যালেন্স যোগ করুন (Deposit) অথবা স্লট/রিওয়ার্ড কমান।</div>
             <div class="info-banner" id="wizSlotGuardWarning" style="display:none;background:var(--red-dim);color:var(--red);border-color:rgba(255,82,82,.25)"></div>
           </div>
@@ -1726,7 +1731,12 @@ function applyTelegramSafeArea(tg) {
 
   <!-- MODALS -->
   <div class="overlay" id="taskOverlay" onclick="if(event.target===this)closeTaskModal()">
-    <div class="modal-sheet"><span class="close-x" onclick="closeTaskModal()">✕</span><div class="modal-handle"></div><div id="modalContent"></div></div>
+    <div class="modal-sheet" style="display:flex;flex-direction:column;padding:0;overflow:hidden">
+      <span class="close-x" onclick="closeTaskModal()" style="position:absolute;top:14px;right:14px;z-index:2">✕</span>
+      <div class="modal-handle" style="flex-shrink:0;padding-top:10px"></div>
+      <div id="modalContent" style="flex:1;overflow-y:auto;padding:16px 18px 8px;"></div>
+      <div id="modalActionBar" style="flex-shrink:0;background:var(--card);border-top:1px solid var(--border);padding:12px 18px calc(12px + env(safe-area-inset-bottom));"></div>
+    </div>
   </div>
   <div class="overlay" id="confirmOverlay"><div class="modal-sheet"><div id="confirmContent"></div></div></div>
   <div class="overlay" id="refUserOverlay" onclick="if(event.target===this)closeRefUserModal()">
@@ -1834,6 +1844,7 @@ const SITE = {
   kycEnabled: true,
   cloudinaryCloudName: '', cloudinaryUploadPreset: '',
   emailjsServiceId: '', emailjsTemplateId: '', emailjsPublicKey: '',
+  emailjsVerifyTemplateId: '', emailjsAuthEnabled: false,
 };
 
 const catGradients = {
@@ -2350,6 +2361,8 @@ function listenSiteSettings(onChange) {
       if (d.emailjsServiceId) SITE.emailjsServiceId = d.emailjsServiceId;
       if (d.emailjsTemplateId) SITE.emailjsTemplateId = d.emailjsTemplateId;
       if (d.emailjsPublicKey) SITE.emailjsPublicKey = d.emailjsPublicKey;
+      if (d.emailjsVerifyTemplateId) SITE.emailjsVerifyTemplateId = d.emailjsVerifyTemplateId;
+      SITE.emailjsAuthEnabled = !!d.emailjsAuthEnabled;
       onChange && onChange(SITE);
     },
     e => console.warn('siteSettings:', e)
@@ -2403,7 +2416,8 @@ function listenCpaTasks(onChange) {
       S.cpaTasks = [];
       snap.forEach(d => {
         const t = d.data();
-        // Normalise CPA task into the same shape as a regular job
+        // Skip if network is disabled by admin
+        if (t.networkEnabled === false) return;
         S.cpaTasks.push({
           id: d.id,
           isCpaTask: true,
@@ -3259,7 +3273,7 @@ async function sendOtpEmail(email) {
   const code = genOtpCode();
   const codeHash = await sha256Hex(code);
   const now = Date.now();
-  const expiresAt = new Date(now + 15 * 60 * 1000);
+  const expiresAt = new Date(now + 3 * 60 * 1000); // 3 minutes
   const emailKey = otpEmailKey(email);
   const docRef = fb.doc(db, 'otpRequests', emailKey);
   const existing = await fb.getDoc(docRef).catch(() => null);
@@ -3294,30 +3308,27 @@ async function sendOtpEmail(email) {
 }
 
 async function verifyOtp(email, guessCode) {
-  const emailKey = otpEmailKey(email);
+  const emailKey = email.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
   const docRef = fb.doc(db, 'otpRequests', emailKey);
 
-  // Step 1: consume one attempt (always — even for wrong guesses)
+  // Step 1: Blind attempt-increment write (no read).
+  // Firestore rules reject this if attempts >= maxAttempts, code expired, or doc missing.
   try {
-    const snap = await fb.getDoc(docRef);
-    if (!snap.exists || !snap.exists()) throw new Error('OTP_NOT_FOUND');
-    const d = snap.data();
-    if (d.attempts >= d.maxAttempts) throw new Error('MAX_ATTEMPTS');
-    if (d.expiresAt?.toDate ? d.expiresAt.toDate() < new Date() : false) throw new Error('EXPIRED');
     await fb.updateDoc(docRef, { attempts: fb.increment(1) });
-  } catch (e) {
-    if (['MAX_ATTEMPTS','EXPIRED','OTP_NOT_FOUND'].includes(e.message)) throw e;
-    throw new Error('OTP_CHECK_FAILED');
+  } catch (err) {
+    throw new Error('কোড মেয়াদোত্তীর্ণ বা সর্বোচ্চ চেষ্টা শেষ — নতুন কোড নিন');
   }
 
-  // Step 2: compute guess hash and attempt the `verified: true` write
+  // Step 2: Compute guessHash client-side and attempt the verified write.
+  // Firestore rules reject this if guessHash !== the stored codeHash.
   const guessHash = await sha256Hex(guessCode.trim());
   try {
     await fb.updateDoc(docRef, { verified: true, guessHash });
-    return true; // Rules only accept this if guessHash === codeHash
-  } catch (e) {
-    throw new Error('WRONG_CODE');
+  } catch (err) {
+    throw new Error('❌ ভুল কোড — আবার চেষ্টা করুন');
   }
+
+  return true;
 }
 
 // ── Forgot-password UI ────────────────────────────────────────────────────────
@@ -3335,6 +3346,7 @@ function openForgotPassword() {
 function closeForgotPassword() {
   closeOverlay('forgotPwOverlay');
   clearInterval(_fpResendTimer);
+  clearInterval(_fpOtpCountdownTimer);
 }
 
 function renderFpModal() {
@@ -3349,12 +3361,18 @@ function renderFpModal() {
   } else if (_fpStep === 'otp') {
     body.innerHTML = `
       <div class="modal-title">কোড যাচাই করুন</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:6px"><b>${escHtml(_fpEmail)}</b>-এ ৬-সংখ্যার কোড পাঠানো হয়েছে। ১৫ মিনিটের মধ্যে দিন।</div>
-      <div class="field"><label>OTP কোড</label><input id="fpOtpInput" type="number" maxlength="6" placeholder="123456" style="width:100%;letter-spacing:6px;font-size:20px;text-align:center;font-weight:900"></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px"><b>${escHtml(_fpEmail)}</b>-এ ৬-সংখ্যার কোড পাঠানো হয়েছে।</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:11.5px;color:var(--text3)">মেয়াদ শেষ হওয়ার আগে দিন:</div>
+        <div id="fpCountdown" style="font-size:18px;font-weight:900;color:var(--green);font-family:monospace;min-width:50px;text-align:right">৩:০০</div>
+      </div>
+      <div class="field"><input id="fpOtpInput" type="number" maxlength="6" placeholder="123456" style="width:100%;letter-spacing:6px;font-size:22px;text-align:center;font-weight:900;padding:14px;border-radius:14px;border:2px solid var(--border2);background:var(--bg3);color:var(--text)"></div>
+      <div id="fpOtpExpiredMsg" style="display:none;font-size:12px;color:var(--red);text-align:center;margin-bottom:8px;font-weight:700">⏰ কোডের মেয়াদ শেষ হয়ে গেছে — নতুন কোড নিন</div>
       <div id="fpErr" style="font-size:12px;color:var(--red);min-height:18px;margin-bottom:8px"></div>
-      <button class="btn-primary" style="width:100%;margin-bottom:10px" onclick="fpVerifyOtp()">✅ যাচাই করুন</button>
-      <div style="text-align:center"><span id="fpResendBtn" style="font-size:11.5px;color:var(--text3)">কোড পাননি? <span id="fpResendLink" style="color:var(--green);cursor:pointer;text-decoration:underline" onclick="fpResend()">পুনরায় পাঠান</span></span></div>
-      <div style="text-align:center;margin-top:8px"><span style="font-size:11px;color:var(--text3);cursor:pointer" onclick="() => { _fpStep='email'; renderFpModal(); }">← অন্য ইমেইল ব্যবহার করুন</span></div>`;
+      <button id="fpVerifyBtn" class="btn-primary" style="width:100%;margin-bottom:10px" onclick="fpVerifyOtp()">✅ যাচাই করুন</button>
+      <div style="text-align:center"><span style="font-size:11.5px;color:var(--text3)">কোড পাননি? <span id="fpResendLink" style="color:var(--text3);cursor:default;text-decoration:none" onclick="fpResend()">পুনরায় পাঠান</span></span></div>
+      <div style="text-align:center;margin-top:8px"><span style="font-size:11px;color:var(--text3);cursor:pointer" onclick="_fpStep='email';renderFpModal()">← অন্য ইমেইল ব্যবহার করুন</span></div>`;
+    fpStartOtpCountdown();
     fpStartResendCountdown();
   } else if (_fpStep === 'newpass') {
     body.innerHTML = `
@@ -3368,8 +3386,16 @@ function renderFpModal() {
 async function fpSendOtp() {
   const email = document.getElementById('fpEmailInput')?.value.trim();
   const errEl = document.getElementById('fpErr');
-  if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { if(errEl) errEl.textContent = '❌ সঠিক ইমেইল দিন'; return; }
-  if (!SITE.emailjsServiceId) { if(errEl) errEl.textContent = '❌ ইমেইল সার্ভিস কনফিগার করা নেই — Admin-কে জানান'; return; }
+  if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { if (errEl) errEl.textContent = '❌ সঠিক ইমেইল দিন'; return; }
+
+  // If EmailJS auth is disabled → skip OTP, go straight to Firebase reset link
+  if (!SITE.emailjsAuthEnabled) {
+    _fpEmail = email; _fpStep = 'newpass';
+    renderFpModal();
+    return;
+  }
+
+  if (!SITE.emailjsServiceId) { if (errEl) errEl.textContent = '❌ ইমেইল সার্ভিস কনফিগার করা নেই — Admin-কে জানান'; return; }
   const btn = document.querySelector('#fpModalBody .btn-primary');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ পাঠানো হচ্ছে...'; }
   try {
@@ -3386,21 +3412,22 @@ async function fpSendOtp() {
 }
 
 async function fpVerifyOtp() {
-  const code = document.getElementById('fpOtpInput')?.value.trim();
-  const errEl = document.getElementById('fpErr');
-  if (!code || code.length !== 6) { if(errEl) errEl.textContent = '❌ ৬-সংখ্যার কোড দিন'; return; }
-  const btn = document.querySelector('#fpModalBody .btn-primary');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ যাচাই হচ্ছে...'; }
+  const code = document.getElementById('fpOtpInput')?.value?.trim();
+  if (!code || code.length !== 6) {
+    showToast('৬ ডিজিটের ওটিপি কোড দিন', 'warning');
+    return;
+  }
+  const btn = document.getElementById('fpVerifyBtn') || document.querySelector('#fpModalBody .btn-primary');
+  if (btn) btn.disabled = true;
   try {
     await verifyOtp(_fpEmail, code);
-    _fpStep = 'newpass'; renderFpModal();
-  } catch (e) {
-    const msg = e.message === 'WRONG_CODE' ? '❌ ভুল কোড — আবার চেষ্টা করুন'
-      : e.message === 'MAX_ATTEMPTS' ? '❌ সর্বোচ্চ চেষ্টার সীমা পেরিয়ে গেছে। নতুন কোডের জন্য অনুরোধ করুন'
-      : e.message === 'EXPIRED' ? '❌ কোডের মেয়াদ শেষ — নতুন কোড পাঠান'
-      : '❌ যাচাই ব্যর্থ হয়েছে, আবার চেষ্টা করুন';
-    if (errEl) errEl.textContent = msg;
-    if (btn) { btn.disabled = false; btn.textContent = '✅ যাচাই করুন'; }
+    showToast('কোড যাচাই সফল হয়েছে!', 'success');
+    _fpStep = 'newpass';
+    renderFpModal();
+  } catch (err) {
+    showToast(err.message || 'যাচাই ব্যর্থ হয়েছে', 'error');
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
@@ -3413,6 +3440,38 @@ async function fpResend() {
   } catch (e) {
     if (errEl) errEl.textContent = e.message === 'COOLDOWN' ? '⏳ একটু অপেক্ষা করুন' : '❌ পাঠানো সম্ভব হয়নি';
   }
+}
+
+let _fpOtpCountdownTimer = null;
+function fpStartOtpCountdown() {
+  clearInterval(_fpOtpCountdownTimer);
+  let remaining = 3 * 60; // 3 minutes in seconds
+  const digits = n => String(n).padStart(2, '0');
+  const toHuman = s => `${Math.floor(s / 60)}:${digits(s % 60)}`;
+
+  function tick() {
+    const el = document.getElementById('fpCountdown');
+    const expMsg = document.getElementById('fpOtpExpiredMsg');
+    const verifyBtn = document.getElementById('fpVerifyBtn');
+    const resendLink = document.getElementById('fpResendLink');
+    if (!el) { clearInterval(_fpOtpCountdownTimer); return; }
+    if (remaining <= 0) {
+      clearInterval(_fpOtpCountdownTimer);
+      el.textContent = '০:০০';
+      el.style.color = 'var(--red)';
+      if (expMsg) expMsg.style.display = 'block';
+      if (verifyBtn) verifyBtn.disabled = true;
+      // Make resend immediately clickable when timer hits zero
+      if (resendLink) { resendLink.style.color = 'var(--green)'; resendLink.style.cursor = 'pointer'; resendLink.style.textDecoration = 'underline'; }
+      clearInterval(_fpResendTimer); // cancel the normal 45s resend cooldown
+      return;
+    }
+    el.textContent = toHuman(remaining);
+    el.style.color = remaining <= 30 ? 'var(--red)' : remaining <= 60 ? 'var(--gold)' : 'var(--green)';
+    remaining--;
+  }
+  tick();
+  _fpOtpCountdownTimer = setInterval(tick, 1000);
 }
 
 function fpStartResendCountdown() {
@@ -3450,6 +3509,132 @@ async function fpSendFirebaseReset() {
   }
 }
 
+// ── Account Email Verification OTP (A6) ──────────────────────────────────────
+// Active only when SITE.emailjsAuthEnabled === true.
+// If OFF, the app falls back to Firebase's native sendEmailVerification() link flow.
+
+async function sendEmailVerifyOtp(email) {
+  const code = genOtpCode();
+  const codeHash = await sha256Hex(code);
+  const now = Date.now();
+  const expiresAt = new Date(now + 3 * 60 * 1000); // 3 minutes
+  const emailKey = email.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+  const docRef = fb.doc(db, 'emailVerifyRequests', emailKey);
+  const existing = await fb.getDoc(docRef).catch(() => null);
+  if (existing && existing.exists && existing.exists()) {
+    const lastSent = existing.data().lastSentAt?.toDate ? existing.data().lastSentAt.toDate() : new Date(0);
+    if ((now - lastSent.getTime()) < 45000) throw new Error('COOLDOWN');
+    await fb.updateDoc(docRef, { codeHash, attempts: 0, verified: false, expiresAt, lastSentAt: fb.serverTimestamp() });
+  } else {
+    await fb.setDoc(docRef, { email: email.toLowerCase(), codeHash, attempts: 0, verified: false, maxAttempts: 5, expiresAt, lastSentAt: fb.serverTimestamp() });
+  }
+  const templateId = SITE.emailjsVerifyTemplateId || SITE.emailjsTemplateId;
+  await sendEmailJS({ to_email: email, to_name: email.split('@')[0], otp_code: code, expires_minutes: '3', site_name: SITE.siteName || 'WorkHive' }, templateId);
+}
+
+async function verifyEmailOtp(email, guessCode) {
+  const emailKey = email.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+  const docRef = fb.doc(db, 'emailVerifyRequests', emailKey);
+  try { await fb.updateDoc(docRef, { attempts: fb.increment(1) }); }
+  catch (err) { throw new Error('কোড মেয়াদোত্তীর্ণ বা সর্বোচ্চ চেষ্টা শেষ — নতুন কোড নিন'); }
+  const guessHash = await sha256Hex(guessCode.trim());
+  try { await fb.updateDoc(docRef, { verified: true, guessHash }); }
+  catch (err) { throw new Error('❌ ভুল কোড — আবার চেষ্টা করুন'); }
+  return true;
+}
+
+// Verification UI — shown as a banner + inline OTP form
+let _evOtpCountdownTimer = null;
+function renderEmailVerifyBanner(user) {
+  const banner = document.getElementById('emailVerifyBanner'); if (!banner) return;
+  if (!user || user.emailVerified || window._userData?.emailVerifiedCustom) { banner.style.display = 'none'; return; }
+  if (SITE.emailjsAuthEnabled) {
+    banner.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:12.5px;font-weight:700">📧 ইমেইল ভেরিফাই করুন</div>
+        <div style="font-size:11.5px;color:var(--text2)">আপনার ইমেইলে একটি OTP কোড পাঠানো হবে।</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn-ghost" style="font-size:11.5px;padding:6px 14px" id="evSendBtn" onclick="evSendCode()">📤 কোড পাঠান</button>
+          <div id="evCountdown" style="font-size:13px;font-weight:900;font-family:monospace;color:var(--green);display:none">৩:০০</div>
+        </div>
+        <div id="evOtpRow" style="display:none;gap:8px;align-items:center">
+          <input type="number" id="evOtpInput" placeholder="6-digit code" maxlength="6" style="flex:1;padding:8px 12px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:14px;font-weight:800;letter-spacing:4px;text-align:center">
+          <button class="btn-primary" style="padding:8px 16px;font-size:12px" id="evVerifyBtn" onclick="evVerifyCode()">✅ যাচাই</button>
+        </div>
+        <div id="evMsg" style="font-size:11.5px;min-height:16px"></div>
+      </div>`;
+    banner.style.display = 'block';
+  } else {
+    banner.innerHTML = `<div>📧 ইমেইল ভেরিফাই হয়নি — <span style="text-decoration:underline;cursor:pointer" onclick="resendVerificationEmail()">লিংক পাঠান</span></div>`;
+    banner.style.display = 'block';
+  }
+}
+async function evSendCode() {
+  const user = window._currentUser; if (!user) return;
+  const btn = document.getElementById('evSendBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳…'; }
+  try {
+    await sendEmailVerifyOtp(user.email);
+    const row = document.getElementById('evOtpRow');
+    if (row) row.style.display = 'flex';
+    evStartCountdown();
+    const msg = document.getElementById('evMsg');
+    if (msg) msg.textContent = '✅ কোড পাঠানো হয়েছে!';
+    if (btn) { btn.textContent = 'পুনরায় পাঠান'; btn.disabled = false; }
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = '📤 কোড পাঠান'; }
+    const msg = document.getElementById('evMsg');
+    if (msg) msg.textContent = e.message === 'COOLDOWN' ? '⏳ একটু অপেক্ষা করুন' : '❌ পাঠানো সম্ভব হয়নি';
+  }
+}
+async function evVerifyCode() {
+  const user = window._currentUser; if (!user) return;
+  const code = document.getElementById('evOtpInput')?.value.trim();
+  if (!code || code.length < 6) { const m = document.getElementById('evMsg'); if (m) m.textContent = '❌ ৬-সংখ্যার কোড দিন'; return; }
+  const btn = document.getElementById('evVerifyBtn');
+  if (btn) btn.disabled = true;
+  try {
+    await verifyEmailOtp(user.email, code);
+    await fb.updateDoc(fb.doc(db, 'users', user.uid), { emailVerifiedCustom: true });
+    if (window._userData) window._userData.emailVerifiedCustom = true;
+    const banner = document.getElementById('emailVerifyBanner');
+    if (banner) banner.style.display = 'none';
+    showToast('✅ ইমেইল ভেরিফাই সফল হয়েছে!', 'success');
+    clearInterval(_evOtpCountdownTimer);
+  } catch (e) {
+    const msg = document.getElementById('evMsg');
+    if (msg) msg.textContent = e.message || '❌ যাচাই ব্যর্থ';
+    if (btn) btn.disabled = false;
+  }
+}
+function evStartCountdown() {
+  clearInterval(_evOtpCountdownTimer);
+  let remaining = 180;
+  const el = document.getElementById('evCountdown');
+  const verifyBtn = document.getElementById('evVerifyBtn');
+  if (el) el.style.display = 'block';
+  const digits = n => String(n).padStart(2, '0');
+  _evOtpCountdownTimer = setInterval(() => {
+    const e2 = document.getElementById('evCountdown');
+    if (!e2) { clearInterval(_evOtpCountdownTimer); return; }
+    if (remaining <= 0) {
+      clearInterval(_evOtpCountdownTimer);
+      e2.textContent = 'মেয়াদ শেষ'; e2.style.color = 'var(--red)';
+      const vb = document.getElementById('evVerifyBtn'); if (vb) vb.disabled = true;
+      return;
+    }
+    e2.textContent = `${Math.floor(remaining/60)}:${digits(remaining%60)}`;
+    e2.style.color = remaining <= 30 ? 'var(--red)' : remaining <= 60 ? 'var(--gold)' : 'var(--green)';
+    remaining--;
+  }, 1000);
+}
+
+// fpSendOtp is defined above — emailjsAuthEnabled check is merged into it
+
+
+function isEmailVerified(user) {
+  return !!(user?.emailVerified || window._userData?.emailVerifiedCustom);
+}
 async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim(), pass = document.getElementById('loginPass').value, errEl = document.getElementById('loginErr');
   errEl.textContent = '';
@@ -3567,7 +3752,17 @@ async function resendVerifyEmail() {
 function updateEmailVerifyBanner() {
   const user = window._currentUser;
   const el = document.getElementById('emailVerifyBanner');
-  if (el) el.style.display = (user && !user.emailVerified) ? 'flex' : 'none';
+  if (!el) return;
+  if (!user || user.emailVerified || window._userData?.emailVerifiedCustom) {
+    el.style.display = 'none';
+    return;
+  }
+  // When EmailJS auth is enabled, render the OTP verification UI
+  if (SITE.emailjsAuthEnabled) {
+    renderEmailVerifyBanner(user);
+  } else {
+    el.style.display = 'flex';
+  }
 }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && window._currentUser) {
@@ -3670,19 +3865,97 @@ function renderAllTasks(cat) {
   const listEl = document.getElementById('taskListFull');
   if (listEl) listEl.innerHTML = list.length ? list.map(t => taskCardHtml(t, false)).join('') : '<div class="history-empty"><div class="big">🔍</div>No tasks in this category.</div>';
 }
-let _instrLangState = {};
-function toggleTaskInstrLang(jobId) {
-  const t = S.approvedJobs.find(x => x.id === jobId); if (!t) return;
-  _instrLangState[jobId] = !_instrLangState[jobId];
-  const showEn = _instrLangState[jobId];
-  const raw = showEn ? (t.instructionsEn || t.instructions) : (t.instructions || '');
-  const steps = raw.split('\n').filter(s => s.trim());
-  const html = steps.length > 1
-    ? `<ul class="step-list">${steps.map((s, i) => `<li><div class="step-num">${i + 1}</div><span>${linkifyInstructionText(s)}</span></li>`).join('')}</ul>`
-    : `<p style="font-size:12.5px;color:var(--text2);line-height:1.7;margin:0">${linkifyInstructionText(raw)}</p>`;
-  document.getElementById('instrBody' + jobId).innerHTML = html;
-  document.getElementById('instrLangLabel' + jobId).textContent = showEn ? 'বাংলা' : 'English';
+// Translation cache: { [jobId]: { translated: { desc, instructions }, lang: 'en'|'bn' } }
+const _translateCache = {};
+
+async function translateText(text, targetLang) {
+  // Uses MyMemory free API — no key required, 5000 chars/day free tier
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.substring(0, 500))}&langpair=${targetLang === 'en' ? 'bn|en' : 'en|bn'}`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const json = await res.json();
+  if (json.responseStatus !== 200 && json.responseStatus !== '200') throw new Error(json.responseMessage || 'Translation failed');
+  return json.responseData.translatedText;
 }
+
+async function toggleTaskInstrLang(jobId) {
+  const t = S.approvedJobs.find(x => x.id === jobId); if (!t) return;
+  const labelEl = document.getElementById('instrLangLabel' + jobId);
+  const bodyEl = document.getElementById('instrBody' + jobId);
+  if (!bodyEl) return;
+
+  // If task already has a built-in English translation, use it (no API call)
+  if (t.instructionsEn) {
+    _instrLangState[jobId] = !_instrLangState[jobId];
+    const showEn = _instrLangState[jobId];
+    const raw = showEn ? t.instructionsEn : (t.instructions || '');
+    const steps = raw.split('\n').filter(s => s.trim());
+    const html = steps.length > 1
+      ? `<ul class="step-list">${steps.map((s, i) => `<li><div class="step-num">${i + 1}</div><span>${linkifyInstructionText(s)}</span></li>`).join('')}</ul>`
+      : `<p style="font-size:12.5px;color:var(--text2);line-height:1.7;margin:0">${linkifyInstructionText(raw)}</p>`;
+    bodyEl.innerHTML = html;
+    if (labelEl) labelEl.textContent = showEn ? 'বাংলা দেখুন' : 'English';
+    return;
+  }
+
+  // Determine target language based on current state
+  const cache = _translateCache[jobId];
+  const currentlyTranslated = _instrLangState[jobId];
+
+  // Toggle back to original
+  if (currentlyTranslated && cache) {
+    _instrLangState[jobId] = false;
+    const raw = t.instructions || '';
+    const steps = raw.split('\n').filter(s => s.trim());
+    bodyEl.innerHTML = steps.length > 1
+      ? `<ul class="step-list">${steps.map((s, i) => `<li><div class="step-num">${i + 1}</div><span>${linkifyInstructionText(s)}</span></li>`).join('')}</ul>`
+      : `<p style="font-size:12.5px;color:var(--text2);line-height:1.7;margin:0">${linkifyInstructionText(raw)}</p>`;
+    if (labelEl) labelEl.textContent = 'English';
+    return;
+  }
+
+  // Detect target lang: if instructions look Bengali → translate to English, else to Bengali
+  const raw = t.instructions || t.desc || '';
+  const isBengali = /[\u0980-\u09FF]/.test(raw);
+  const targetLang = isBengali ? 'en' : 'bn';
+
+  // Show loading state
+  if (labelEl) labelEl.textContent = '⏳…';
+  bodyEl.style.opacity = '0.5';
+
+  try {
+    // Use cache if available
+    let translated = cache?.translated;
+    if (!translated) {
+      const instrText = t.instructions || '';
+      const descText = t.desc || '';
+      const [instrTranslated, descTranslated] = await Promise.all([
+        instrText ? translateText(instrText, targetLang) : Promise.resolve(''),
+        descText ? translateText(descText, targetLang) : Promise.resolve(''),
+      ]);
+      translated = { instructions: instrTranslated, desc: descTranslated, lang: targetLang };
+      _translateCache[jobId] = { translated, lang: targetLang };
+    }
+
+    const steps = (translated.instructions || '').split('\n').filter(s => s.trim());
+    bodyEl.innerHTML = steps.length > 1
+      ? `<ul class="step-list">${steps.map((s, i) => `<li><div class="step-num">${i + 1}</div><span>${linkifyInstructionText(s)}</span></li>`).join('')}</ul>`
+      : `<p style="font-size:12.5px;color:var(--text2);line-height:1.7;margin:0">${linkifyInstructionText(translated.instructions || '')}</p>`;
+
+    // Also update description if present
+    const descEl = document.getElementById('jobDescBody' + jobId);
+    if (descEl && translated.desc) descEl.textContent = translated.desc;
+
+    _instrLangState[jobId] = true;
+    if (labelEl) labelEl.textContent = 'মূল ভাষায় ফেরত';
+  } catch (e) {
+    if (labelEl) labelEl.textContent = '❌ Retry';
+    showToast('Translation failed — try again', 'error');
+  } finally {
+    bodyEl.style.opacity = '1';
+  }
+}
+let _instrLangState = {};
 function openTaskModal(jobId) {
   const t = S.approvedJobs.find(x => x.id === jobId); if (!t) return;
   const grad = getCatGrad(t.category), ico = getCatSvg(t.category);
@@ -3769,12 +4042,16 @@ function openTaskModal(jobId) {
       <ul class="req-list">${reqList.map(r => `<li>${escHtml(r.label)} <span style="color:var(--text3)">(${r.type === 'screenshot' ? 'Image' : 'Text'})</span></li>`).join('')}</ul>
     </div>
     <div class="dates-row"><span>Posted: ${postedTxt}</span><span>Expires: ${expiresTxt}</span></div>
-    <div style="display:flex;gap:8px;margin-top:18px;position:sticky;bottom:0;background:var(--card);padding-top:12px">
-      <button class="btn-primary" style="flex:1" onclick="openSubmitWorkScreen('${jobId}')">📤 Submit Now</button>
-      <div class="icon-btn" style="width:44px;height:44px" title="Report"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--red)" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>
-      <div class="icon-btn" style="width:44px;height:44px" title="Open externally" onclick="window.open(location.href,'_blank')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--text3)" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
-    </div>
   `;
+  // Fixed action bar — injected into #modalActionBar so it never scrolls
+  const actionBar = document.getElementById('modalActionBar');
+  if (actionBar) actionBar.innerHTML = `
+    <div style="display:flex;gap:8px">
+      <button class="btn-primary" style="flex:1" onclick="openSubmitWorkScreen('${jobId}')">📤 Submit Now</button>
+      <div class="icon-btn" style="width:44px;height:44px;flex-shrink:0" title="Report"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--red)" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>
+      <div class="icon-btn" style="width:44px;height:44px;flex-shrink:0" title="Share" onclick="window.open(location.href,'_blank')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--text3)" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+      <div class="icon-btn" style="width:44px;height:44px;flex-shrink:0" title="Close" onclick="closeTaskModal()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--text3)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+    </div>`;
   openOverlay('taskOverlay');
 
   // lightweight poster stats — avoids the heavy getUserProfileStats() call, just what the card needs
@@ -3805,7 +4082,11 @@ async function quickFollowFromJob(uid, jobId) {
     if (btn) { btn.style.opacity = '1'; btn.textContent = nowFollowing ? '✓ Following' : '+ Follow'; btn.classList.toggle('following', nowFollowing); }
   } catch (e) { if (btn) btn.style.opacity = '1'; showToast('❌ ব্যর্থ হয়েছে', 'error'); }
 }
-function closeTaskModal() { closeOverlay('taskOverlay'); }
+function closeTaskModal() {
+  closeOverlay('taskOverlay');
+  const bar = document.getElementById('modalActionBar');
+  if (bar) bar.innerHTML = '';
+}
 
 let _submitWorkJobId = null;
 function openSubmitWorkScreen(jobId) {
@@ -4052,7 +4333,7 @@ function wizResetState() {
   const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
   setVal('postTitle', ''); setVal('postLink', ''); setVal('postShotCount', 1); setVal('postDescription', '');
   setVal('postInstructions', ''); setVal('postInstructionsEn', ''); setVal('postSlots', ''); setVal('postReward', '');
-  setVal('postExpiryDays', '7');
+  S.wiz.expiryDays = 7; // reset to default; date picker will be re-inited on step 4
   const attachInput = document.getElementById('wizAttachInput'); if (attachInput) attachInput.value = '';
   const grid = document.getElementById('wizAttachGrid'); if (grid) grid.innerHTML = '';
   wizUpdateInstrCount();
@@ -4113,7 +4394,7 @@ function wizOpenEdit(jobId) {
   // Prefill step 4
   setVal('postSlots', j.limit || '');
   setVal('postReward', j.reward || '');
-  setVal('postExpiryDays', String(j.expiryDays || 7));
+  S.wiz.expiryDays = j.expiryDays || 7;
   updatePostBudgetPreview();
 }
 
@@ -4130,7 +4411,7 @@ function wizGoStep(n) {
   if (S.wiz.step === 1) { wizSetLocationMode(S.wiz.locationMode, true); }
   if (S.wiz.step === 2) { renderWizCatRowList(); }
   if (S.wiz.step === 3) { renderProofReqBuilder(); wizRenderAttachGrid(); }
-  if (S.wiz.step === 4) { updatePostBudgetPreview(); }
+  if (S.wiz.step === 4) { updatePostBudgetPreview(); wizInitExpiryDatePicker(); }
   document.getElementById('mainScroll')?.scrollTo(0, 0);
 }
 function wizPrevStep() { wizGoStep(S.wiz.step - 1); }
@@ -4301,22 +4582,71 @@ function updateWizSubcatSummary() {
 // Step 3 — job details helpers
 function wizUpdateInstrCount() {
   const ta = document.getElementById('postInstructions'), cnt = document.getElementById('postInstrCharCnt');
-  if (ta && cnt) cnt.textContent = `${ta.value.length}/500`;
+  if (ta && cnt) cnt.textContent = `${ta.value.length}/3000`;
+}
+function wizExpiryDateChanged() {
+  const input = document.getElementById('postExpiryDate');
+  const hint = document.getElementById('postExpiryHint');
+  if (!input || !input.value) return;
+  const chosen = new Date(input.value + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diffDays = Math.round((chosen - today) / 86400000);
+  if (diffDays < 3) { input.style.borderColor = 'var(--red)'; if (hint) hint.textContent = '❌ Minimum 3 days from today.'; input.value = ''; return; }
+  if (diffDays > 30) { input.style.borderColor = 'var(--red)'; if (hint) hint.textContent = '❌ Maximum 30 days from today.'; input.value = ''; return; }
+  input.style.borderColor = 'var(--green)';
+  if (hint) hint.textContent = `✅ Expires in ${diffDays} day${diffDays !== 1 ? 's' : ''} (${chosen.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})`;
+  S.wiz.expiryDays = diffDays;
+  updatePostBudgetPreview();
+}
+function wizInitExpiryDatePicker() {
+  const input = document.getElementById('postExpiryDate'); if (!input) return;
+  const fmt = d => d.toISOString().split('T')[0];
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const minDate = new Date(today); minDate.setDate(minDate.getDate() + 3);
+  const maxDate = new Date(today); maxDate.setDate(maxDate.getDate() + 30);
+  input.min = fmt(minDate);
+  input.max = fmt(maxDate);
+  // Editing: prefill from saved expiryDays; new post: leave blank so user must pick
+  if (S.wiz.mode === 'edit' && S.wiz.expiryDays >= 3) {
+    const prefill = new Date(today);
+    prefill.setDate(prefill.getDate() + S.wiz.expiryDays);
+    if (prefill <= maxDate) { input.value = fmt(prefill); wizExpiryDateChanged(); }
+  }
 }
 function wizUpdateDescCount() {
   const ta = document.getElementById('postDescription'), cnt = document.getElementById('postDescCharCnt');
-  if (ta && cnt) cnt.textContent = `${ta.value.length}/150`;
+  if (ta && cnt) cnt.textContent = `${ta.value.length}/3000`;
 }
 function renderProofReqBuilder() {
   const el = document.getElementById('proofReqList'); if (!el) return;
-  el.innerHTML = S.wiz.proofRequirements.map((r, i) => `<div class="proof-req-item">
-    <select onchange="wizUpdateProofReqField(${i},'type',this.value)">
-      <option value="screenshot" ${r.type === 'screenshot' ? 'selected' : ''}>স্ক্রিনশট</option>
-      <option value="text" ${r.type === 'text' ? 'selected' : ''}>টেক্সট</option>
-    </select>
-    <input type="text" value="${escHtml(r.label || '')}" placeholder="যেমন: Before screenshot" onchange="wizUpdateProofReqField(${i},'label',this.value)">
-    <div class="proof-req-remove" onclick="wizRemoveProofReq(${i})">${wizIcon('x', 14)}</div>
-  </div>`).join('');
+  const cnt = document.getElementById('wizProofCount');
+  if (cnt) cnt.textContent = S.wiz.proofRequirements.length;
+  const addBtn = document.getElementById('wizAddProofBtn');
+  if (addBtn) addBtn.disabled = S.wiz.proofRequirements.length >= 5;
+  if (!S.wiz.proofRequirements.length) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px;border:1.5px dashed var(--border2);border-radius:12px;margin-bottom:10px">At least 1 proof requirement is needed. Tap "+ Add Proof" above.</div>`;
+    return;
+  }
+  el.innerHTML = S.wiz.proofRequirements.map((r, i) => `
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:26px;height:26px;border-radius:8px;background:var(--green);color:#001a0a;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i + 1}</div>
+        <div style="display:flex;gap:5px;background:var(--bg4);border:1px solid var(--border2);border-radius:20px;padding:3px">
+          <div onclick="wizUpdateProofReqField(${i},'type','screenshot');renderProofReqBuilder()" style="padding:4px 11px;border-radius:16px;font-size:11px;font-weight:700;cursor:pointer;${r.type === 'screenshot' ? 'background:var(--green);color:#001a0a' : 'color:var(--text3)'}">📷 Screenshot</div>
+          <div onclick="wizUpdateProofReqField(${i},'type','text');renderProofReqBuilder()" style="padding:4px 11px;border-radius:16px;font-size:11px;font-weight:700;cursor:pointer;${r.type === 'text' ? 'background:var(--green);color:#001a0a' : 'color:var(--text3)'}">💬 Text</div>
+        </div>
+        <div onclick="wizRemoveProofReq(${i})" style="margin-left:auto;width:26px;height:26px;border-radius:8px;background:var(--red-dim);color:var(--red);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;flex-shrink:0">✕</div>
+      </div>
+      <input type="text" value="${escHtml(r.label || '')}" placeholder="Label (e.g., 'Homepage screenshot')" onchange="wizUpdateProofReqField(${i},'label',this.value)" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);font-size:12.5px;margin-bottom:8px">
+      <div style="font-size:10.5px;font-weight:700;color:var(--text3);margin-bottom:5px">📎 Example Screenshot (ঐচ্ছিক — ওয়ার্কারকে দেখাবে)</div>
+      ${r.exampleUrl
+        ? `<div style="position:relative;display:inline-block"><img src="${escHtml(r.exampleUrl)}" style="width:80px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"><div onclick="wizUpdateProofReqField(${i},'exampleUrl','');renderProofReqBuilder()" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer">✕</div></div>`
+        : `<div class="proof-upload-area" id="proofExUpload${i}" onclick="document.getElementById('proofExFile${i}').click()" style="padding:8px;min-height:48px">
+            <div class="pua-text" style="font-size:11px">📷 Add Example</div>
+          </div>
+          <input type="file" id="proofExFile${i}" accept="image/*" style="display:none" onchange="wizUploadProofExample(${i},this)">`
+      }
+    </div>`).join('');
 }
 function wizAddProofReq() {
   if (S.wiz.proofRequirements.length >= 5) { showToast('সর্বোচ্চ ৫টি প্রুফ স্লট যোগ করা যাবে', 'error'); return; }
@@ -4325,6 +4655,23 @@ function wizAddProofReq() {
 }
 function wizRemoveProofReq(i) { S.wiz.proofRequirements.splice(i, 1); renderProofReqBuilder(); }
 function wizUpdateProofReqField(i, field, val) { if (S.wiz.proofRequirements[i]) S.wiz.proofRequirements[i][field] = val; }
+
+async function wizUploadProofExample(idx, input) {
+  const file = input.files && input.files[0]; if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('ছবি ফাইল দিন', 'error'); return; }
+  if (file.size > 10 * 1024 * 1024) { showToast('ছবি খুব বড় (সর্বোচ্চ 10MB)', 'error'); return; }
+  const area = document.getElementById('proofExUpload' + idx);
+  if (area) { area.innerHTML = '<div class="pua-text" style="font-size:11px">⏳ Uploading…</div>'; }
+  try {
+    const url = await uploadProofToCloudinary(file);
+    wizUpdateProofReqField(idx, 'exampleUrl', url);
+    renderProofReqBuilder();
+  } catch (e) {
+    showToast('❌ Upload failed: ' + e.message, 'error');
+    if (area) { area.innerHTML = '<div class="pua-text" style="font-size:11px">📷 Add Example</div>'; }
+  }
+  input.value = '';
+}
 
 function handleWizAttachFiles(input) {
   const files = Array.from(input.files || []);
@@ -4337,6 +4684,8 @@ function handleWizAttachFiles(input) {
   }
   input.value = '';
   wizRenderAttachGrid();
+  const lbl = document.getElementById('wizAttachLabel');
+  if (lbl) lbl.textContent = `Add Files (${S.wiz.attachments.length}/10)`;
 }
 function wizRenderAttachGrid() {
   const grid = document.getElementById('wizAttachGrid'); if (!grid) return;
@@ -4361,17 +4710,21 @@ function updatePostBudgetPreview() {
   const slots = Number(document.getElementById('postSlots')?.value) || 0;
   const budget = computeJobBudget(reward, slots);
   const balance = (window._userData?.balance) || 0;
+  const balanceAfter = balance - budget.grandTotal;
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   set('postPreviewPerWorker', fmtUSD(budget.reward));
   set('postPreviewWorkerTotal', fmtUSD(budget.workerTotal));
   set('postPreviewPlatformFee', fmtUSD(budget.platformFee) + ` (${SITE.postPlatformFeePct}%)`);
   set('postPreviewGrandTotal', fmtUSD(budget.grandTotal));
   set('postPreviewBalance', fmtUSD(balance));
+  set('postPreviewBalanceAfter', fmtUSD(balanceAfter));
   const warnBox = document.getElementById('postInsufficientWarning');
+  const minWarnBox = document.getElementById('postMinCostWarning');
   const nextBtn = document.getElementById('wizNextBtn');
   const diffRow = document.getElementById('wizDiffRow'), diffLabel = document.getElementById('wizDiffLabel'), diffValue = document.getElementById('wizDiffValue');
   const slotGuard = document.getElementById('wizSlotGuardWarning');
   let insufficient = false;
+  let belowMin = false;
 
   if (S.wiz.mode === 'edit') {
     const job = S.myPostedJobs.find(x => x.id === S.wiz.editJobId);
@@ -4392,15 +4745,20 @@ function updatePostBudgetPreview() {
     if (diffRow) diffRow.style.display = 'none';
     if (slotGuard) slotGuard.style.display = 'none';
     insufficient = budget.grandTotal > 0 && balance < budget.grandTotal;
+    belowMin = budget.grandTotal > 0 && budget.grandTotal < 1.00;
   }
-  if (warnBox) warnBox.style.display = insufficient ? 'flex' : 'none';
-  if (nextBtn && S.wiz.step === 4) nextBtn.disabled = insufficient;
+  if (warnBox) warnBox.style.display = (insufficient && !belowMin) ? 'flex' : 'none';
+  if (minWarnBox) minWarnBox.style.display = belowMin ? 'flex' : 'none';
+  if (nextBtn && S.wiz.step === 4) nextBtn.disabled = insufficient || belowMin || budget.grandTotal <= 0;
+  // Balance after row color
+  const balAfterEl = document.getElementById('postPreviewBalanceAfter');
+  if (balAfterEl) balAfterEl.style.color = balanceAfter < 0 ? 'var(--red)' : 'var(--green)';
 }
 
 async function wizSubmitJob() {
   const user = window._currentUser, userData = window._userData, userRef = window._userRef;
   if (!user || !userRef) { showToast('Please login again', 'error'); return; }
-  if (!user.emailVerified) { showToast('⚠️ Job Post করতে আগে ইমেইল ভেরিফাই করুন', 'error'); return; }
+  if (!user.emailVerified && !(SITE.emailjsAuthEnabled && window._userData?.emailVerifiedCustom === true)) { showToast('⚠️ Job Post করতে আগে ইমেইল ভেরিফাই করুন', 'error'); return; }
 
   const nextBtn = document.getElementById('wizNextBtn');
   const country = S.wiz.locationMode === 'specific' && S.wiz.targetCountries.length === 1 ? S.wiz.targetCountries[0] : 'Global';
@@ -4430,7 +4788,17 @@ async function wizSubmitJob() {
       locationMode: S.wiz.locationMode,
       targetCountries: S.wiz.targetCountries,
       proofRequirements: S.wiz.proofRequirements.filter(r => r.label && r.label.trim()),
-      expiryDays: document.getElementById('postExpiryDays')?.value || 7,
+      expiryDays: S.wiz.expiryDays || (() => {
+        // Fallback: compute from the date picker value if S.wiz.expiryDays wasn't set
+        const dp = document.getElementById('postExpiryDate');
+        if (dp && dp.value) {
+          const chosen = new Date(dp.value + 'T00:00:00');
+          const today = new Date(); today.setHours(0,0,0,0);
+          const days = Math.round((chosen - today) / 86400000);
+          if (days >= 3 && days <= 30) return days;
+        }
+        return 7; // absolute last resort
+      })(),
       attachmentUrls,
     };
     if (S.wiz.mode === 'edit') {
@@ -4719,7 +5087,7 @@ function renderTxList() {
 function filterTx(type, el) { S.txFilter = type; document.querySelectorAll('.tx-filter-btn').forEach(b => b.classList.remove('active')); if (el && el.classList) el.classList.add('active'); renderTxList(); }
 async function doWithdraw() {
   const user0 = window._currentUser;
-  if (user0 && !user0.emailVerified) { showToast('⚠️ Withdraw করতে আগে ইমেইল ভেরিফাই করুন', 'error'); return; }
+  if (user0 && !isEmailVerified(user0)) { showToast('⚠️ Withdraw করতে আগে ইমেইল ভেরিফাই করুন', 'error'); return; }
   const amt = Number(document.getElementById('withdrawAmt').value), num = document.getElementById('withdrawNumber').value.trim(), notes = document.getElementById('withdrawNotes')?.value.trim() || '';
   if (!amt || amt < SITE.minWithdraw) { showToast(`Minimum withdrawal $${SITE.minWithdraw.toFixed(2)}`, 'error'); return; }
   const currentBal = window._userData?.balance || 0;
@@ -5416,6 +5784,7 @@ Object.assign(window, {
   initAuthScreenBindings, switchAuthTab, togglePass, checkStrength, doLogin, doForgotPassword,
   doGoogle, doRegister, openChangePassword, submitChangePassword, doLogout, doLogoutConfirm,
   openForgotPassword, closeForgotPassword, fpSendOtp, fpVerifyOtp, fpResend,
+  evSendCode, evVerifyCode, renderEmailVerifyBanner,
   confirmDeleteAccount, reallyDeleteAccount, resendVerifyEmail,
   updateGreeting, refreshWalletUI, renderHomeTasks, renderRecentActivity, renderLeaderboard,
   renderTaskCategories, filterTaskCategory, filterTaskSubcategory, filterCategorySearch, onPostCategoryChange, renderAllTasks, openTaskModal, closeTaskModal,
@@ -5427,7 +5796,8 @@ Object.assign(window, {
   filterMyJobSubmissions, renderMyJobSubmissions, approveJobSubmission, rejectJobSubmission, confirmRejectJobSubmission,
   openPostWizard, wizOpenEdit, wizGoStep, wizPrevStep, wizNextStep,
   wizSetLocationMode, wizFilterCountrySearch, wizToggleContinent, wizToggleCountry, wizSelectAllContinent,
-  wizSelectCategory, wizOpenSubcatOverlay, wizCloseSubcatOverlay, wizPickSubcatOverlay, wizUpdateInstrCount, wizUpdateDescCount,
+  wizExpiryDateChanged, wizInitExpiryDatePicker,
+  wizSelectCategory, wizOpenSubcatOverlay, wizCloseSubcatOverlay, wizPickSubcatOverlay, wizUpdateInstrCount, wizUpdateDescCount, wizUploadProofExample,
   wizAddProofReq, wizRemoveProofReq, wizUpdateProofReqField,
   handleWizAttachFiles, removeWizAttach, wizQuickAddSlots, wizSubmitJob,
   selectDepAmt, onDepositCustomAmt, selectDepMethod, submitDepositRequest, renderDepositHistory,
@@ -5604,26 +5974,42 @@ function applySiteSettingsToUI() {
 }
 
 fb.onAuthStateChanged(auth, async (user) => {
-  if (user && !user.isAnonymous) {
-    onesignalLogin(user.uid);
-    try {
-      const { ref, data } = await ensureUserDoc(user);
-      await bootstrapApp(user, ref, data);
-    } catch (e) {
-      console.error('Firebase error:', e);
-      await bootstrapApp(user, null, {});
+  try {
+    if (user && !user.isAnonymous) {
+      onesignalLogin(user.uid);
+      try {
+        const { ref, data } = await ensureUserDoc(user);
+        await bootstrapApp(user, ref, data);
+      } catch (e) {
+        console.error('Firebase bootstrap error:', e);
+        try { await bootstrapApp(user, null, {}); } catch (e2) {
+          console.error('bootstrapApp fallback failed:', e2);
+          showAuthScreen();
+        }
+      }
+    } else if (!user) {
+      onesignalLogout();
+      clearUserListeners();
+      window._currentUser = null; window._userData = null;
+      _appInitialized = false;
+      S.approvedJobs = []; S.myTaskSubmissions = []; S.transactions = []; S.notifications = []; S.myPostedJobs = [];
+      showAuthScreen();
     }
-  } else if (!user) {
-    onesignalLogout();
-    clearUserListeners();
-    window._currentUser = null; window._userData = null;
-    _appInitialized = false;
-    S.approvedJobs = []; S.myTaskSubmissions = []; S.transactions = []; S.notifications = []; S.myPostedJobs = [];
+  } catch (fatal) {
+    // Last-resort: any uncaught error in the auth callback must not leave the loading screen up
+    console.error('Fatal onAuthStateChanged error — showing auth screen:', fatal);
     showAuthScreen();
   }
 });
 
-setTimeout(() => { if (document.getElementById('loadingScreen').style.display !== 'none' && !window._currentUser) showAuthScreen(); }, 7000);
+// Fallback: if auth never resolves within 5s, show login screen rather than spinning forever
+setTimeout(() => {
+  const ls = document.getElementById('loadingScreen');
+  if (ls && ls.style.display !== 'none' && !window._currentUser) {
+    console.warn('Auth fallback: loading screen still visible after 5s — forcing auth screen');
+    showAuthScreen();
+  }
+}, 5000);
 
 initAuthScreenBindings();
 

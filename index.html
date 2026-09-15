@@ -225,6 +225,8 @@ main{flex:1;overflow-y:auto;padding:4px 16px 110px;scroll-behavior:smooth;oversc
 .admin-chip{font-size:8.5px;font-weight:800;padding:3px 8px;border-radius:20px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(68,138,255,.25);display:inline-flex;align-items:center;gap:3px;flex-shrink:0;white-space:nowrap}
 .modal-poster-row{display:flex;align-items:center;gap:10px;padding:12px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:13px}
 .modal-poster-avatar{width:38px;height:38px;border-radius:12px;background:var(--green-dim);border:1px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--green);font-size:16px;flex-shrink:0;overflow:hidden}
+.poster-avatar-circle{border-radius:50%!important;border-width:1.5px;border-style:solid}
+.poster-rating-badge{display:inline-flex;align-items:center;gap:2px;font-size:9.5px;font-weight:800;color:var(--gold);background:var(--gold-dim);padding:1.5px 6px;border-radius:20px;line-height:1.5;flex-shrink:0}
 
 .chip-row{display:flex;gap:7px;overflow-x:auto;padding-bottom:3px;margin-bottom:11px}
 .chip-row::-webkit-scrollbar{display:none}
@@ -357,6 +359,8 @@ main{flex:1;overflow-y:auto;padding:4px 16px 110px;scroll-behavior:smooth;oversc
 .notif-title{font-size:12.5px;font-weight:700;margin-bottom:2px}
 .notif-msg{font-size:11.5px;color:var(--text2);line-height:1.5}
 .notif-time{font-size:10px;color:var(--text3);margin-top:3px;font-weight:600}
+.notif-close{flex-shrink:0;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px;cursor:pointer;align-self:flex-start}
+.notif-close:hover{background:var(--red-dim);color:var(--red)}
 
 .ref-hero{background:linear-gradient(135deg,rgba(224,64,251,.08),rgba(68,138,255,.06));border:1px solid rgba(224,64,251,.2);border-radius:var(--r-xl);padding:22px 18px;margin-bottom:14px;text-align:center;position:relative;overflow:hidden}
 .ref-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(224,64,251,.1),transparent 70%)}
@@ -961,6 +965,10 @@ html[data-env="telegram"] nav.tabbar{padding-bottom:calc(20px + var(--tg-safe-bo
 .myjob-stat .v{font-size:13px;font-weight:900}
 .myjob-stat .l{font-size:8px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
 .myjob-reject-box{display:flex;gap:6px;align-items:flex-start;background:var(--red-dim);border:1px solid rgba(255,82,82,.2);border-radius:8px;padding:9px 10px;margin-top:9px;font-size:11px;color:var(--red);line-height:1.5}
+.job-rejected-banner{border:1.5px solid var(--red);background:var(--red-dim);border-radius:var(--r-lg);padding:12px;margin-top:9px}
+.jrb-title{color:var(--red);font-weight:900;font-size:13.5px;margin-bottom:7px}
+.jrb-reason{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 10px}
+.jrb-actions{display:flex;gap:8px;flex-wrap:wrap}
 
 .post-limit-banner{display:flex;gap:9px;align-items:flex-start;background:var(--purple-dim);border:1px solid rgba(224,64,251,.2);border-radius:var(--r-md);padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--purple);font-weight:600;line-height:1.5}
 
@@ -1403,7 +1411,7 @@ function applyTelegramSafeArea(tg) {
             <div class="h-chip" onclick="filterMyPostedJobs('pending_review',this)">⏳ Review</div>
             <div class="h-chip" onclick="filterMyPostedJobs('approved',this)">✅ Live</div>
             <div class="h-chip" onclick="filterMyPostedJobs('rejected',this)">❌ Rejected</div>
-          </div>
+            <div class="h-chip" onclick="filterMyPostedJobs('completed',this)">🏁 Completed</div>          </div>
           <div id="myPostedJobsList"></div>
         </div>
 
@@ -1513,7 +1521,13 @@ function applyTelegramSafeArea(tg) {
 
     <!-- NOTIFICATIONS -->
     <section class="screen" id="screen-notifications">
-      <div class="sec-title" style="margin-top:13px"><h3>🔔 Notifications</h3><a onclick="markAllRead()">Mark all read</a></div>
+      <div class="sec-title" style="margin-top:13px">
+        <h3>🔔 Notifications</h3>
+        <div style="display:flex;gap:12px">
+          <a onclick="markAllRead()">Read All</a>
+          <a onclick="clearAllNotifs()" style="color:var(--red)">Clear All</a>
+        </div>
+      </div>
       <div id="notifList"></div>
     </section>
 
@@ -1927,7 +1941,16 @@ const catSvg = {
   'Survey': '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
   'Other': '<circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/>',
 };
-const avatarColors = ['#00E676', '#448AFF', '#E040FB', '#FFB300', '#FF5252', '#00BCD4'];
+const avatarColors = ['#00E676', '#448AFF', '#E040FB', '#FFB300', '#FF5252', '#00BCD4', '#FF8A65', '#7C4DFF', '#9CCC65', '#EC407A', '#26C6DA', '#5C6BC0'];
+// Full-string deterministic hash (not just first-char) so poster avatars get a stable,
+// well-distributed color per user id/name — used for job-card poster avatars.
+function fullHash(str) {
+  str = String(str || 'A');
+  let h = 0;
+  for (let i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) | 0; }
+  return Math.abs(h);
+}
+const posterAvatarColor = seed => avatarColors[fullHash(seed) % avatarColors.length];
 
 // ══════ js/data/countries.js (Post Wizard — Step 1 location targeting) ══════
 const CONTINENTS = [
@@ -2057,18 +2080,30 @@ function countryBadgeHtml(t) {
   return `<span class="country-target-badge">${wizIcon('globe', 11)} International</span>`;
 }
 
+// Small compact "⭐ 4.3" style rating badge for a job poster. Returns '' when there's no review yet.
+function posterRatingBadgeHtml(rating, count) {
+  if (!count) return '';
+  return `<span class="poster-rating-badge" title="${count} review${count === 1 ? '' : 's'}">⭐ ${(rating || 0).toFixed(1)}</span>`;
+}
+function posterAvatarStyle(admin, seed) {
+  if (admin) return '';
+  const c = posterAvatarColor(seed);
+  return `background:${c}26;border-color:${c}66;color:${c}`;
+}
 function posterRowHtml(t, compact) {
   const admin = isJobAdmin(t);
   const name = jobPosterName(t);
   const initial = (name || 'W').charAt(0).toUpperCase();
   const avSize = compact ? 20 : 26;
+  const rating = t.postedByAvgRating || 0, rCount = t.postedByReviewCount || 0;
   const clickAttr = (!admin && t.postedById) ? `onclick="event.stopPropagation();openPublicProfile('${t.postedById}')" style="cursor:pointer"` : '';
   return `<div class="poster-row" style="${compact ? 'margin-bottom:6px;' : ''}${(!admin && t.postedById) ? 'cursor:pointer' : ''}" ${clickAttr}>
-    <div class="poster-avatar" style="width:${avSize}px;height:${avSize}px;font-size:${compact ? 10 : 12}px">${t.postedByAvatar ? `<img src="${escHtml(t.postedByAvatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">` : initial}</div>
+    <div class="poster-avatar poster-avatar-circle" style="width:${avSize}px;height:${avSize}px;font-size:${compact ? 10 : 12}px;${posterAvatarStyle(admin, t.postedById || name)}">${t.postedByAvatar ? `<img src="${escHtml(t.postedByAvatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">` : initial}</div>
     <div class="poster-info">
       <div class="poster-name-row">
         <span class="poster-name" style="${compact ? 'font-size:9.5px' : ''}">${escHtml(name)}</span>
         ${admin ? verifiedTickSvg(compact ? 10 : 12) : (t.postedByKycVerified ? verifiedTickSvg(compact ? 10 : 12) : '')}
+        ${!admin ? posterRatingBadgeHtml(rating, rCount) : ''}
       </div>
       ${!compact ? `<span class="poster-sub">${admin ? 'Official task provider' : 'Community job'}</span>` : ''}
     </div>
@@ -2079,13 +2114,15 @@ function modalPosterRowHtml(t) {
   const admin = isJobAdmin(t);
   const name = jobPosterName(t);
   const initial = (name || 'W').charAt(0).toUpperCase();
+  const rating = t.postedByAvgRating || 0, rCount = t.postedByReviewCount || 0;
   const clickAttr = (!admin && t.postedById) ? `onclick="openPublicProfile('${t.postedById}')" style="cursor:pointer"` : '';
   return `<div class="modal-poster-row" ${clickAttr}>
-    <div class="modal-poster-avatar">${t.postedByAvatar ? `<img src="${escHtml(t.postedByAvatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">` : initial}</div>
+    <div class="modal-poster-avatar poster-avatar-circle" style="${posterAvatarStyle(admin, t.postedById || name)}">${t.postedByAvatar ? `<img src="${escHtml(t.postedByAvatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">` : initial}</div>
     <div style="flex:1;min-width:0">
       <div class="poster-name-row">
         <span class="poster-name" style="font-size:12.5px">${escHtml(name)}</span>
         ${admin ? verifiedTickSvg(14) : (t.postedByKycVerified ? verifiedTickSvg(14) : '')}
+        ${!admin ? posterRatingBadgeHtml(rating, rCount) : ''}
       </div>
       <span class="poster-sub">${admin ? 'Official task provider' : 'Community job'}</span>
     </div>
@@ -2709,6 +2746,8 @@ async function createJobPost({ title, category, subcategory, type, reward, limit
       postedById: user.uid,
       postedByName: userData?.name || user.displayName || 'WorkHive User',
       postedByAvatar: userData?.photoURL || '',
+      postedByAvgRating: userData?.avgRating || 0,
+      postedByReviewCount: userData?.reviewCount || 0,
       workerTotal: budget.workerTotal,
       platformFeePct: SITE.postPlatformFeePct,
       platformFee: budget.platformFee,
@@ -2748,7 +2787,11 @@ async function saveWizardJobEdit(jobId, payload, user, userData, userRef) {
     const uSnap = await tx.get(userRef);
     if (!uSnap.exists()) throw new Error('USER_NOT_FOUND');
     const bal = uSnap.data().balance || 0;
-    const oldHeld = jData.budgetHeld || 0;
+    // If the previous hold was already settled (e.g. this job was rejected, and
+    // settleJobPostHolds() already refunded it back to balance automatically),
+    // there is currently NO real hold backing this job — so we must re-hold the
+    // full new budget from scratch rather than diffing against the old amount.
+    const oldHeld = jData.holdSettled ? 0 : (jData.budgetHeld || 0);
     const diff = newBudget.grandTotal - oldHeld;
 
     if (diff > 0.0001) {
@@ -2758,7 +2801,9 @@ async function saveWizardJobEdit(jobId, payload, user, userData, userRef) {
       tx.update(userRef, { balance: fb.increment(-diff), postingHold: fb.increment(diff) });
     }
 
-    const wasApproved = jData.status === 'approved';
+    // Both a previously-approved job (edited mid-flight) and a previously-rejected
+    // job (fixed up and resubmitted) go back through admin review the same way.
+    const needsReapproval = jData.status === 'approved' || jData.status === 'rejected';
     tx.update(jobRef, {
       title: payload.title.trim(), category: payload.category, subcategory: payload.subcategory || '',
       type: payload.type, reward, limit, country: payload.country || 'Global',
@@ -2772,11 +2817,46 @@ async function saveWizardJobEdit(jobId, payload, user, userData, userRef) {
       verificationQuestions: payload.autoVerify && Array.isArray(payload.verificationQuestions) ? payload.verificationQuestions.slice(0, 5) : [],
       expiryDays: expDays, expiresAt,
       budgetHeld: newBudget.grandTotal, workerTotal: newBudget.workerTotal, platformFee: newBudget.platformFee,
-      status: wasApproved ? 'pending_reapproval' : jData.status,
+      status: needsReapproval ? 'pending_reapproval' : jData.status,
+      holdSettled: needsReapproval ? false : !!jData.holdSettled,
+      rejectReason: needsReapproval ? '' : (jData.rejectReason || ''),
       editedAt: fb.serverTimestamp(),
     });
   });
 }
+
+// Poster closes a REJECTED job for good (they've decided not to fix & resubmit it).
+// Safely refunds any still-held budget back to balance in the same transaction —
+// idempotent: if settleJobPostHolds() already auto-refunded it (holdSettled true),
+// this just flips status to 'closed' without double-crediting anything.
+async function closeMyRejectedJob(jobId) {
+  const j = S.myPostedJobs.find(x => x.id === jobId);
+  if (!j) { showToast('জবটি খুঁজে পাওয়া যায়নি', 'error'); return; }
+  if (j.status !== 'rejected') { showToast('শুধু rejected জব বন্ধ করা যায়', 'error'); return; }
+  if (!confirm(`"${j.title}" জবটি স্থায়ীভাবে বন্ধ করতে চান? হোল্ড করা বাজেট আপনার ব্যালেন্সে ফেরত যাবে এবং এই জব আর এডিট করা যাবে না।`)) return;
+  const user = window._currentUser, userRef = window._userRef;
+  if (!user || !userRef) return;
+  try {
+    const jobRef = fb.doc(db, 'jobs', jobId);
+    await fb.runTransaction(db, async (tx) => {
+      const jSnap = await tx.get(jobRef);
+      if (!jSnap.exists()) throw new Error('JOB_NOT_FOUND');
+      const jData = jSnap.data();
+      if (jData.status !== 'rejected') throw new Error('NOT_REJECTED');
+      if (!jData.holdSettled && jData.budgetHeld) {
+        const uSnap = await tx.get(userRef);
+        if (!uSnap.exists()) throw new Error('USER_NOT_FOUND');
+        tx.update(userRef, { balance: fb.increment(jData.budgetHeld), postingHold: fb.increment(-jData.budgetHeld) });
+      }
+      tx.update(jobRef, { status: 'closed', holdSettled: true });
+    });
+    showToast('🔒 জব বন্ধ করা হয়েছে, বাজেট ফেরত দেওয়া হয়েছে', 'success');
+  } catch (e) {
+    console.error('closeMyRejectedJob:', e);
+    showToast('❌ ব্যর্থ হয়েছে, আবার চেষ্টা করুন', 'error');
+  }
+}
+
 
 function listenMyPostedJobs(uid, onChange) {
   if (_unsubPostJobs) _unsubPostJobs();
@@ -2827,6 +2907,31 @@ async function settleJobPostHolds(jobs, userRef) {
     }
   }
 }
+
+// Poster marks their own job 'completed' — allowed only from 'approved' or
+// 'pending_reapproval' (mirrors the Firestore rule that must accompany this;
+// see the rules block noted alongside this function). Once completed:
+//  - it drops out of the public feed automatically (feed query is
+//    where('status','==','approved'), so a status change alone removes it)
+//  - it still shows in "My Jobs" (sorted to the bottom — see renderMyPostedJobs)
+//  - pending submissions on it remain reviewable/payable — nothing here touches
+//    taskSubmissions, and the reject/approve submission rules don't check job status
+//  - no NEW worker can submit, because the job is gone from the public feed and
+//    isJobVisibleToUser/the feed listener never surface it once status !== 'approved'
+async function markMyJobCompleted(jobId) {
+  const j = S.myPostedJobs.find(x => x.id === jobId);
+  if (!j) { showToast('জবটি খুঁজে পাওয়া যায়নি', 'error'); return; }
+  if (j.status !== 'approved' && j.status !== 'pending_reapproval') { showToast('এই জব এখন completed করা যাবে না', 'error'); return; }
+  if (!confirm(`"${j.title}" জবটি completed মার্ক করতে চান? এটা আর পাবলিক ফিডে দেখাবে না এবং নতুন worker আর submit করতে পারবে না।`)) return;
+  try {
+    await fb.updateDoc(fb.doc(db, 'jobs', jobId), { status: 'completed' });
+    showToast('✅ Job completed মার্ক করা হয়েছে', 'success');
+  } catch (e) {
+    console.error('markMyJobCompleted:', e);
+    showToast(e.code === 'permission-denied' ? '❌ Permission denied — Firestore Rules আপডেট করা দরকার' : '❌ ব্যর্থ হয়েছে, আবার চেষ্টা করুন', 'error');
+  }
+}
+
 
 // ══════ js/services/submissions.js ══════
 let _unsubSubmissions = null;
@@ -2879,18 +2984,47 @@ async function submitProofTask(jobId, job, proofText, imageFiles, user, userData
   };
   if (autoApproved) {
     subData.autoApproved = true; // proof fields intentionally omitted — same end-state as a manually approved submission
+    subData.credited = false; // consumed exactly once by creditApprovedSubmission's transaction — prevents balance-credit replay
   } else {
     subData.proofText = proofText || '';
     subData.proofImageUrl = proofImageUrls[0] || '';
     subData.proofImageUrls = proofImageUrls;
   }
 
-  const docRef = await fb.addDoc(fb.collection(db, 'taskSubmissions'), subData);
+  let subId;
+  if (autoApproved) {
+    // Deterministic ID (jobId_workerId) so a worker can only ever hold ONE
+    // auto-approved submission per job — Firestore rules reject a second
+    // create at the same path once this one exists (it's an update at that
+    // point, and updates to an already-approved doc are not permitted).
+    // This is what actually stops the "resubmit forever, get paid every time"
+    // exploit an auto-credit feature would otherwise be wide open to.
+    subId = jobId + '_' + user.uid;
+    await fb.setDoc(fb.doc(db, 'taskSubmissions', subId), subData);
+  } else {
+    const docRef = await fb.addDoc(fb.collection(db, 'taskSubmissions'), subData);
+    subId = docRef.id;
+  }
 
   if (autoApproved) {
     // Reuse the exact same crediting logic used for manual job-poster approvals —
     // balance increment, totalEarned, tasksCompleted, job filled counter, notification.
-    await creditApprovedSubmission({ ...subData, id: docRef.id });
+    await creditApprovedSubmission({ ...subData, id: subId });
+  }
+
+  // Notify the job poster that a new submission has arrived on their job — names
+  // both the worker and the job title so the poster doesn't have to guess. Skip
+  // for admin-owned/CPA jobs (no real 'admin' user doc to notify) and the rare
+  // self-submission edge case. Best-effort, same pattern as every other notif here.
+  if (jobPosterId && jobPosterId !== 'admin' && jobPosterId !== user.uid) {
+    const workerLabel = userData?.name || user.displayName || 'A worker';
+    fb.addDoc(fb.collection(db, 'users', jobPosterId, 'notifications'), {
+      title: autoApproved ? '📥 New Submission (Auto-Approved)' : '📥 New Submission Received',
+      msg: autoApproved
+        ? `${workerLabel} submitted "${job.title || 'your job'}" — answers matched, auto-approved & paid.`
+        : `${workerLabel} submitted proof for "${job.title || 'your job'}" — review it now.`,
+      icon: '📥', unread: true, createdAt: fb.serverTimestamp()
+    }).catch(() => {});
   }
 }
 
@@ -2921,16 +3055,71 @@ function listenSubmissionsToMyJobs(uid, onChange) {
 }
 
 async function creditApprovedSubmission(sub) {
-  if (sub.workerId) {
-    await fb.updateDoc(fb.doc(db, 'users', sub.workerId), {
-      balance: fb.increment(sub.reward || 0), totalEarned: fb.increment(sub.reward || 0),
-      tasksCompleted: fb.increment(1), approvedTasks: fb.increment(1)
-    }).catch(() => {});
+  if (sub.autoApproved) {
+    // Auto-Verification credit — must be a one-shot transaction: the security
+    // rules require this write to reference a submission that is not yet
+    // 'credited', and flip that flag in the same transaction, so a replayed
+    // call (or a hand-crafted console call) can never pay out twice for the
+    // same submission.
+    const subRef = fb.doc(db, 'taskSubmissions', sub.id);
+    const workerRef = fb.doc(db, 'users', sub.workerId);
+    const jobRef = (sub.jobId && sub.jobId !== 'spin') ? fb.doc(db, 'jobs', sub.jobId) : null;
+    let alreadyCredited = false;
+    try {
+      await fb.runTransaction(db, async (tx) => {
+        const subSnap = await tx.get(subRef);
+        if (!subSnap.exists() || subSnap.data().credited) { alreadyCredited = true; return; }
+        const jobSnap = jobRef ? await tx.get(jobRef) : null;
+        tx.update(workerRef, {
+          balance: fb.increment(sub.reward || 0), totalEarned: fb.increment(sub.reward || 0),
+          tasksCompleted: fb.increment(1), approvedTasks: fb.increment(1),
+          lastAutoCreditRef: sub.id,
+        });
+        tx.update(subRef, { credited: true });
+        if (jobRef && jobSnap && jobSnap.exists() && (jobSnap.data().filled || 0) < (jobSnap.data().limit || Infinity)) {
+          tx.update(jobRef, { filled: fb.increment(1) });
+        }
+      });
+    } catch (e) { console.warn('creditApprovedSubmission (auto):', e); return; }
+    if (alreadyCredited) return;
     await fb.addDoc(fb.collection(db, 'users', sub.workerId, 'notifications'), {
       title: '✅ Task Approved!',
-      msg: sub.autoApproved
-        ? `"${sub.jobTitle || 'Your task'}" was auto-approved — your verification answers were correct! ${fmtUSD(sub.reward || 0)} added to your balance.`
-        : `"${sub.jobTitle || 'Your task'}" was approved by the job poster — ${fmtUSD(sub.reward || 0)} added to your balance.`,
+      msg: `"${sub.jobTitle || 'Your task'}" was auto-approved — your verification answers were correct! ${fmtUSD(sub.reward || 0)} added to your balance.`,
+      icon: '✅', unread: true, createdAt: fb.serverTimestamp()
+    }).catch(() => {});
+    return;
+  }
+  // Manual (job-poster) approval credit — SECURITY-CRITICAL: this now runs as a
+  // single Firestore transaction, mirroring the Auto-Verification credit above,
+  // so it satisfies isJobSubmissionApproval() in the rules:
+  //   1) read taskSubmissions/{subId} fresh from the server
+  //   2) bail out if it's already credited (no double-pay on retry/replay)
+  //   3) increment users/{workerId} balance/totalEarned/tasksCompleted/approvedTasks
+  //      by the submission's OWN reward field (never the stale in-memory `sub.reward`)
+  //      and stamp lastAutoCreditRef = subId, exactly as the rule requires
+  //   4) flip taskSubmissions/{subId}.credited to true in the SAME transaction
+  if (sub.workerId) {
+    const subRef = fb.doc(db, 'taskSubmissions', sub.id);
+    const workerRef = fb.doc(db, 'users', sub.workerId);
+    let alreadyCredited = false, creditedReward = 0;
+    try {
+      await fb.runTransaction(db, async (tx) => {
+        const subSnap = await tx.get(subRef);
+        if (!subSnap.exists() || subSnap.data().credited) { alreadyCredited = true; return; }
+        const subData = subSnap.data();
+        creditedReward = subData.reward || 0;
+        tx.update(workerRef, {
+          balance: fb.increment(creditedReward), totalEarned: fb.increment(creditedReward),
+          tasksCompleted: fb.increment(1), approvedTasks: fb.increment(1),
+          lastAutoCreditRef: sub.id,
+        });
+        tx.update(subRef, { credited: true });
+      });
+    } catch (e) { console.warn('creditApprovedSubmission (manual):', e); return; }
+    if (alreadyCredited) return;
+    await fb.addDoc(fb.collection(db, 'users', sub.workerId, 'notifications'), {
+      title: '✅ Task Approved!',
+      msg: `"${sub.jobTitle || 'Your task'}" was approved by the job poster — ${fmtUSD(creditedReward)} added to your balance.`,
       icon: '✅', unread: true, createdAt: fb.serverTimestamp()
     }).catch(() => {});
   }
@@ -3080,10 +3269,33 @@ function listenUserNotifications(uid, onChange) {
 }
 async function markAllNotificationsRead(uid) {
   const snap = await fb.getDocs(fb.collection(db, 'users', uid, 'notifications'));
-  snap.forEach(d => { if (d.data().unread) fb.updateDoc(d.ref, { unread: false }).catch(() => {}); });
+  const unreadDocs = snap.docs.filter(d => d.data().unread);
+  if (!unreadDocs.length) return;
+  // Proper Firestore batch write (max 500 ops/batch) instead of N separate updateDoc
+  // calls — atomic-ish and far fewer round trips for users with many notifications.
+  const CHUNK = 450;
+  for (let i = 0; i < unreadDocs.length; i += CHUNK) {
+    const batch = fb.writeBatch(db);
+    unreadDocs.slice(i, i + CHUNK).forEach(d => batch.update(d.ref, { unread: false }));
+    await batch.commit().catch(() => {});
+  }
 }
 async function markNotificationRead(uid, id) {
   await fb.updateDoc(fb.doc(db, 'users', uid, 'notifications', id), { unread: false }).catch(() => {});
+}
+async function deleteNotification(uid, id) {
+  await fb.deleteDoc(fb.doc(db, 'users', uid, 'notifications', id)).catch(() => {});
+}
+async function clearAllNotifications(uid) {
+  const snap = await fb.getDocs(fb.collection(db, 'users', uid, 'notifications'));
+  if (snap.empty) return;
+  const CHUNK = 450;
+  const docs = snap.docs;
+  for (let i = 0; i < docs.length; i += CHUNK) {
+    const batch = fb.writeBatch(db);
+    docs.slice(i, i + CHUNK).forEach(d => batch.delete(d.ref));
+    await batch.commit().catch(() => {});
+  }
 }
 
 // ══════ js/services/referral.js ══════
@@ -5227,18 +5439,22 @@ function selectPostType(el, type) {
   if (shotField) shotField.style.display = type === 'proof' ? 'block' : 'none';
 }
 
-const STATUS_LABEL = { pending_review: ['⏳ Review Pending', 'type-pending'], approved: ['✓ Live', 'type-done'], rejected: ['❌ Rejected', 'type-rejected'], pending_reapproval: ['🔄 Needs Re-Approval', 'type-pending'] };
+const STATUS_LABEL = { pending_review: ['⏳ Review Pending', 'type-pending'], approved: ['✓ Live', 'type-done'], rejected: ['❌ Rejected', 'type-rejected'], pending_reapproval: ['🔄 Needs Re-Approval', 'type-pending'], completed: ['🏁 Completed', 'type-rejected'], closed: ['🔒 Closed', 'type-rejected'] };
 
 function renderMyPostedJobs() {
   const el = document.getElementById('myPostedJobsList'); if (!el) return;
   const filter = S.postFilter || 'all';
   let list = S.myPostedJobs;
   if (filter !== 'all') list = list.filter(j => j.status === filter);
+  // Completed/closed jobs sink to the bottom so active/pending jobs stay visible up top;
+  // within each group the original (newest-first) order from listenMyPostedJobs is kept.
+  const isDone = st => st === 'completed' || st === 'closed';
+  list = [...list].sort((a, b) => (isDone(a.status) ? 1 : 0) - (isDone(b.status) ? 1 : 0));
   if (!list.length) { el.innerHTML = '<div class="history-empty"><div class="big">📢</div>এখনো কোনো জব পোস্ট করেননি।</div>'; return; }
   el.innerHTML = list.map(j => {
     const [label, cls] = STATUS_LABEL[j.status] || ['⏳ Review Pending', 'type-pending'];
-    const heldNote = j.budgetHeld ? `<div class="myjob-meta" style="margin-top:4px"><span>💰 হোল্ড করা বাজেট: ${fmtUSD(j.budgetHeld)}${j.holdSettled ? (j.status === 'rejected' ? ' (ফেরত দেওয়া হয়েছে)' : ' (নিশ্চিত)') : ' (প্রক্রিয়াধীন)'}</span></div>` : '';
-    return `<div class="myjob-card">
+    const heldNote = j.budgetHeld ? `<div class="myjob-meta" style="margin-top:4px"><span>💰 হোল্ড করা বাজেট: ${fmtUSD(j.budgetHeld)}${j.holdSettled ? ((j.status === 'rejected' || j.status === 'closed') ? ' (ফেরত দেওয়া হয়েছে)' : ' (নিশ্চিত)') : ' (প্রক্রিয়াধীন)'}</span></div>` : '';
+    return `<div class="myjob-card" style="${isDone(j.status) ? 'opacity:.72' : ''}">
       <div class="myjob-top"><div class="myjob-title">${escHtml(j.title)}</div><span class="badge ${cls}">${label}</span></div>
       <div class="myjob-meta"><span>${escHtml(j.category || '')}</span><span>🌍 ${escHtml(j.country || 'Global')}</span></div>
       <div class="myjob-stats">
@@ -5247,9 +5463,21 @@ function renderMyPostedJobs() {
         <div class="myjob-stat"><div class="v" style="color:var(--green)">${fmtUSD((j.reward || 0) * (j.limit || 0))}</div><div class="l">Total Budget</div></div>
       </div>
       ${heldNote}
-      ${j.status === 'rejected' && j.rejectReason ? `<div class="myjob-reject-box">💬 <div><strong>এডমিনের কারণ:</strong> ${escHtml(j.rejectReason)}</div></div>` : ''}
+      ${j.status === 'rejected' ? `<div class="job-rejected-banner">
+        <div class="jrb-title">❌ Job Rejected</div>
+        <div class="jrb-reason">${j.rejectReason ? escHtml(j.rejectReason) : 'এডমিন কোনো নির্দিষ্ট কারণ লেখেননি।'}</div>
+        <div class="jrb-actions">
+          <button class="btn-ghost" onclick="openPostWizard({mode:'edit',jobId:'${j.id}'})">${wizIcon('paperclip', 14)} Edit the job and fix the issues</button>
+          <button class="btn-ghost" style="color:var(--red);border-color:rgba(255,82,82,.3)" onclick="closeMyRejectedJob('${j.id}')">🔒 Close this job</button>
+        </div>
+      </div>` : ''}
       ${j.status === 'pending_reapproval' ? `<div class="myjob-reject-box" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(224,64,251,.2)">🔄 <div>আপনি এই জব এডিট করেছেন — এডমিন আবার রিভিউ করার পর এটি লাইভ হবে।</div></div>` : ''}
-      ${(j.status === 'approved' || j.status === 'pending_reapproval') ? `<button class="btn-ghost" style="margin-top:9px" onclick="openPostWizard({mode:'edit',jobId:'${j.id}'})">${wizIcon('paperclip', 14)} Edit This Job</button>` : ''}
+      ${j.status === 'completed' ? `<div class="myjob-reject-box" style="background:var(--red-dim);color:var(--red);border-color:rgba(255,82,82,.2)">🏁 <div>এই জব completed — পাবলিক ফিডে আর নেই, নতুন worker submit করতে পারবে না। পুরনো pending submission থাকলে সেগুলো এখনো review/pay করা যাবে।</div></div>` : ''}
+      ${j.status === 'closed' ? `<div class="myjob-reject-box" style="background:var(--red-dim);color:var(--red);border-color:rgba(255,82,82,.2)">🔒 <div>আপনি এই জবটি বন্ধ করে দিয়েছেন — হোল্ড করা বাজেট ব্যালেন্সে ফেরত দেওয়া হয়েছে।</div></div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:9px;flex-wrap:wrap">
+        ${(j.status === 'approved' || j.status === 'pending_reapproval') ? `<button class="btn-ghost" onclick="openPostWizard({mode:'edit',jobId:'${j.id}'})">${wizIcon('paperclip', 14)} Edit This Job</button>` : ''}
+        ${(j.status === 'approved' || j.status === 'pending_reapproval') ? `<button class="btn-ghost" style="color:var(--red);border-color:rgba(255,82,82,.25)" onclick="markMyJobCompleted('${j.id}')">🏁 Mark as Completed</button>` : ''}
+      </div>
     </div>`;
   }).join('');
 }
@@ -5425,7 +5653,7 @@ function renderNotifications() {
   const el = document.getElementById('notifList'); if (!el) return;
   updateNotifCount();
   if (!S.notifications.length) { el.innerHTML = '<div class="history-empty"><div class="big">🔔</div>No notifications.</div>'; return; }
-  el.innerHTML = S.notifications.map(n => `<div class="notif-item ${n.unread ? 'unread' : ''}" onclick="markNotifRead('${n.id}')"><div class="notif-ico" style="background:${n.unread ? 'var(--green-dim)' : 'var(--bg3)'}">${n.icon}</div><div class="notif-body"><div class="notif-title">${escHtml(n.title)}${n.unread ? '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--green);margin-left:5px;vertical-align:middle"></span>' : ''}</div><div class="notif-msg">${escHtml(n.msg)}</div><div class="notif-time">${n.time}</div></div></div>`).join('');
+  el.innerHTML = S.notifications.map(n => `<div class="notif-item ${n.unread ? 'unread' : ''}" onclick="markNotifRead('${n.id}')"><div class="notif-ico" style="background:${n.unread ? 'var(--green-dim)' : 'var(--bg3)'}">${n.icon}</div><div class="notif-body"><div class="notif-title">${escHtml(n.title)}${n.unread ? '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--green);margin-left:5px;vertical-align:middle"></span>' : ''}</div><div class="notif-msg">${escHtml(n.msg)}</div><div class="notif-time">${n.time}</div></div><div class="notif-close" onclick="event.stopPropagation();deleteNotif('${n.id}')" title="Delete">✕</div></div>`).join('');
 }
 async function markAllRead() {
   const user = window._currentUser; if (!user) return;
@@ -5437,6 +5665,20 @@ async function markNotifRead(id) {
   const n = S.notifications.find(x => x.id === id); if (!n || !n.unread) return;
   n.unread = false; renderNotifications();
   const user = window._currentUser; if (user) markNotificationRead(user.uid, id);
+}
+async function deleteNotif(id) {
+  const user = window._currentUser; if (!user) return;
+  S.notifications = S.notifications.filter(x => x.id !== id);
+  renderNotifications();
+  try { await deleteNotification(user.uid, id); } catch (e) {}
+}
+async function clearAllNotifs() {
+  const user = window._currentUser; if (!user) return;
+  if (!S.notifications.length) return;
+  if (!confirm('সব notification মুছে ফেলতে চান? এটা আর ফেরানো যাবে না।')) return;
+  S.notifications = [];
+  renderNotifications(); showToast('All notifications cleared');
+  try { await clearAllNotifications(user.uid); } catch (e) {}
 }
 
 // ══════ js/screens/referral.js ══════
@@ -6066,7 +6308,7 @@ Object.assign(window, {
   openSubmitWorkScreen, closeSubmitWorkScreen, handleSubmitWorkFile, finalizeSubmitWork,
   renderMyTasks, filterMyTasks,
   onEnterPostScreen, applySiteSettingsToPost, switchPostTab, selectPostType,
-  updatePostBudgetPreview, renderMyPostedJobs, filterMyPostedJobs,
+  updatePostBudgetPreview, renderMyPostedJobs, filterMyPostedJobs, markMyJobCompleted, closeMyRejectedJob,
   filterMyJobSubmissions, renderMyJobSubmissions, approveJobSubmission, rejectJobSubmission, confirmRejectJobSubmission,
   openPostWizard, wizOpenEdit, wizGoStep, wizPrevStep, wizNextStep,
   wizSetLocationMode, wizFilterCountrySearch, wizToggleContinent, wizToggleCountry, wizSelectAllContinent,
@@ -6078,7 +6320,7 @@ Object.assign(window, {
   applySiteSettingsToWallet, renderWithdrawMethodGrid, selectWithdrawMethod, updateWithdrawPreview,
   rebuildAndRenderTx, renderTxList, filterTx, doWithdraw,
   renderHistory, filterHistory, switchStatementTab,
-  updateNotifCount, renderNotifications, markAllRead, markNotifRead,
+  updateNotifCount, renderNotifications, markAllRead, markNotifRead, deleteNotif, clearAllNotifs,
   onEnterReferralScreen, applySiteSettingsToReferral, updateReferralUI, switchGenTab,
   renderGenTree, showRefUserProfile, closeRefUserModal, copyRef, shareRef,
   updateAvatarDisplay, updateProfileUI, previewAvatar, saveProfile,
@@ -6221,6 +6463,12 @@ async function bootstrapApp(user, ref, data) {
     setInterval(() => tickDailyCountdowns(() => { renderAllTasks('__current__'); renderHomeTasks(); renderMyTasks(); }), 1000);
     if (data?.isNewUser) setTimeout(() => showOnboarding(), 1500);
     if (data?.isNewUser) fb.updateDoc(ref, { isNewUser: false }).catch(() => {});
+    // Deep-link support so approve/reject emails can send the poster straight to
+    // "My Posted Jobs" — e.g. workhive.pro/?screen=myjobs — instead of just the homepage.
+    try {
+      const screenParam = new URLSearchParams(window.location.search).get('screen');
+      if (screenParam === 'myjobs') { goTab('post'); setTimeout(() => switchPostTab('mine'), 0); }
+    } catch (e) {}
     let _resizeTimer;
     window.addEventListener('resize', () => {
       clearTimeout(_resizeTimer);

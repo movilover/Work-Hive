@@ -172,7 +172,7 @@ main{flex:1;overflow-y:auto;padding:4px 16px 110px;scroll-behavior:smooth;oversc
 .two-col .sec-title{margin:0 0 9px}
 .two-col .sec-title h3{font-size:12.5px}
 .two-col .task-card{padding:9px;gap:7px;margin-bottom:7px}
-.two-col .task-ico{width:32px;height:32px;border-radius:9px}
+.two-col .task-ico{width:28px;height:28px;border-radius:8px;border:1px solid var(--border2);box-shadow:0 1px 4px rgba(0,0,0,.15);overflow:hidden}
 .two-col .task-title{font-size:10.5px}
 .two-col .task-reward{font-size:11px}
 .two-col .task-meta{font-size:8.5px;gap:3px}
@@ -192,7 +192,7 @@ main{flex:1;overflow-y:auto;padding:4px 16px 110px;scroll-behavior:smooth;oversc
 .task-card:active{transform:scale(.985)}
 .task-card-accent{height:3px;width:100%;border-radius:0}
 .task-card-inner{padding:13px}
-.task-ico{width:44px;height:44px;border-radius:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.task-ico{width:38px;height:38px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--border2);box-shadow:0 2px 6px rgba(0,0,0,.18);overflow:hidden}
 .task-ico svg{width:19px;height:19px;stroke:#fff}
 .task-body{flex:1;min-width:0}
 .task-top{display:flex;justify-content:space-between;gap:7px;align-items:flex-start}
@@ -2362,7 +2362,7 @@ function taskCardHtml(t, compact = false) {
         <div class="task-card-inner">
           ${posterRowHtml(t, true)}
           <div style="display:flex;gap:9px;align-items:flex-start">
-            ${taskIcoHtml(t, 'width:32px;height:32px;border-radius:9px')}
+            ${taskIcoHtml(t, 'width:28px;height:28px;border-radius:8px')}
             <div class="task-body"><div class="task-top"><div class="task-title" style="font-size:10.5px">${escHtml(t.title)}</div><div class="task-reward-pill" style="padding:2px 7px"><span style="font-size:11px">+${fmtUSD(t.reward || 0)}</span></div></div>
             <div class="task-meta" style="font-size:8.5px;margin-top:4px">${badge}</div></div>
           </div>
@@ -2409,7 +2409,7 @@ function taskCardHtml(t, compact = false) {
       <div class="task-card-inner">
         ${posterRowHtml(t, true)}
         <div style="display:flex;gap:9px;align-items:flex-start">
-          ${taskIcoHtml(t, 'width:32px;height:32px;border-radius:9px')}
+          ${taskIcoHtml(t, 'width:28px;height:28px;border-radius:8px')}
           <div class="task-body"><div class="task-top"><div class="task-title" style="font-size:10.5px">${escHtml(t.title)}</div><div class="task-reward-pill" style="padding:2px 7px"><span style="font-size:11px">+${fmtUSD(t.reward || 0)}</span></div></div>
           <div class="task-meta" style="font-size:8.5px;margin-top:4px">${statusBadge}</div></div>
         </div>
@@ -2510,6 +2510,49 @@ function listenSiteSettings(onChange) {
   );
 }
 
+// ══════ Auto-expire (7-day) jobs + refund unused slots ══════
+// This app has no server/Cloud Function, so "automatic" expiry is done
+// opportunistically by whichever logged-in client's browser happens to see an
+// expired job first (in the public feed OR the poster's own "My Jobs" list) —
+// it fires a transaction that (a) flips the job to 'completed' and (b) credits
+// the ORIGINAL POSTER's balance for the slots nobody filled before it expired.
+// Concurrency/replay safety: gated by the job's own `expiryRefunded` flag,
+// consumed atomically in the same transaction that credits the user, mirroring
+// the same one-time-receipt pattern used everywhere else in this app
+// (lastAutoCreditRef / credited). Two clients racing on the same expired job
+// is harmless — Firestore transactions serialize the conflicting writes, and
+// whichever one loses re-reads expiryRefunded == true and safely no-ops.
+const _expiryAttempted = new Set();
+async function expireJobWithRefund(job) {
+  if (!job || !job.id || job.status !== 'approved') return;
+  if (!job.expiresAt) return;
+  const exp = job.expiresAt.toDate ? job.expiresAt.toDate() : new Date(job.expiresAt);
+  if (isNaN(exp) || exp >= new Date()) return;
+  if (job.expiryRefunded) return;
+  if (_expiryAttempted.has(job.id)) return;
+  _expiryAttempted.add(job.id);
+  try {
+    const jobRef = fb.doc(db, 'jobs', job.id);
+    await fb.runTransaction(db, async (tx) => {
+      const jSnap = await tx.get(jobRef);
+      if (!jSnap.exists()) return;
+      const jData = jSnap.data();
+      if (jData.status !== 'approved') return;
+      if (jData.get ? jData.get('expiryRefunded', false) : jData.expiryRefunded) return;
+      const jExp = jData.expiresAt?.toDate ? jData.expiresAt.toDate() : new Date(jData.expiresAt);
+      if (isNaN(jExp) || jExp >= new Date()) return;
+      const limit = jData.limit || 0, filled = jData.filled || 0, held = jData.budgetHeld || 0;
+      const unfilled = Math.max(0, limit - filled);
+      const refundAmount = limit > 0 ? parseFloat(((held / limit) * unfilled).toFixed(2)) : 0;
+      tx.update(jobRef, { status: 'completed', expiryRefunded: true });
+      if (refundAmount > 0 && jData.postedById) {
+        const posterRef = fb.doc(db, 'users', jData.postedById);
+        tx.update(posterRef, { balance: fb.increment(refundAmount), lastExpiryRefundRef: job.id });
+      }
+    });
+  } catch (e) { console.warn('expireJobWithRefund:', e); }
+}
+
 // ══════ js/services/jobs.js ══════
 let _unsubJobs = null;
 function isJobVisibleToUser(job) {
@@ -2532,7 +2575,13 @@ function listenApprovedJobs(onChange) {
     fb.query(fb.collection(db, 'jobs'), fb.where('status', '==', 'approved')),
     snap => {
       S.approvedJobs = [];
-      snap.forEach(d => { const job = { id: d.id, ...d.data() }; if (isJobVisibleToUser(job)) S.approvedJobs.push(job); });
+      snap.forEach(d => {
+        const job = { id: d.id, ...d.data() };
+        // Opportunistically settle any job whose 7-day window just passed —
+        // best-effort, fire-and-forget; see expireJobWithRefund() above.
+        expireJobWithRefund(job).catch(() => {});
+        if (isJobVisibleToUser(job)) S.approvedJobs.push(job);
+      });
       // Merge CPA tasks into feed (already loaded by listenCpaTasks)
       if (S.cpaTasks && S.cpaTasks.length) {
         S.cpaTasks.forEach(t => { if (!S.approvedJobs.find(j => j.id === t.id)) S.approvedJobs.push(t); });
@@ -2865,7 +2914,11 @@ function listenMyPostedJobs(uid, onChange) {
     fb.query(fb.collection(db, 'jobs'), fb.where('postedById', '==', uid)),
     snap => {
       S.myPostedJobs = [];
-      snap.forEach(d => S.myPostedJobs.push({ id: d.id, ...d.data() }));
+      snap.forEach(d => {
+        const job = { id: d.id, ...d.data() };
+        expireJobWithRefund(job).catch(() => {}); // best-effort, see above
+        S.myPostedJobs.push(job);
+      });
       S.myPostedJobs.sort((a, b) => (b._ts || 0) - (a._ts || 0));
       onChange && onChange(S.myPostedJobs);
     },
@@ -5472,7 +5525,7 @@ function renderMyPostedJobs() {
         </div>
       </div>` : ''}
       ${j.status === 'pending_reapproval' ? `<div class="myjob-reject-box" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(224,64,251,.2)">🔄 <div>আপনি এই জব এডিট করেছেন — এডমিন আবার রিভিউ করার পর এটি লাইভ হবে।</div></div>` : ''}
-      ${j.status === 'completed' ? `<div class="myjob-reject-box" style="background:var(--red-dim);color:var(--red);border-color:rgba(255,82,82,.2)">🏁 <div>এই জব completed — পাবলিক ফিডে আর নেই, নতুন worker submit করতে পারবে না। পুরনো pending submission থাকলে সেগুলো এখনো review/pay করা যাবে।</div></div>` : ''}
+      ${j.status === 'completed' ? `<div class="myjob-reject-box" style="background:var(--red-dim);color:var(--red);border-color:rgba(255,82,82,.2)">${j.expiryRefunded ? '⏰' : '🏁'} <div>${j.expiryRefunded ? 'এই জবের ৭ দিনের মেয়াদ শেষ হওয়ায় এটি স্বয়ংক্রিয়ভাবে completed হয়েছে — যত slot খালি ছিল তার বাজেট আপনার ব্যালেন্সে ফেরত দেওয়া হয়েছে।' : 'এই জব completed — পাবলিক ফিডে আর নেই, নতুন worker submit করতে পারবে না। পুরনো pending submission থাকলে সেগুলো এখনো review/pay করা যাবে।'}</div></div>` : ''}
       ${j.status === 'closed' ? `<div class="myjob-reject-box" style="background:var(--red-dim);color:var(--red);border-color:rgba(255,82,82,.2)">🔒 <div>আপনি এই জবটি বন্ধ করে দিয়েছেন — হোল্ড করা বাজেট ব্যালেন্সে ফেরত দেওয়া হয়েছে।</div></div>` : ''}
       <div style="display:flex;gap:8px;margin-top:9px;flex-wrap:wrap">
         ${(j.status === 'approved' || j.status === 'pending_reapproval') ? `<button class="btn-ghost" onclick="openPostWizard({mode:'edit',jobId:'${j.id}'})">${wizIcon('paperclip', 14)} Edit This Job</button>` : ''}

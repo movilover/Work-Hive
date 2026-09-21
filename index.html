@@ -1639,7 +1639,7 @@ function applyTelegramSafeArea(tg) {
         </div>
       </div>
       <div class="field"><label>Full Name *</label><input type="text" id="editName" placeholder="Your name"></div>
-      <div class="field"><label>Username</label><input type="text" id="editUsername" placeholder="@username" style="text-transform:lowercase"></div>
+      <div class="field"><label>Username</label><input type="text" id="editUsername" placeholder="@username" style="text-transform:lowercase"><div id="usernameLockNote" style="font-size:10.5px;color:var(--text3);margin-top:4px;display:none">🔒 একবার সেট করার পর username আর পরিবর্তন করা যাবে না।</div></div>
       <div class="field"><label>Country</label><select id="editCountry"><option value="">— Select Country —</option><option>Bangladesh</option><option>India</option><option>Pakistan</option><option>Nepal</option><option>Philippines</option><option>Indonesia</option><option>Nigeria</option><option>USA</option><option>UK</option><option>Other</option></select></div>
       <div class="field"><label>Bio</label><textarea id="editBio" placeholder="Tell something about yourself..." rows="3" maxlength="150"></textarea></div>
       <div class="field"><label>Phone Number</label><input type="tel" id="editPhone" placeholder="+880 1XXXXXXXXX"></div>
@@ -1891,40 +1891,27 @@ const SITE = {
   supportEmail: 'support@workhive.pro',
   supportHours: '9 AM – 11 PM',
   supportResponse: 'Within 12 hours',
-  rulesContent: `WorkHive.pro — সম্পূর্ণ নিয়মাবলী ও নীতিমালা
+  rulesContent: `WorkHive.pro — নিয়মাবলী ও নীতিমালা
 
-১. অ্যাকাউন্ট ও যোগ্যতা
-প্রতিটি ইউজারের একটাই অ্যাকাউন্ট থাকতে পারবে। একাধিক/ভুয়া অ্যাকাউন্ট তৈরি করলে সবগুলো স্থায়ীভাবে ব্যান হবে এবং জমাকৃত ব্যালেন্স বাজেয়াপ্ত হতে পারে। রেজিস্ট্রেশনের সময় দেওয়া তথ্য (নাম, ইমেইল) সঠিক হতে হবে।
+১. জব পোস্ট করার নিয়ম
+জব পোস্ট করলে বাজেট (reward × slot + platform fee) সাথে সাথে আপনার ব্যালেন্স থেকে হোল্ড হয়ে যায়। Admin অনুমোদন করলে জব লাইভ হয়। Reject হলে কারণসহ জানানো হয় এবং আপনি Edit করে আবার সাবমিট করতে পারেন, অথবা জব বন্ধ করে বাজেট ফেরত নিতে পারেন। প্রতিটা জবের একটা মেয়াদ (ডিফল্ট ৭ দিন) থাকে — মেয়াদ শেষ হলে জব স্বয়ংক্রিয়ভাবে Completed হয়ে যায় এবং খালি থাকা slot-এর বাজেট ব্যালেন্সে ফেরত আসে।
 
-২. KYC ভেরিফিকেশন
-বড় অঙ্কের উইথড্র বা নির্দিষ্ট ফিচার ব্যবহারের জন্য NID/Passport/Driving License দিয়ে KYC সম্পন্ন করতে হবে। Admin ডকুমেন্ট রিভিউ করে Approve/Reject করে; Reject হলে কারণ দেখানো হয় এবং পুনরায় জমা দেওয়া যায়। ভুয়া/এডিট করা ডকুমেন্ট জমা দিলে অ্যাকাউন্ট সাসপেন্ড হবে।
+২. কাজ সম্পন্ন করার নিয়ম
+প্রতিটা submission-এ চাওয়া প্রমাণ সত্যি ও নির্ভুল হতে হবে। ভুয়া/এডিট করা স্ক্রিনশট বা কপি-পেস্ট প্রমাণ জমা দিলে submission বাতিল ও অ্যাকাউন্ট সাসপেন্ড হতে পারে। একই জবে দ্বিতীয়বার submit করা যাবে না যতক্ষণ না প্রথমটি reject হয়।
 
-৩. জব পোস্ট করার নিয়ম
-জব পোস্ট করলে বাজেট (reward × slot + platform fee) সাথে সাথে আপনার ব্যালেন্স থেকে হোল্ড হয়ে যায়। Admin অনুমোদন করলে জব লাইভ হয়। Reject হলে কারণসহ জানানো হয় এবং আপনি Edit করে আবার সাবমিট করতে পারেন, অথবা জব বন্ধ করে বাজেট ফেরত নিতে পারেন। প্রতিটা জবের একটা মেয়াদ (ডিফল্ট ৭ দিন) থাকে — মেয়াদ শেষ হলে জব স্বয়ংক্রিয়ভাবে Completed হয়ে যায় এবং খালি থাকা slot-এর বাজেট ব্যালেন্সে ফেরত আসে। লোকেশন টার্গেটিং (দেশ/মহাদেশ) সেট করা যায়, তবে ভুল টার্গেটিং দিয়ে সিস্টেম বাইপাসের চেষ্টা নিষিদ্ধ।
+৩. পেমেন্ট ও উইথড্র
+Approved submission-এর টাকা সাথে সাথে ব্যালেন্সে যোগ হয়। Withdrawal request admin রিভিউয়ের পর প্রসেস হয়।
 
-৪. কাজ সম্পন্ন ও সাবমিশনের নিয়ম
-প্রতিটা submission-এ চাওয়া প্রমাণ (স্ক্রিনশট/লিংক/তথ্য) সত্যি ও নির্ভুল হতে হবে। ভুয়া/এডিট করা স্ক্রিনশট বা কপি-পেস্ট প্রমাণ জমা দিলে submission বাতিল ও অ্যাকাউন্ট সাসপেন্ড হতে পারে। একই জবে দ্বিতীয়বার submit করা যাবে না যতক্ষণ না প্রথমটি reject হয়। Approve হলে ব্যালেন্সে টাকা যোগ হওয়ার সাথে সাথে একটি নিশ্চিতকরণ সাউন্ড বাজবে — এই সাউন্ড শুধুমাত্র Admin Panel থেকে কনফিগার করা যায়; কোনো ইউজার নিজে এটি পরিবর্তন, বন্ধ বা নির্বাচন করতে পারবে না।
+৪. রেফারেল প্রোগ্রাম
+নিজের লিংকে নিজে সাইনআপ করে বোনাস নেওয়া নিষিদ্ধ। ৩ স্তর পর্যন্ত (Gen1/Gen2/Gen3) বোনাস পাওয়া যায়, প্রতি নতুন সাইনআপে একবারই।
 
-৫. পেমেন্ট ও উইথড্র
-Approved submission-এর টাকা সাথে সাথে ব্যালেন্সে যোগ হয়। Withdrawal request admin রিভিউয়ের পর প্রসেস হয়। ভুল পেমেন্ট তথ্য দেওয়ার দায় ইউজারের।
+৫. নিষিদ্ধ আচরণ
+একাধিক/ভুয়া অ্যাকাউন্ট, ভুয়া প্রমাণ, বোনাস/অটো-ভেরিফাই সিস্টেম exploit করার চেষ্টা, হয়রানি, বা পেমেন্ট জালিয়াতি করলে সতর্কতা ছাড়াই ব্যান হতে পারে।
 
-৬. রেফারেল প্রোগ্রাম
-রেফারেল লিংক সবসময় https://workhive.pro/?ref=CODE ফরম্যাটে জেনারেট হয়। ৩ স্তর পর্যন্ত (Gen1/Gen2/Gen3) বোনাস পাওয়া যায়, প্রতি নতুন সাইনআপে একবারই। নিজের লিংকে নিজে সাইনআপ করে বা ভুয়া রেফারেল দিয়ে বোনাস নেওয়া কঠোরভাবে নিষিদ্ধ।
+৬. Admin-এর ক্ষমতা
+Admin যেকোনো জব/সাবমিশন/উইথড্র/KYC অনুমোদন বা প্রত্যাখ্যান করতে পারে, অ্যাকাউন্ট সাসপেন্ড করতে পারে, এবং সাইটের সেটিং পরিবর্তন করতে পারে। এডমিনের সিদ্ধান্তে দ্বিমত থাকলে সাপোর্ট চ্যাটে যোগাযোগ করুন।
 
-৭. সাপোর্ট ও লাইভ চ্যাট
-প্রতিটি ইউজারের জন্য একটি পৃথক সাপোর্ট থ্রেড থাকে, যেখানে Admin টেক্সট মেসেজ ও ইমেজ পাঠাতে পারে। সাপোর্টের মাধ্যমে অপব্যবহার, স্প্যাম বা হুমকিমূলক বার্তা পাঠানো নিষিদ্ধ।
-
-৮. নোটিফিকেশন ও ব্রডকাস্ট
-Admin ইন-অ্যাপ পুশ নোটিফিকেশন এবং ইমেইল ব্রডকাস্ট পাঠাতে পারে — All Users, KYC Verified, অথবা KYC Pending গ্রুপ টার্গেট করে।
-
-৯. নিষিদ্ধ আচরণ
-একাধিক/ভুয়া অ্যাকাউন্ট, ভুয়া প্রমাণ, বট/অটোমেশন ব্যবহার, বোনাস বা ভেরিফিকেশন সিস্টেম exploit করার চেষ্টা, হয়রানি, পেমেন্ট জালিয়াতি, বা সাইটের যেকোনো ফাংশন misuse করলে সতর্কতা ছাড়াই সাময়িক বা স্থায়ীভাবে ব্যান হতে পারে।
-
-১০. Admin-এর ক্ষমতা ও দায়িত্ব
-Admin যেকোনো জব/সাবমিশন/উইথড্র/KYC অনুমোদন বা প্রত্যাখ্যান করতে পারে, অ্যাকাউন্ট সাসপেন্ড/ব্যান করতে পারে, সাইটের সেটিংস পরিবর্তন করতে পারে, এবং ব্রডকাস্ট পাঠাতে পারে। এডমিনের সিদ্ধান্তে দ্বিমত থাকলে সাপোর্ট চ্যাটে যোগাযোগ করুন।
-
-১১. পরিবর্তনযোগ্যতা
-এই নীতিমালা প্ল্যাটফর্মের আপডেটের সাথে যেকোনো সময় পরিবর্তনসাপেক্ষ। বড় পরিবর্তন হলে ব্রডকাস্টের মাধ্যমে জানানো হবে।`,
+এই নীতিমালা যেকোনো সময় পরিবর্তনসাপেক্ষ।`,
   banner: '', bannerType: 'info', spinEnabled: true, postFeatureDesc: '',
   postFeatureEnabled: true,
   postMinReward: 0.02,
@@ -2622,9 +2609,6 @@ async function expireJobWithRefund(job) {
 // ══════ js/services/jobs.js ══════
 let _unsubJobs = null;
 function isJobVisibleToUser(job) {
-  // Daily-link tasks are disabled site-wide — the client-side auto-credit flow
-  // for this task type was a balance-manipulation risk (see completeDailyLinkTask).
-  if (job.type === 'dailylink') return false;
   if (job.expiresAt) {
     const exp = job.expiresAt.toDate ? job.expiresAt.toDate() : new Date(job.expiresAt);
     if (!isNaN(exp) && exp < new Date()) return false;
@@ -3148,12 +3132,42 @@ async function submitProofTask(jobId, job, proofText, imageFiles, user, userData
 }
 
 async function completeDailyLinkTask(jobId, job, user, userData, userRef) {
-  // DISABLED: this used to write status:'approved' + credit balance directly from
-  // the client with no admin review — a self-approval / balance-manipulation risk.
-  // Daily-link jobs are also filtered out of S.approvedJobs (see isJobVisibleToUser),
-  // so this function should now be unreachable from the UI; it throws defensively
-  // in case anything still calls it.
-  throw new Error('FEATURE_DISABLED');
+  // Re-enabled with a server-enforced cooldown instead of the old client-only
+  // self-approval flow. Two collections work together, both gated by
+  // Firestore rules (not just this function):
+  //   1) dailyLinkSubmissions/{jobId}_{uid} — a single per-user-per-job doc
+  //      whose `lastClaimedAt` can only be updated once request.time is more
+  //      than 24h past the PREVIOUS lastClaimedAt (checked server-side, so
+  //      clearing localStorage/cache can't shortcut the wait).
+  //   2) A fresh taskSubmissions doc, allowed to be created as instantly
+  //      'approved' + credited:false ONLY when a dailyLinkSubmissions write
+  //      with the exact same request.time just happened — proving the two
+  //      writes are part of the same legitimate, cooldown-gated claim.
+  // Crediting itself then reuses the exact same proven one-time-receipt
+  // transaction (isSelfAutoVerifyCreditWrite) that Lucky Spin/Auto-Verify use.
+  const claimRef = fb.doc(db, 'dailyLinkSubmissions', jobId + '_' + user.uid);
+  const subRef = fb.doc(fb.collection(db, 'taskSubmissions'));
+  let cooledDown = true;
+  await fb.runTransaction(db, async (tx) => {
+    const claimSnap = await tx.get(claimRef);
+    if (claimSnap.exists()) {
+      const d = claimSnap.data();
+      const last = d.lastClaimedAt?.toDate ? d.lastClaimedAt.toDate() : new Date(d.lastClaimedAt);
+      if (Date.now() - last.getTime() < 24 * 3600 * 1000) { cooledDown = false; return; }
+      tx.update(claimRef, { lastClaimedAt: fb.serverTimestamp() });
+    } else {
+      tx.set(claimRef, { workerId: user.uid, jobId, lastClaimedAt: fb.serverTimestamp() });
+    }
+    tx.set(subRef, {
+      workerId: user.uid, workerName: userData?.name || user.displayName || 'User',
+      jobId, jobTitle: job.title || 'Daily Task', jobPosterId: job.postedById || 'admin',
+      reward: job.reward || 0, status: 'approved', credited: false,
+      proofText: 'Daily link auto-claim (24h cooldown)', type: 'dailylink',
+      _ts: Date.now(), createdAt: fb.serverTimestamp(),
+    });
+  });
+  if (!cooledDown) throw new Error('COOLDOWN');
+  await creditApprovedSubmission({ id: subRef.id, workerId: user.uid, autoApproved: true, jobId, jobTitle: job.title, reward: job.reward || 0 });
 }
 
 // ══════ js/services/peerReview.js ══════
@@ -3443,10 +3457,20 @@ async function loadReferralTree(userData) {
 }
 async function loadLeaderboard() {
   try {
-    const snap = await fb.getDocs(fb.query(fb.collection(db, 'users'), fb.orderBy('totalEarned', 'desc'), fb.limit(10)));
+    // Fetch more than we need (20, not 10) because deleted/banned accounts are
+    // filtered out below — without the extra headroom, a leaderboard full of
+    // stale deleted-user balances could crowd out real active earners and the
+    // list would show fewer than 10 names, or the wrong people, near the top.
+    const snap = await fb.getDocs(fb.query(fb.collection(db, 'users'), fb.orderBy('totalEarned', 'desc'), fb.limit(20)));
     const lb = [];
-    snap.forEach(d => { const u = d.data(); lb.push({ name: u.name || 'User', amt: u.totalEarned || 0, color: nameColor(u.name || 'A') }); });
-    return lb;
+    snap.forEach(d => {
+      const u = d.data();
+      if (u.deleted) return; // skip deleted accounts
+      if (u.status === 'banned') return; // skip banned accounts
+      if (!u.name) return; // skip incomplete/orphaned docs
+      lb.push({ name: u.name || 'User', amt: u.totalEarned || 0, color: nameColor(u.name || 'A') });
+    });
+    return lb.slice(0, 10);
   } catch (e) { console.warn('leaderboard:', e); return []; }
 }
 
@@ -4707,7 +4731,10 @@ async function runCompleteDailyLink(jobId) {
     showToast('🎉 টাস্ক সম্পন্ন! +' + fmtUSD(t.reward || 0) + ' ব্যালেন্সে যোগ হয়েছে। পরবর্তী ২৪ ঘণ্টা এই টাস্কটি লক থাকবে।', 'info');
     closeTaskModal(); renderAllTasks('__current__');
     renderHomeTasks(); renderMyTasks();
-  } catch (e) { console.error('completeDailyLinkTask:', e); showToast('সাবমিট ব্যর্থ হয়েছে, আবার চেষ্টা করুন', 'error'); }
+  } catch (e) {
+    console.error('completeDailyLinkTask:', e);
+    showToast(e.message === 'COOLDOWN' ? '⏳ এখনো ২৪ ঘণ্টা হয়নি — একটু পর আবার চেষ্টা করুন' : 'সাবমিট ব্যর্থ হয়েছে, আবার চেষ্টা করুন', 'error');
+  }
   finally { S._dailyLinkCompleting[jobId] = false; }
 }
 function handleProofFileSelect(jobId, idx, input) {
@@ -5171,6 +5198,7 @@ function renderProofReqBuilder() {
         <div onclick="wizRemoveProofReq(${i})" style="margin-left:auto;width:26px;height:26px;border-radius:8px;background:var(--red-dim);color:var(--red);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;flex-shrink:0">✕</div>
       </div>
       <input type="text" value="${escHtml(r.label || '')}" placeholder="Label (e.g., 'Homepage screenshot')" onchange="wizUpdateProofReqField(${i},'label',this.value)" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);font-size:12.5px;margin-bottom:8px">
+      ${r.type === 'screenshot' ? `
       <div style="font-size:10.5px;font-weight:700;color:var(--text3);margin-bottom:5px">📎 Example Screenshot (ঐচ্ছিক — ওয়ার্কারকে দেখাবে)</div>
       ${r.exampleUrl
         ? `<div style="position:relative;display:inline-block"><img src="${escHtml(r.exampleUrl)}" style="width:80px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"><div onclick="wizUpdateProofReqField(${i},'exampleUrl','');renderProofReqBuilder()" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer">✕</div></div>`
@@ -5178,7 +5206,9 @@ function renderProofReqBuilder() {
             <div class="pua-text" style="font-size:11px">📷 Add Example</div>
           </div>
           <input type="file" id="proofExFile${i}" accept="image/*" style="display:none" onchange="wizUploadProofExample(${i},this)">`
-      }
+      }` : `
+      <div style="font-size:10.5px;font-weight:700;color:var(--text3);margin-bottom:5px">💬 Worker will see a text box here — no image needed for this requirement.</div>
+      `}
     </div>`).join('');
 }
 function wizAddProofReq() {
@@ -6173,6 +6203,15 @@ function prefillEditProfileFields(data, user) {
   setVal('editBio', data?.bio || '');
   setVal('editPhone', data?.phone || '');
   setVal('editCountry', data?.country || '');
+  // Username can only ever be set once — lock the field the moment one exists.
+  const uEl = document.getElementById('editUsername'), noteEl = document.getElementById('usernameLockNote');
+  if (data?.username) {
+    if (uEl) { uEl.disabled = true; uEl.style.opacity = '.6'; uEl.style.cursor = 'not-allowed'; }
+    if (noteEl) noteEl.style.display = 'block';
+  } else {
+    if (uEl) { uEl.disabled = false; uEl.style.opacity = '1'; uEl.style.cursor = ''; }
+    if (noteEl) noteEl.style.display = 'none';
+  }
 }
 
 // ══════ js/screens/kyc.js ══════

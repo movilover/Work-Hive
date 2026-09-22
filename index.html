@@ -5203,13 +5203,25 @@ function renderProofReqBuilder() {
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
         <div style="width:26px;height:26px;border-radius:8px;background:var(--green);color:#001a0a;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i + 1}</div>
         <div style="display:flex;gap:5px;background:var(--bg4);border:1px solid var(--border2);border-radius:20px;padding:3px">
-          <div onclick="wizUpdateProofReqField(${i},'type','screenshot');renderProofReqBuilder()" style="padding:4px 11px;border-radius:16px;font-size:11px;font-weight:700;cursor:pointer;${r.type === 'screenshot' ? 'background:var(--green);color:#001a0a' : 'color:var(--text3)'}">📷 Screenshot</div>
-          <div onclick="wizUpdateProofReqField(${i},'type','text');renderProofReqBuilder()" style="padding:4px 11px;border-radius:16px;font-size:11px;font-weight:700;cursor:pointer;${r.type === 'text' ? 'background:var(--green);color:#001a0a' : 'color:var(--text3)'}">💬 Text</div>
+          <button type="button" id="proofTypeBtn${i}_screenshot" onclick="event.preventDefault();event.stopPropagation();wizSetProofType(${i},'screenshot')" style="border:none;background:${r.type === 'screenshot' ? 'var(--green)' : 'transparent'};color:${r.type === 'screenshot' ? '#001a0a' : 'var(--text3)'};padding:5px 12px;border-radius:16px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">📷 Screenshot</button>
+          <button type="button" id="proofTypeBtn${i}_text" onclick="event.preventDefault();event.stopPropagation();wizSetProofType(${i},'text')" style="border:none;background:${r.type === 'text' ? 'var(--green)' : 'transparent'};color:${r.type === 'text' ? '#001a0a' : 'var(--text3)'};padding:5px 12px;border-radius:16px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">💬 Text</button>
         </div>
         <div onclick="wizRemoveProofReq(${i})" style="margin-left:auto;width:26px;height:26px;border-radius:8px;background:var(--red-dim);color:var(--red);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;flex-shrink:0">✕</div>
       </div>
-      <input type="text" value="${escHtml(r.label || '')}" placeholder="Label (e.g., 'Homepage screenshot')" onchange="wizUpdateProofReqField(${i},'label',this.value)" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);font-size:12.5px;margin-bottom:8px">
-      ${r.type === 'screenshot' ? `
+      <input type="text" id="proofLabel${i}" value="${escHtml(r.label || '')}" placeholder="Label (e.g., 'Homepage screenshot')" onchange="wizUpdateProofReqField(${i},'label',this.value)" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);font-size:12.5px;margin-bottom:8px">
+      <div id="proofTypeArea${i}">${proofTypeAreaHtml(r, i)}</div>
+    </div>`).join('');
+}
+// The part of a proof-requirement card that differs by type (screenshot
+// example-image uploader vs. a plain note for text) — factored out so the
+// toggle below can swap ONLY this piece instead of re-rendering the whole
+// list (which used to blow away whatever the admin was mid-typing in the
+// Label field above, since a full re-render re-reads the LAST SAVED value —
+// onchange only commits on blur, so a fast click right after typing looked
+// like "the button doesn't work" when it was actually the label reverting).
+function proofTypeAreaHtml(r, i) {
+  if (r.type === 'screenshot') {
+    return `
       <div style="font-size:10.5px;font-weight:700;color:var(--text3);margin-bottom:5px">📎 Example Screenshot (ঐচ্ছিক — ওয়ার্কারকে দেখাবে)</div>
       ${r.exampleUrl
         ? `<div style="position:relative;display:inline-block"><img src="${escHtml(r.exampleUrl)}" style="width:80px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"><div onclick="wizUpdateProofReqField(${i},'exampleUrl','');renderProofReqBuilder()" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer">✕</div></div>`
@@ -5217,10 +5229,26 @@ function renderProofReqBuilder() {
             <div class="pua-text" style="font-size:11px">📷 Add Example</div>
           </div>
           <input type="file" id="proofExFile${i}" accept="image/*" style="display:none" onchange="wizUploadProofExample(${i},this)">`
-      }` : `
-      <div style="font-size:10.5px;font-weight:700;color:var(--text3);margin-bottom:5px">💬 Worker will see a text box here — no image needed for this requirement.</div>
-      `}
-    </div>`).join('');
+      }`;
+  }
+  return `<div style="font-size:10.5px;font-weight:700;color:var(--text3);margin-bottom:5px">💬 Worker will see a text box here — no image needed for this requirement.</div>`;
+}
+// Surgical toggle: flips the type in state, swaps the two pill buttons'
+// styles directly, and re-renders ONLY the type-specific area below — never
+// touches the Label <input>, so anything the admin is mid-typing survives.
+function wizSetProofType(i, type) {
+  if (!S.wiz.proofRequirements[i]) return;
+  // Commit whatever's currently in the Label field first, in case onchange
+  // hasn't fired yet (e.g. the admin clicked the toggle without blurring).
+  const labelEl = document.getElementById('proofLabel' + i);
+  if (labelEl) S.wiz.proofRequirements[i].label = labelEl.value;
+  S.wiz.proofRequirements[i].type = type;
+  const ssBtn = document.getElementById(`proofTypeBtn${i}_screenshot`);
+  const txBtn = document.getElementById(`proofTypeBtn${i}_text`);
+  if (ssBtn) { ssBtn.style.background = type === 'screenshot' ? 'var(--green)' : 'transparent'; ssBtn.style.color = type === 'screenshot' ? '#001a0a' : 'var(--text3)'; }
+  if (txBtn) { txBtn.style.background = type === 'text' ? 'var(--green)' : 'transparent'; txBtn.style.color = type === 'text' ? '#001a0a' : 'var(--text3)'; }
+  const areaEl = document.getElementById('proofTypeArea' + i);
+  if (areaEl) areaEl.innerHTML = proofTypeAreaHtml(S.wiz.proofRequirements[i], i);
 }
 function wizAddProofReq() {
   if (S.wiz.proofRequirements.length >= 5) { showToast('সর্বোচ্চ ৫টি প্রুফ স্লট যোগ করা যাবে', 'error'); return; }
@@ -6492,7 +6520,7 @@ Object.assign(window, {
   wizSetLocationMode, wizFilterCountrySearch, wizToggleContinent, wizToggleCountry, wizSelectAllContinent,
   wizExpiryDateChanged, wizInitExpiryDatePicker,
   wizSelectCategory, wizOpenSubcatOverlay, wizCloseSubcatOverlay, wizPickSubcatOverlay, wizUpdateInstrCount, wizUpdateDescCount, wizUploadProofExample,
-  wizAddProofReq, wizRemoveProofReq, wizUpdateProofReqField,
+  wizAddProofReq, wizRemoveProofReq, wizUpdateProofReqField, wizSetProofType,
   handleWizAttachFiles, removeWizAttach, wizQuickAddSlots, wizSubmitJob,
   selectDepAmt, onDepositCustomAmt, selectDepMethod, submitDepositRequest, renderDepositHistory,
   applySiteSettingsToWallet, renderWithdrawMethodGrid, selectWithdrawMethod, updateWithdrawPreview,

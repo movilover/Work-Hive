@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.json">
 <title>WorkHive — Earning Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Bengali:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg:#080808;--bg2:#0d0d0d;--bg3:#111111;--bg4:#161616;
@@ -373,9 +373,10 @@ main{flex:1;overflow-y:auto;padding:4px 16px 110px;scroll-behavior:smooth;oversc
 .history-empty{text-align:center;padding:38px 18px;color:var(--text3);font-size:12.5px}
 .history-empty .big{font-size:34px;margin-bottom:9px}
 
-.notif-item{display:flex;gap:11px;padding:13px;border-radius:var(--r-lg);background:var(--bg3);border:1px solid var(--border);margin-bottom:9px}
+.notif-item{display:flex;gap:11px;padding:13px;border-radius:var(--r-lg);background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--border);margin-bottom:9px}
 .notif-item.unread{border-color:rgba(0,230,118,.25);background:rgba(0,230,118,.03)}
 .notif-ico{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.notif-photo{width:100%;max-height:150px;object-fit:cover;border-radius:9px;margin-top:8px;display:block}
 .notif-body{flex:1}
 .notif-title{font-size:12.5px;font-weight:700;margin-bottom:2px}
 .notif-msg{font-size:11.5px;color:var(--text2);line-height:1.5}
@@ -389,6 +390,26 @@ main{flex:1;overflow-y:auto;padding:4px 16px 110px;scroll-behavior:smooth;oversc
 .rule-card-num{flex-shrink:0;width:26px;height:26px;border-radius:8px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);font-weight:900;font-size:12.5px;display:flex;align-items:center;justify-content:center}
 .rule-card-title{font-size:13px;font-weight:800;color:var(--text);margin-bottom:5px}
 .rule-card-body{font-size:11.5px;color:var(--text2);line-height:1.8}
+/* Clickable rule/policy rows — tap to open a nicely formatted popup instead
+   of one long wall of scrolling text (screen-rules redesign). */
+.rule-row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px 14px;margin-bottom:9px;cursor:pointer;transition:border-color .15s,background .15s}
+.rule-row:active{background:var(--bg3);border-color:var(--green-border)}
+.rule-row-ico{flex-shrink:0;width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--green-dim);border:1px solid var(--green-border)}
+.rule-row-ico.blue{background:var(--blue-dim);border-color:rgba(68,138,255,.3)}
+.rule-row-ico.purple{background:var(--purple-dim);border-color:rgba(224,64,251,.3)}
+.rule-row-body{flex:1;min-width:0}
+.rule-row-title{font-size:13.5px;font-weight:800;color:var(--text);margin-bottom:2px}
+.rule-row-sub{font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rule-row-chev{flex-shrink:0;color:var(--text3);font-size:15px}
+.rule-section-label{font-size:10.5px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin:16px 2px 8px}
+.rule-section-label:first-child{margin-top:2px}
+/* Popup content typography (rendered inside the shared showConfirmHtml sheet) */
+.rule-modal-title{font-size:17px;font-weight:900;color:var(--text);margin-bottom:12px;line-height:1.4;display:flex;align-items:center;gap:9px}
+.rule-modal-body{font-size:13px;color:var(--text2);line-height:1.9;font-weight:500;max-height:52vh;overflow-y:auto;padding-right:2px}
+.rule-modal-body p{margin:0 0 10px}
+.rule-do{display:flex;gap:9px;align-items:flex-start;margin-bottom:9px;padding:9px 11px;background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;font-size:12.5px;color:var(--text);line-height:1.6;font-weight:600}
+.rule-dont{display:flex;gap:9px;align-items:flex-start;margin-bottom:9px;padding:9px 11px;background:var(--red-dim);border:1px solid rgba(255,82,82,.3);border-radius:10px;font-size:12.5px;color:var(--text);line-height:1.6;font-weight:600}
+.rule-do span:first-child,.rule-dont span:first-child{flex-shrink:0;font-size:14px}
 
 .ref-hero{background:linear-gradient(135deg,rgba(224,64,251,.08),rgba(68,138,255,.06));border:1px solid rgba(224,64,251,.2);border-radius:var(--r-xl);padding:22px 18px;margin-bottom:14px;text-align:center;position:relative;overflow:hidden}
 .ref-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(224,64,251,.1),transparent 70%)}
@@ -3402,7 +3423,12 @@ function listenUserNotifications(uid, onChange) {
           id: d.id, title: raw.title || '', msg: raw.msg || '',
           icon: raw.icon || '🔔',
           time: created ? created.toLocaleString() : 'recently',
-          unread: raw.unread !== false
+          unread: raw.unread !== false,
+          // Admin broadcast styling (Settings → Broadcast → color/bold/photo) —
+          // previously dropped here since this listener only copied a fixed
+          // set of fields, so an admin's customized notification always
+          // rendered as a plain default-color, non-bold, image-less item.
+          color: raw.color || '', bold: !!raw.bold, image: raw.image || ''
         });
       });
       onChange && onChange(S.notifications);
@@ -5843,11 +5869,37 @@ function updateNotifCount() {
   const el = document.getElementById('notifCount'); if (!el) return;
   if (cnt > 0) { el.textContent = cnt; el.style.display = 'block'; } else el.style.display = 'none';
 }
+// Admin-chosen accent colors for broadcast notifications (Settings → Broadcast
+// → Notification Color Theme). Falls back to the default green look when no
+// color was set (regular system notifications).
+const NOTIF_COLOR_MAP = {
+  blue:   { accent: 'var(--blue)',   bg: 'var(--blue-dim)'   },
+  amber:  { accent: '#FFB300',       bg: '#241c08'            },
+  red:    { accent: 'var(--red)',    bg: 'var(--red-dim)'    },
+  purple: { accent: 'var(--purple)', bg: 'var(--purple-dim)' },
+  teal:   { accent: '#00BFA5',       bg: '#062420'            },
+};
 function renderNotifications() {
   const el = document.getElementById('notifList'); if (!el) return;
   updateNotifCount();
   if (!S.notifications.length) { el.innerHTML = '<div class="history-empty"><div class="big">🔔</div>No notifications.</div>'; return; }
-  el.innerHTML = S.notifications.map(n => `<div class="notif-item ${n.unread ? 'unread' : ''}" onclick="markNotifRead('${n.id}')"><div class="notif-ico" style="background:${n.unread ? 'var(--green-dim)' : 'var(--bg3)'}">${n.icon}</div><div class="notif-body"><div class="notif-title">${escHtml(n.title)}${n.unread ? '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--green);margin-left:5px;vertical-align:middle"></span>' : ''}</div><div class="notif-msg">${escHtml(n.msg)}</div><div class="notif-time">${n.time}</div></div><div class="notif-close" onclick="event.stopPropagation();deleteNotif('${n.id}')" title="Delete">✕</div></div>`).join('');
+  el.innerHTML = S.notifications.map(n => {
+    const theme = NOTIF_COLOR_MAP[n.color] || null;
+    const accent = theme ? theme.accent : (n.unread ? 'var(--green)' : 'var(--border)');
+    const icoBg = theme ? theme.bg : (n.unread ? 'var(--green-dim)' : 'var(--bg3)');
+    const titleStyle = n.bold ? 'font-weight:900' : '';
+    const msgStyle = n.bold ? 'font-weight:700;color:var(--text)' : '';
+    return `<div class="notif-item ${n.unread ? 'unread' : ''}" style="border-left-color:${accent}" onclick="markNotifRead('${n.id}')">
+      <div class="notif-ico" style="background:${icoBg}">${n.icon}</div>
+      <div class="notif-body">
+        <div class="notif-title" style="${titleStyle}">${escHtml(n.title)}${n.unread ? `<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${accent};margin-left:5px;vertical-align:middle"></span>` : ''}</div>
+        <div class="notif-msg" style="${msgStyle}">${escHtml(n.msg)}</div>
+        ${n.image ? `<img class="notif-photo" src="${escHtml(n.image)}" alt="" loading="lazy" onerror="this.remove()">` : ''}
+        <div class="notif-time">${n.time}</div>
+      </div>
+      <div class="notif-close" onclick="event.stopPropagation();deleteNotif('${n.id}')" title="Delete">✕</div>
+    </div>`;
+  }).join('');
 }
 async function markAllRead() {
   const user = window._currentUser; if (!user) return;
@@ -6540,33 +6592,119 @@ onEnterScreen('tasks', () => renderAllTasks('__current__'));
 onEnterScreen('mytasks', () => renderMyTasks());
 onEnterScreen('post', () => onEnterPostScreen());
 onEnterScreen('history', () => { renderTxList(); renderHistory(); });
+// Hardcoded Password & Privacy policy content — shown in their own popups
+// regardless of what the admin has written in the general Rules textarea,
+// since these need to stay consistent and always present.
+const PASSWORD_POLICY = {
+  icon: '🔒', color: '',
+  title: 'পাসওয়ার্ড সংক্রান্ত নীতিমালা',
+  dos: [
+    'পাসওয়ার্ডে কমপক্ষে ৬টি ক্যারেক্টার রাখুন — সংখ্যা, অক্ষর মিশিয়ে দিলে আরও নিরাপদ হয়।',
+    'প্রতি কয়েক মাস পরপর পাসওয়ার্ড পরিবর্তন করুন, বিশেষ করে অন্য কারো সাথে শেয়ার করে থাকলে।',
+    'পাসওয়ার্ড ভুলে গেলে "Forgot Password" থেকে নিরাপদে রিসেট করুন — এটাই একমাত্র অফিসিয়াল উপায়।',
+    'লগইন করার আগে সবসময় ওয়েবসাইটের সঠিক ঠিকানা (URL) যাচাই করে নিন।',
+  ],
+  donts: [
+    'আপনার পাসওয়ার্ড বা ৬-ডিজিটের Security Code কখনো কারো সাথে শেয়ার করবেন না — এমনকি "Admin/Support" পরিচয় দিলেও না।',
+    'Admin/WorkHive টিম কখনোই ফোন, মেসেজ বা ইমেইলে আপনার পাসওয়ার্ড জিজ্ঞাসা করবে না — কেউ চাইলে সেটি প্রতারণা (Scam)।',
+    'একই পাসওয়ার্ড অন্য কোনো ওয়েবসাইট বা অ্যাপে ব্যবহার করবেন না।',
+    'পাবলিক/শেয়ার্ড ডিভাইস বা ওয়াইফাই থেকে লগইন করে "Remember Me" অন রাখবেন না।',
+  ],
+};
+const PRIVACY_POLICY = {
+  icon: '🛡️', color: 'blue',
+  title: 'প্রাইভেসি পলিসি',
+  dos: [
+    'আপনার নাম, ইমেইল ও প্রোফাইল তথ্য শুধুমাত্র অ্যাকাউন্ট পরিচালনা, পেমেন্ট প্রসেসিং ও যোগাযোগের কাজে ব্যবহার করা হয়।',
+    'KYC-এর জন্য জমা দেওয়া ডকুমেন্ট শুধুমাত্র ভেরিফিকেশনের উদ্দেশ্যে সংরক্ষণ করা হয় এবং সীমিত অ্যাক্সেসের মধ্যে রাখা হয়।',
+    'আপনি যেকোনো সময় আপনার প্রোফাইল তথ্য দেখতে ও আপডেট করতে পারবেন, এবং অ্যাকাউন্ট ডিলিটের অনুরোধও করতে পারবেন।',
+  ],
+  donts: [
+    'আপনার ব্যক্তিগত তথ্য (নাম, ইমেইল, ফোন, পেমেন্ট নম্বর) কোনো তৃতীয় পক্ষের কাছে বিক্রি করা হয় না।',
+    'আপনার অনুমতি ছাড়া কোনো মার্কেটিং/প্রোমোশনাল উদ্দেশ্যে তথ্য শেয়ার করা হয় না।',
+    'টাস্ক প্রুফ হিসেবে জমা দেওয়া স্ক্রিনশট/তথ্য শুধু ভেরিফিকেশনের জন্যই দেখা হয়, অন্য কোনো উদ্দেশ্যে নয়।',
+  ],
+};
+
+let _ruleSections = []; // populated on each render; index referenced by openRuleModal(i)
 function renderRulesContent() {
   const el = document.getElementById('rulesContentBox');
   if (!el) return;
   const raw = (SITE.rulesContent || 'নিয়মাবলী শীঘ্রই যোগ করা হবে।').trim();
-  // Lightweight formatter — keeps the admin's textarea 100% plain text (easy
-  // to edit) but renders it as proper sections here: a paragraph whose first
-  // line looks like "১. Title" / "1. Title" becomes a styled card with its
-  // own heading; anything else (the intro/closing lines) stays as plain text.
+  // Parse the admin's plain-text textarea into sections — a paragraph whose
+  // first line looks like "১. Title" / "1. Title" becomes one section, kept
+  // in _ruleSections so the row we render below can open it in a popup on tap
+  // (was previously all rendered inline as one long scrolling page).
   const blocks = raw.split(/\n\s*\n/);
   const numHeading = /^([০-৯0-9]+)[.।]\s*(.+)$/;
-  el.innerHTML = blocks.map(block => {
+  const introLines = [];
+  _ruleSections = [];
+  blocks.forEach(block => {
     const lines = block.split('\n').filter(l => l.trim());
-    if (!lines.length) return '';
+    if (!lines.length) return;
     const m = lines[0].match(numHeading);
-    if (m) {
-      const body = lines.slice(1).join(' ');
-      return `<div class="rule-card">
-        <div class="rule-card-num">${escHtml(m[1])}</div>
-        <div style="flex:1;min-width:0">
-          <div class="rule-card-title">${escHtml(m[2])}</div>
-          ${body ? `<div class="rule-card-body">${escHtml(body)}</div>` : ''}
-        </div>
-      </div>`;
-    }
-    // Title line (e.g. "WorkHive.pro — নিয়মাবলী ও নীতিমালা") or a closing note
-    return `<div class="rule-plain">${escHtml(lines.join(' '))}</div>`;
+    if (m) _ruleSections.push({ num: m[1], title: m[2], body: lines.slice(1).join('\n') });
+    else introLines.push(lines.join(' '));
+  });
+
+  const rowHtml = (icoClass, icon, title, sub, onclick) => `
+    <div class="rule-row" onclick="${onclick}">
+      <div class="rule-row-ico ${icoClass}">${icon}</div>
+      <div class="rule-row-body">
+        <div class="rule-row-title">${escHtml(title)}</div>
+        <div class="rule-row-sub">${escHtml(sub)}</div>
+      </div>
+      <div class="rule-row-chev">›</div>
+    </div>`;
+
+  let html = '';
+  if (introLines.length) html += `<div class="rule-plain">${escHtml(introLines.join(' '))}</div>`;
+
+  html += `<div class="rule-section-label">অ্যাকাউন্ট ও নিরাপত্তা</div>`;
+  html += rowHtml('', '🔑', 'পাসওয়ার্ড পরিবর্তন / রিসেট করুন', 'বর্তমান পাসওয়ার্ড দিয়ে যাচাই করে নতুন পাসওয়ার্ড সেট করুন', "openChangePassword()");
+  html += rowHtml('', PASSWORD_POLICY.icon, PASSWORD_POLICY.title, 'কী করা যাবে, কী করা যাবে না — বিস্তারিত পড়ুন', "openRuleModal('password')");
+  html += rowHtml('blue', PRIVACY_POLICY.icon, PRIVACY_POLICY.title, 'আপনার তথ্য কীভাবে ব্যবহার ও সংরক্ষণ করা হয়', "openRuleModal('privacy')");
+
+  if (_ruleSections.length) {
+    html += `<div class="rule-section-label">সাধারণ নিয়মাবলী</div>`;
+    html += _ruleSections.map((s, i) => rowHtml('purple', '📌', `${s.num}. ${s.title}`, s.body.replace(/\n/g, ' ').slice(0, 60), `openRuleModal(${i})`)).join('');
+  }
+
+  el.innerHTML = html;
+}
+
+// Renders one section/policy as a nicely typeset popup, using the app's
+// existing bottom-sheet (showConfirmHtml/closeConfirm) so it matches every
+// other modal in the app rather than introducing a new popup style.
+function _ruleBodyHtml(text) {
+  // Auto-detect do/don't style bullet lines (✅/❌/•/-) and give them their
+  // own colored rows; everything else stays as a normal paragraph.
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  return lines.map(line => {
+    if (/^(✅|✔)/.test(line)) return `<div class="rule-do"><span>✅</span><span>${escHtml(line.replace(/^(✅|✔)\s*/, ''))}</span></div>`;
+    if (/^(❌|✖|⚠️?)/.test(line)) return `<div class="rule-dont"><span>${line.match(/^(❌|✖|⚠️?)/)[0]}</span><span>${escHtml(line.replace(/^(❌|✖|⚠️?)\s*/, ''))}</span></div>`;
+    if (/^[•\-–]\s*/.test(line)) return `<p>• ${escHtml(line.replace(/^[•\-–]\s*/, ''))}</p>`;
+    return `<p>${escHtml(line)}</p>`;
   }).join('');
+}
+function openRuleModal(key) {
+  let title, icon, bodyHtml;
+  if (key === 'password' || key === 'privacy') {
+    const pol = key === 'password' ? PASSWORD_POLICY : PRIVACY_POLICY;
+    title = pol.title; icon = pol.icon;
+    bodyHtml = pol.dos.map(t => `<div class="rule-do"><span>✅</span><span>${escHtml(t)}</span></div>`).join('')
+             + pol.donts.map(t => `<div class="rule-dont"><span>❌</span><span>${escHtml(t)}</span></div>`).join('');
+  } else {
+    const s = _ruleSections[key];
+    if (!s) return;
+    title = `${s.num}. ${s.title}`; icon = '📌';
+    bodyHtml = _ruleBodyHtml(s.body || 'বিস্তারিত শীঘ্রই যোগ করা হবে।');
+  }
+  showConfirmHtml(`<div>
+    <div class="rule-modal-title"><span>${icon}</span><span>${escHtml(title)}</span></div>
+    <div class="rule-modal-body">${bodyHtml}</div>
+    <button class="btn-primary" style="width:100%;margin-top:16px" onclick="closeConfirm()">বুঝেছি</button>
+  </div>`);
 }
 onEnterScreen('referral', () => onEnterReferralScreen());
 onEnterScreen('rules', renderRulesContent);

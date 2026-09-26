@@ -1953,7 +1953,7 @@ Admin যেকোনো জব/সাবমিশন/উইথড্র/KYC অ
   postPlatformFeePct: 10,
   postApprovalNote: 'জব পোস্ট করার পর এডমিন রিভিউ করে অনুমোদন দিলে এটি Tasks তালিকায় দেখা যাবে। বাজেট সমপরিমাণ ব্যালেন্স আপনার ওয়ালেট থেকে সাথে সাথে হোল্ড করা হবে।',
   kycEnabled: true,
-  cloudinaryCloudName: '', cloudinaryUploadPreset: '',
+  imgbbApiKey: '',
   emailjsServiceId: '', emailjsTemplateId: '', emailjsPublicKey: '',
   emailjsVerifyTemplateId: '', emailjsAuthEnabled: false,
   completionSound: 'subtle_ding', // default sound key
@@ -2524,31 +2524,35 @@ function taskCardHtml(t, compact = false) {
   </div>`;
 }
 
-// ══════ js/services/cloudinary.js ══════
-// Fallback defaults — used until siteSettings/global loads (or if the admin never
-// changes them). SITE.cloudinaryCloudName/cloudinaryUploadPreset (see listenSiteSettings)
-// take priority once available, so the whole app can be pointed at a new Cloudinary
-// account from the Admin Panel without touching any code.
-const CLOUDINARY_CLOUD_NAME_DEFAULT = 'paqs4n2j';
-const CLOUDINARY_UPLOAD_PRESET_DEFAULT = 'ml_default';
+// ══════ js/services/imgbb.js ══════
+// Switched from Cloudinary to ImgBB (Cloudinary account got suspended).
+// ImgBB is images-only (no video) — safe here since every upload input in
+// this app (KYC, avatar, task proofs, job attachments, support chat) is
+// already accept="image/*" only. SITE.imgbbApiKey (see listenSiteSettings)
+// takes priority once loaded, so the whole app can be pointed at a new
+// ImgBB account from the Admin Panel without touching any code.
+const IMGBB_API_KEY_DEFAULT = '';
 
-async function uploadProofToCloudinary(file, folder = 'workhive_proofs') {
-  const cloudName = SITE.cloudinaryCloudName || CLOUDINARY_CLOUD_NAME_DEFAULT;
-  const uploadPreset = SITE.cloudinaryUploadPreset || CLOUDINARY_UPLOAD_PRESET_DEFAULT;
-  const form = new FormData();
-  form.append('file', file);
-  form.append('upload_preset', uploadPreset);
-  form.append('folder', folder);
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: form });
-  if (!res.ok) {
-    let detail = '';
-    try { detail = (await res.json())?.error?.message || ''; } catch (e) {}
-    const err = new Error(detail || ('Cloudinary upload failed (' + res.status + ')'));
-    err.cloudinary = true; err.status = res.status;
+async function uploadProofToImgbb(file, name) {
+  const apiKey = SITE.imgbbApiKey || IMGBB_API_KEY_DEFAULT;
+  if (!apiKey) {
+    const err = new Error('ছবি আপলোড সার্ভিস কনফিগার করা হয়নি — এডমিনকে জানান');
+    err.imgbb = true; err.status = 0;
     throw err;
   }
-  const json = await res.json();
-  return json.secure_url;
+  const form = new FormData();
+  form.append('image', file);
+  if (name) form.append('name', name);
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(apiKey)}`, { method: 'POST', body: form });
+  let json = null;
+  try { json = await res.json(); } catch (e) {}
+  if (!res.ok || !json || !json.success) {
+    const detail = json?.error?.message || '';
+    const err = new Error(detail || ('ImgBB upload failed (' + res.status + ')'));
+    err.imgbb = true; err.status = res.status;
+    throw err;
+  }
+  return json.data.url;
 }
 
 // ══════ js/services/settings.js ══════
@@ -2580,8 +2584,7 @@ function listenSiteSettings(onChange) {
       if (d.postPlatformFeePct !== undefined) SITE.postPlatformFeePct = d.postPlatformFeePct;
       if (d.postApprovalNote) SITE.postApprovalNote = d.postApprovalNote;
       if (d.kycEnabled !== undefined) SITE.kycEnabled = d.kycEnabled;
-      if (d.cloudinaryCloudName) SITE.cloudinaryCloudName = d.cloudinaryCloudName;
-      if (d.cloudinaryUploadPreset) SITE.cloudinaryUploadPreset = d.cloudinaryUploadPreset;
+      if (d.imgbbApiKey) SITE.imgbbApiKey = d.imgbbApiKey;
       if (d.emailjsServiceId) SITE.emailjsServiceId = d.emailjsServiceId;
       if (d.emailjsTemplateId) SITE.emailjsTemplateId = d.emailjsTemplateId;
       if (d.emailjsPublicKey) SITE.emailjsPublicKey = d.emailjsPublicKey;
@@ -3093,7 +3096,7 @@ function listenMyTaskSubmissions(uid, onChange) {
 
 async function submitProofTask(jobId, job, proofText, imageFiles, user, userData, verificationAnswers) {
   let proofImageUrls = [];
-  for (const file of imageFiles) proofImageUrls.push(await uploadProofToCloudinary(file));
+  for (const file of imageFiles) proofImageUrls.push(await uploadProofToImgbb(file));
   const jobPosterId = job.postedByAdmin === false ? (job.postedById || '') : 'admin';
 
   // Auto-Verification: if the job has questions and every answer matches exactly
@@ -4832,7 +4835,7 @@ async function submitTaskProof(jobId, proofText) {
   } catch (e) {
     console.error('submitTaskProof:', e);
     let msg = 'Submission failed. Try again.';
-    if (e.cloudinary) msg = e.status === 400 ? '❌ Cloudinary সেটিংস ভুল আছে — এডমিনকে জানান' : '❌ ছবি আপলোড ব্যর্থ হয়েছে — আবার চেষ্টা করুন';
+    if (e.imgbb) msg = e.status === 400 ? '❌ ছবি আপলোড সেটিংস ভুল আছে — এডমিনকে জানান' : '❌ ছবি আপলোড ব্যর্থ হয়েছে — আবার চেষ্টা করুন';
     else if (e.code === 'permission-denied') msg = '❌ Permission denied — Firestore Rules ঠিক করতে হবে';
     showToast(msg, 'error');
     if (submitBtn) submitBtn.disabled = false;
@@ -5291,7 +5294,7 @@ async function wizUploadProofExample(idx, input) {
   const area = document.getElementById('proofExUpload' + idx);
   if (area) { area.innerHTML = '<div class="pua-text" style="font-size:11px">⏳ Uploading…</div>'; }
   try {
-    const url = await uploadProofToCloudinary(file);
+    const url = await uploadProofToImgbb(file);
     wizUpdateProofReqField(idx, 'exampleUrl', url);
     renderProofReqBuilder();
   } catch (e) {
@@ -5440,12 +5443,12 @@ async function wizSubmitJob() {
     if (S.wiz.attachments.length) {
       showToast(`⬆ Uploading ${S.wiz.attachments.length} attachment(s)...`, 'info');
       for (const a of S.wiz.attachments) {
-        const url = await uploadProofToCloudinary(a.file, 'workhive_job_attachments');
+        const url = await uploadProofToImgbb(a.file, 'workhive_job_attachments');
         attachmentUrls.push(url);
       }
     }
 
-    // Upload any proof-requirement example screenshots to Cloudinary
+    // Upload any proof-requirement example screenshots to ImgBB
     const uploadedProofReqs = [];
     for (const r of S.wiz.proofRequirements.filter(x => x.label && x.label.trim())) {
       const req = { ...r };
@@ -5455,7 +5458,7 @@ async function wizSubmitJob() {
           const res = await fetch(req.exampleUrl);
           const blob = await res.blob();
           const file = new File([blob], 'example.jpg', { type: blob.type || 'image/jpeg' });
-          req.exampleUrl = await uploadProofToCloudinary(file, 'workhive_proof_examples');
+          req.exampleUrl = await uploadProofToImgbb(file, 'workhive_proof_examples');
         } catch (e) {
           console.warn('Example upload failed:', e);
           req.exampleUrl = ''; // drop broken blob rather than save it
@@ -6274,7 +6277,7 @@ async function saveProfile() {
   if (!window._userRef) return;
   try {
     let photoURL = window._userData?.photoURL || '';
-    if (_pendingAvatarFile) { showToast('⬆ Uploading photo...', 'info'); photoURL = await uploadProofToCloudinary(_pendingAvatarFile, 'workhive_avatars'); }
+    if (_pendingAvatarFile) { showToast('⬆ Uploading photo...', 'info'); photoURL = await uploadProofToImgbb(_pendingAvatarFile, 'workhive_avatars'); }
     await fb.updateDoc(window._userRef, { name, username, bio, phone, country, photoURL, lastActive: fb.serverTimestamp() });
     if (window._currentUser) await fb.updateProfile(window._currentUser, { displayName: name, ...(photoURL ? { photoURL } : {}) }).catch(() => {});
     _pendingAvatarFile = null;
@@ -6282,7 +6285,7 @@ async function saveProfile() {
   } catch (e) {
     console.error(e);
     let msg = 'Update failed. Try again.';
-    if (e.cloudinary) msg = e.status === 400 ? '❌ Cloudinary সেটিংস ভুল আছে — এডমিনকে জানান' : '❌ ছবি আপলোড ব্যর্থ হয়েছে — আবার চেষ্টা করুন';
+    if (e.imgbb) msg = e.status === 400 ? '❌ ছবি আপলোড সেটিংস ভুল আছে — এডমিনকে জানান' : '❌ ছবি আপলোড ব্যর্থ হয়েছে — আবার চেষ্টা করুন';
     showToast(msg, 'error');
   }
 }
@@ -6369,8 +6372,8 @@ async function submitKyc() {
   if (btn) { btn.disabled = true; btn.textContent = '⏳ জমা দেওয়া হচ্ছে...'; }
   try {
     const [frontUrl, backUrl] = await Promise.all([
-      uploadProofToCloudinary(S._kycFiles.front, 'workhive_kyc'),
-      uploadProofToCloudinary(S._kycFiles.back, 'workhive_kyc'),
+      uploadProofToImgbb(S._kycFiles.front, 'workhive_kyc'),
+      uploadProofToImgbb(S._kycFiles.back, 'workhive_kyc'),
     ]);
     await fb.updateDoc(userRef, {
       kycStatus: 'pending', kyc: false,
@@ -6383,7 +6386,7 @@ async function submitKyc() {
   } catch (e) {
     console.error(e);
     let msg = '❌ জমা দিতে ব্যর্থ হয়েছে, আবার চেষ্টা করুন';
-    if (e.cloudinary) msg = '❌ ছবি আপলোড ব্যর্থ হয়েছে';
+    if (e.imgbb) msg = '❌ ছবি আপলোড ব্যর্থ হয়েছে';
     showToast(msg, 'error');
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '📤 জমা দিন'; }
@@ -6529,7 +6532,7 @@ async function handleSupportAttach(input) {
   input.value = '';
   try {
     showToast('⬆ ছবি আপলোড হচ্ছে...', 'info');
-    const url = await uploadProofToCloudinary(file, 'workhive_support');
+    const url = await uploadProofToImgbb(file, 'workhive_support');
     await fb.addDoc(fb.collection(db, 'users', uid, 'supportChat'), { from: 'user', text: '', imageUrl: url, lang: _supLang, _ts: Date.now(), createdAt: fb.serverTimestamp() });
     updateSupportThread(uid, window._userData, window._currentUser, '📷 ছবি পাঠানো হয়েছে', 'user', _supLang);
   } catch (e) { console.error(e); showToast('❌ ছবি পাঠাতে ব্যর্থ হয়েছে', 'error'); }

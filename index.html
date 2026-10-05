@@ -1274,6 +1274,10 @@ function applyTelegramSafeArea(tg) {
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="categorySearchInput" placeholder="ক্যাটাগরি খুঁজুন..." oninput="filterCategorySearch(this.value)" style="width:100%;padding:9px 14px 9px 34px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit;font-size:12px;font-weight:600;outline:none">
       </div>
+      <div class="chip-row" id="tasksViewTabs" style="margin-bottom:9px">
+        <div class="chip active" id="tvMicro" onclick="setTasksView('micro')">📋 Micro Tasks</div>
+        <div class="chip" id="tvCpa" onclick="setTasksView('cpa')">🎯 CPA / Offerwall <span id="tvCpaCount" style="opacity:.7"></span></div>
+      </div>
       <div class="chip-row" id="categoryChips"></div>
       <div class="chip-row" id="subcategoryChips" style="display:none"></div>
       <div id="taskListFull"></div>
@@ -1295,6 +1299,7 @@ function applyTelegramSafeArea(tg) {
     <!-- POST (job posting) -->
     <section class="screen" id="screen-post">
       <div class="sec-title" style="margin-top:13px"><h3>📢 Post a Job</h3></div>
+      <div id="postDepositBanner" style="margin:0 0 12px;padding:14px;border-radius:16px;background:linear-gradient(135deg,rgba(0,230,118,.12),rgba(0,200,83,.04));border:1px solid var(--green-border)"></div>
 
       <div class="post-disabled-wrap" id="postDisabledWrap" style="display:none">
         <div class="coming-soon-icon-box">🚧</div>
@@ -1424,6 +1429,7 @@ function applyTelegramSafeArea(tg) {
               <div class="pbc-row"><span>ওয়ার্কার পেমেন্ট মোট</span><span class="v" id="postPreviewWorkerTotal">$0.00</span></div>
               <div class="pbc-row"><span>প্ল্যাটফর্ম ফি</span><span class="v" id="postPreviewPlatformFee">$0.00</span></div>
               <div class="pbc-row total"><span>Total Cost</span><span class="v" id="postPreviewGrandTotal">$0.00</span></div>
+              <div class="pbc-row"><span>Pay from</span><span class="v"><select id="postFundSel" onchange="setPostFund(this.value)" style="background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:5px 8px;font-size:11.5px;font-weight:700"><option value="deposit" id="postFundOptDep">🎁 Job Deposit</option><option value="balance">💰 Main Balance</option></select></span></div>
               <div class="pbc-row balance-row" id="postPreviewBalanceRow"><span>Your Balance</span><span class="v" id="postPreviewBalance">$0.00</span></div>
               <div class="pbc-row balance-row"><span>Balance After</span><span class="v" id="postPreviewBalanceAfter" style="color:var(--green)">$0.00</span></div>
               <div class="pbc-row balance-row" id="wizDiffRow" style="display:none"><span id="wizDiffLabel">পার্থক্য</span><span class="v" id="wizDiffValue">$0.00</span></div>
@@ -1908,7 +1914,7 @@ const S = {
   publicProfile: null, _publicFollowBusy: false, _reviewCtx: null,
   _visitedLinks: {}, gen1Users: [], gen2Users: [], gen3Users: [], currentGenTab: 1,
   _pendingProofFiles: {}, _dailyLinkPending: {}, _dailyLinkCompleting: {},
-  cpaTasks: [], landingHistory: {},
+  cpaTasks: [], landingHistory: {}, tasksView: 'micro', postFundSource: 'balance',
   supportMessages: [],
   myPostedJobs: [], postSelectedType: 'proof', postFilter: 'all',
   myJobSubmissions: [], myJobSubFilter: 'pending',
@@ -1951,6 +1957,8 @@ Admin যেকোনো জব/সাবমিশন/উইথড্র/KYC অ
   postMinSlots: 5,
   postMaxSlots: 500,
   postPlatformFeePct: 10,
+  depositJobFeePct: 15,   // 10–20% fee on jobs funded from the Job Deposit Balance (admin-configurable)
+  signupBonus: 0.5,       // one-time signup bonus → Job Deposit Balance
   postApprovalNote: 'জব পোস্ট করার পর এডমিন রিভিউ করে অনুমোদন দিলে এটি Tasks তালিকায় দেখা যাবে। বাজেট সমপরিমাণ ব্যালেন্স আপনার ওয়ালেট থেকে সাথে সাথে হোল্ড করা হবে।',
   kycEnabled: true,
   imgbbApiKey: '',
@@ -2592,6 +2600,8 @@ function listenSiteSettings(onChange) {
       if (d.postMinSlots !== undefined) SITE.postMinSlots = d.postMinSlots;
       if (d.postMaxSlots !== undefined) SITE.postMaxSlots = d.postMaxSlots;
       if (d.postPlatformFeePct !== undefined) SITE.postPlatformFeePct = d.postPlatformFeePct;
+      if (d.depositJobFeePct !== undefined) SITE.depositJobFeePct = Math.min(20, Math.max(10, Number(d.depositJobFeePct) || 15));
+      if (d.signupBonus !== undefined) SITE.signupBonus = Math.max(0, Number(d.signupBonus) || 0);
       if (d.postApprovalNote) SITE.postApprovalNote = d.postApprovalNote;
       if (d.kycEnabled !== undefined) SITE.kycEnabled = d.kycEnabled;
       if (d.imgbbApiKey) SITE.imgbbApiKey = d.imgbbApiKey;
@@ -2728,9 +2738,11 @@ function listenCpaTasks(onChange) {
           _ts: t.importedAt?.seconds ? t.importedAt.seconds * 1000 : Date.now(),
         });
       });
+      // Merge here too: previously CPA offers only merged if they loaded BEFORE the jobs snapshot (race) → empty list.
+      S.approvedJobs = (S.approvedJobs || []).filter(j => !j.isCpaTask).concat(S.cpaTasks);
       onChange && onChange(S.cpaTasks);
     },
-    e => console.warn('listenCpaTasks:', e)
+    e => { console.warn('listenCpaTasks:', e); showToast('CPA offers load failed: ' + (e.code || e.message), 'error'); }
   );
 }
 
@@ -2834,12 +2846,15 @@ function findCategory(name) { return S.categories.find(c => c.name === name); }
 // ══════ js/services/postJobs.js ══════
 let _unsubPostJobs = null;
 
+// Funding source for user-posted jobs: 'deposit' (Job Deposit Balance, 10–20% fee) or 'balance' (main balance).
+function feePctForSource(src) { return src === 'deposit' ? Math.min(20, Math.max(10, Number(SITE.depositJobFeePct) || 15)) : SITE.postPlatformFeePct; }
 function computeJobBudget(reward, slots) {
   reward = Number(reward) || 0; slots = Number(slots) || 0;
   const workerTotal = reward * slots;
-  const platformFee = workerTotal * (SITE.postPlatformFeePct / 100);
+  const feePct = feePctForSource(S.postFundSource);
+  const platformFee = workerTotal * (feePct / 100);
   const grandTotal = workerTotal + platformFee;
-  return { reward, slots, workerTotal, platformFee: parseFloat(platformFee.toFixed(2)), grandTotal: parseFloat(grandTotal.toFixed(2)) };
+  return { reward, slots, workerTotal, feePct, platformFee: parseFloat(platformFee.toFixed(2)), grandTotal: parseFloat(grandTotal.toFixed(2)) };
 }
 
 async function createJobPost({ title, category, subcategory, type, reward, limit, country, instructions, instructionsEn, desc, link, screenshotCount, locationMode, targetCountries, proofRequirements, expiryDays, attachmentUrls, autoVerify, verificationQuestions }, user, userData, userRef) {
@@ -2864,13 +2879,16 @@ async function createJobPost({ title, category, subcategory, type, reward, limit
   await fb.runTransaction(db, async (tx) => {
     const uSnap = await tx.get(userRef);
     if (!uSnap.exists()) throw new Error('USER_NOT_FOUND');
-    const bal = uSnap.data().balance || 0;
-    if (bal < budget.grandTotal) throw new Error('INSUFFICIENT_BALANCE');
-
-    tx.update(userRef, {
-      balance: bal - budget.grandTotal,
-      postingHold: fb.increment(budget.grandTotal)
-    });
+    const fundedBy = S.postFundSource === 'deposit' ? 'deposit' : 'balance';
+    if (fundedBy === 'deposit') {
+      const dep = uSnap.data().depositBalance || 0;
+      if (dep < budget.grandTotal) throw new Error('INSUFFICIENT_BALANCE');
+      tx.update(userRef, { depositBalance: parseFloat((dep - budget.grandTotal).toFixed(4)) });   // decrease-only (see Firestore rules)
+    } else {
+      const bal = uSnap.data().balance || 0;
+      if (bal < budget.grandTotal) throw new Error('INSUFFICIENT_BALANCE');
+      tx.update(userRef, { balance: bal - budget.grandTotal, postingHold: fb.increment(budget.grandTotal) });
+    }
 
     tx.set(newJobRef, {
       title: title.trim(), category, subcategory: subcategory || '', type, reward, limit, filled: 0,
@@ -2893,9 +2911,10 @@ async function createJobPost({ title, category, subcategory, type, reward, limit
       postedByAvgRating: userData?.avgRating || 0,
       postedByReviewCount: userData?.reviewCount || 0,
       workerTotal: budget.workerTotal,
-      platformFeePct: SITE.postPlatformFeePct,
+      platformFeePct: budget.feePct,
       platformFee: budget.platformFee,
       budgetHeld: budget.grandTotal,
+      fundedBy: S.postFundSource === 'deposit' ? 'deposit' : 'balance',
       holdSettled: false,
       _ts: nowTs, createdAt: fb.serverTimestamp(),
     });
@@ -2917,6 +2936,7 @@ async function saveWizardJobEdit(jobId, payload, user, userData, userRef) {
   if ((payload.type === 'link' || payload.type === 'dailylink') && !payload.link) throw new Error('LINK_REQUIRED');
   if (!userRef) throw new Error('NO_USER_REF');
 
+  { const _old = S.myPostedJobs.find(x => x.id === jobId); if (_old && _old.fundedBy === 'deposit') throw new Error('DEPOSIT_EDIT'); }
   const jobRef = fb.doc(db, 'jobs', jobId);
   const newBudget = computeJobBudget(reward, limit);
   const expDays = Number(payload.expiryDays) || 7;
@@ -3025,6 +3045,7 @@ async function settleJobPostHolds(jobs, userRef) {
   if (!userRef) return;
   for (const job of jobs) {
     if (!job.budgetHeld || job.holdSettled) continue;
+    if (job.fundedBy === 'deposit') continue;   // deposit-funded jobs are settled/refunded by admin (no postingHold used)
     if (job.status !== 'approved' && job.status !== 'rejected') continue;
     if (S._settlingJobIds[job.id]) continue;
     S._settlingJobIds[job.id] = true;
@@ -3621,9 +3642,13 @@ async function registerUser({ name, username, email, phone, country, pass, ref }
   await fb.updateProfile(cred.user, { displayName: name }).catch(() => {});
   const refCode = 'WH' + Math.random().toString(36).substr(2, 6).toUpperCase();
   const { deviceId, ipAddress } = await getDeviceFingerprint();
+  // One-time signup bonus → Job Deposit Balance ONLY (never withdrawable). The Firestore rule caps it at siteSettings.signupBonus.
+  let signupBonus = 0.5;
+  try { const s = await fb.getDoc(fb.doc(db, 'siteSettings', 'global')); if (s.exists() && s.data().signupBonus !== undefined) signupBonus = Math.max(0, Number(s.data().signupBonus) || 0); } catch (e) {}
   const userData = {
     name, username, email, country, phone, bio: '', photoURL: '',
     balance: 0, totalEarned: 0, totalWithdrawn: 0, pendingAmount: 0, postingHold: 0,
+    depositBalance: signupBonus, signupBonusGiven: signupBonus > 0,
     tasksCompleted: 0, approvedTasks: 0, accuracy: 0, streak: 0, workerLevel: 1,
     kyc: false, kycStatus: 'none',
     referralCode: refCode, referredBy: ref || '', referralCount: 0, referralEarned: 0,
@@ -3728,7 +3753,10 @@ async function ensureUserDoc(user) {
   const { deviceId, ipAddress } = await getDeviceFingerprint();
   if (!snap.exists()) {
     const refCode = 'WH' + Math.random().toString(36).substr(2, 6).toUpperCase();
+    let signupBonus = 0.5;   // one-time bonus → Job Deposit Balance (Google signup path)
+    try { const s = await fb.getDoc(fb.doc(db, 'siteSettings', 'global')); if (s.exists() && s.data().signupBonus !== undefined) signupBonus = Math.max(0, Number(s.data().signupBonus) || 0); } catch (e) {}
     const data = {
+      depositBalance: signupBonus, signupBonusGiven: signupBonus > 0,
       name: user.displayName || 'WorkHive User', username: '', email: user.email || '', phone: '', bio: '', country: '',
       photoURL: user.photoURL || '',
       balance: 0, totalEarned: 0, totalWithdrawn: 0, pendingAmount: 0, postingHold: 0,
@@ -4469,7 +4497,17 @@ function filterTaskCategory(el, cat) {
 }
 function renderAllTasks(cat) {
   if (cat === '__current__') cat = _activeCategoryChip;
+  const cpaCnt = document.getElementById('tvCpaCount'); if (cpaCnt) cpaCnt.textContent = S.cpaTasks.length ? '(' + S.cpaTasks.length + ')' : '';
+  if (S.tasksView === 'cpa') {
+    const b = document.getElementById('taskCountBadge'); if (b) b.textContent = S.cpaTasks.length + ' offers';
+    const el = document.getElementById('taskListFull');
+    if (el) el.innerHTML = S.cpaTasks.length
+      ? S.cpaTasks.map(t => taskCardHtml(t, false)).join('')
+      : '<div class="history-empty"><div class="big">🎯</div>এই মুহূর্তে কোনো CPA অফার নেই। কিছুক্ষণ পর আবার দেখুন।</div>';
+    return;
+  }
   let list = (cat === 'All') ? S.approvedJobs : S.approvedJobs.filter(t => t.category === cat);
+  list = list.filter(t => !t.isCpaTask);   // CPA offers live in their own tab
   if (S.activeSubChip && S.activeSubChip !== 'All') list = list.filter(t => t.subcategory === S.activeSubChip);
   const badge = document.getElementById('taskCountBadge'); if (badge) badge.textContent = list.length + ' tasks';
   const listEl = document.getElementById('taskListFull');
@@ -4641,7 +4679,7 @@ function openTaskModal(jobId) {
     ${t.isCpaTask ? `
     <div class="translate-bar" style="background:rgba(0,188,212,.08);border-color:rgba(0,188,212,.2)">
       <div style="color:var(--cyan);font-size:12px;font-weight:700">🎯 ${(t.network||'CPA').toUpperCase()} Offerwall Task</div>
-      ${t.offerUrl ? `<a href="${escHtml(t.offerUrl)}?subid=${window._currentUser?.uid||''}" target="_blank" rel="noopener" class="tbtn" style="color:var(--cyan);border-color:rgba(0,188,212,.3);background:rgba(0,188,212,.1)">🔗 Start Offer</a>` : ''}
+      ${t.offerUrl ? `<a href="${escHtml(cpaOfferLink(t))}" target="_blank" rel="noopener" class="tbtn" style="color:var(--cyan);border-color:rgba(0,188,212,.3);background:rgba(0,188,212,.1)">🔗 Start Offer</a>` : ''}
     </div>` : `<div class="translate-bar">🌐 Translate this job <div class="tbtn" onclick="toggleTaskInstrLang('${jobId}')">🌐 <span id="instrLangLabel${jobId}">${t.instructionsEn ? 'English' : 'N/A'}</span></div></div>`}
     <div class="cat-loc-row" style="display:flex;align-items:center;gap:14px;font-size:11px;color:var(--text3);font-weight:600;margin:10px 0 14px;flex-wrap:wrap">
       <span>📁 ${escHtml(t.category || '')}${t.subcategory ? ' • ' + escHtml(t.subcategory) : ''}</span>
@@ -4849,6 +4887,7 @@ function startDailyLinkTask(jobId, url) {
 function startLandingTask(jobId) {
   const t = S.approvedJobs.find(x => x.id === jobId), user = window._currentUser;
   if (!t || !user || getLandingStatus(t).onCooldown) return;
+  if (t.taskKind === 'shortlink' && t.shortUrl) { window.open(t.shortUrl, '_blank', 'noopener'); return; }   // shortlink → captcha → landing.html verification page → secret code
   const u = new URL('landing.html', location.href);
   u.searchParams.set('job_id', jobId); u.searchParams.set('user_id', user.uid);
   window.open(u.toString(), '_blank');
@@ -5021,6 +5060,7 @@ S.wiz = {
 };
 const WIZ_STEP_LABELS = ['লোকেশন', 'ক্যাটাগরি', 'ডিটেইলস', 'বাজেট'];
 const WIZ_ERR_MSGS = Object.assign({}, ERR_MSGS, {
+  DEPOSIT_EDIT: 'Job Deposit দিয়ে পোস্ট করা জব এডিট করা যায় না — নতুন জব পোস্ট করুন।',
   SLOT_BELOW_FILLED: 'ইতিমধ্যে কিছু ওয়ার্কার এই জব সম্পন্ন করেছে — স্লট সংখ্যা তার চেয়ে কম করা যাবে না।',
   JOB_NOT_FOUND: 'জবটি খুঁজে পাওয়া যায়নি।',
 });
@@ -5488,12 +5528,14 @@ function updatePostBudgetPreview() {
   const reward = Number(document.getElementById('postReward')?.value) || 0;
   const slots = Number(document.getElementById('postSlots')?.value) || 0;
   const budget = computeJobBudget(reward, slots);
-  const balance = (window._userData?.balance) || 0;
+  const _isDep = S.postFundSource === 'deposit' && S.wiz.mode !== 'edit';
+  const balance = (_isDep ? window._userData?.depositBalance : window._userData?.balance) || 0;
   const balanceAfter = balance - budget.grandTotal;
+  { const lbl = document.querySelector('#postPreviewBalanceRow span'); if (lbl) lbl.textContent = _isDep ? 'Job Deposit Balance' : 'Your Balance'; const sel = document.getElementById('postFundSel'); if (sel && sel.value !== S.postFundSource) sel.value = S.postFundSource; const dOpt = document.getElementById('postFundOptDep'); if (dOpt) dOpt.textContent = '🎁 Job Deposit (' + fmtUSD(window._userData?.depositBalance || 0) + ') — ' + feePctForSource('deposit') + '% fee'; }
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   set('postPreviewPerWorker', fmtUSD(budget.reward));
   set('postPreviewWorkerTotal', fmtUSD(budget.workerTotal));
-  set('postPreviewPlatformFee', fmtUSD(budget.platformFee) + ` (${SITE.postPlatformFeePct}%)`);
+  set('postPreviewPlatformFee', fmtUSD(budget.platformFee) + ` (${budget.feePct}%)`);
   set('postPreviewGrandTotal', fmtUSD(budget.grandTotal));
   set('postPreviewBalance', fmtUSD(balance));
   set('postPreviewBalanceAfter', fmtUSD(balanceAfter));
@@ -5639,6 +5681,8 @@ function wizShowSuccess(isEdit) {
 
 
 function onEnterPostScreen() {
+  S.postFundSource = ((window._userData?.depositBalance || 0) > 0) ? 'deposit' : 'balance';   // existing users keep paying from main balance
+  renderPostDepositBanner();
   applySiteSettingsToPost(SITE);
   switchPostTab('post');
   if (S.wiz.mode !== 'edit') { wizResetState(); wizGoStep(1); }
@@ -6624,8 +6668,9 @@ function renderSupportMessages() {
   area.innerHTML = list.map(m => {
     const time = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : (m.timeLabel || '');
     const imgHtml = m.imageUrl ? `<img src="${escHtml(m.imageUrl)}" style="max-width:180px;border-radius:10px;display:block;margin-bottom:${m.text ? '6px' : '0'};cursor:pointer" onclick="window.open('${escHtml(m.imageUrl)}','_blank')">` : '';
-    if (m.from === 'admin') return `<div class="msg-row them"><div class="msg-ava"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/></svg></div><div><div class="msg-bubble">${imgHtml}${escHtml(m.text || '')}<div class="msg-time">${time}</div></div></div></div>`;
-    return `<div class="msg-row me"><div><div class="msg-bubble" onpointerdown="startMsgLongPress('${m.id}')" onpointerup="cancelMsgLongPress()" onpointerleave="cancelMsgLongPress()">${imgHtml}${escHtml(m.text || '')}<div class="msg-time">${time}</div></div></div></div>`;
+    const fileHtml = (m.fileUrl && /^https?:\/\//i.test(m.fileUrl)) ? `<a href="${escHtml(m.fileUrl)}" target="_blank" rel="noopener" style="display:block;margin-bottom:6px;color:inherit;font-weight:700;text-decoration:underline">📎 ${escHtml(m.fileName || 'Attachment')}</a>` : '';
+    if (m.from === 'admin') return `<div class="msg-row them"><div class="msg-ava"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/></svg></div><div><div class="msg-bubble">${imgHtml}${fileHtml}${escHtml(m.text || '')}<div class="msg-time">${time}</div></div></div></div>`;
+    return `<div class="msg-row me"><div><div class="msg-bubble" onpointerdown="startMsgLongPress('${m.id}')" onpointerup="cancelMsgLongPress()" onpointerleave="cancelMsgLongPress()">${imgHtml}${fileHtml}${escHtml(m.text || '')}<div class="msg-time">${time}</div></div></div></div>`;
   }).join('');
   area.scrollTop = area.scrollHeight;
 }
@@ -6923,6 +6968,7 @@ async function bootstrapApp(user, ref, data) {
     renderHomeTasks(); renderAllTasks('__current__'); rebuildAndRenderTx();
   });
   listenLandingHistory(user.uid, () => { renderHomeTasks(); renderAllTasks('__current__'); });
+  listenCpaCredits(user.uid);
   listenUserWithdrawals(user.uid, () => rebuildAndRenderTx());
   listenUserDeposits(user.uid, () => renderDepositHistory());
   listenUserNotifications(user.uid, () => renderNotifications());
@@ -7025,6 +7071,75 @@ setTimeout(() => {
 
 initAuthScreenBindings();
 
+
+// ══════ Job Deposit / CPA Offerwall / Quick Social Jobs ══════
+function setPostFund(v) { S.postFundSource = v === 'balance' ? 'balance' : 'deposit'; updatePostBudgetPreview(); renderPostDepositBanner(); }
+const QUICK_SOCIAL = {
+  youtube:  { icon: '▶️', label: 'YouTube Subscribe', title: 'Subscribe to my YouTube channel', ins: '1. নিচের লিংকে গিয়ে চ্যানেলটি Subscribe করুন।\n2. Subscribe করার পর স্ক্রিনশট নিয়ে সাবমিট করুন।' },
+  facebook: { icon: '👍', label: 'Facebook Follow',   title: 'Follow my Facebook page',          ins: '1. নিচের লিংকে গিয়ে পেজটি Follow করুন।\n2. Follow করার পর স্ক্রিনশট নিয়ে সাবমিট করুন।' },
+  telegram: { icon: '✈️', label: 'Telegram Join',     title: 'Join my Telegram channel',         ins: '1. নিচের লিংকে গিয়ে চ্যানেল/গ্রুপে Join করুন।\n2. Join করার পর স্ক্রিনশট নিয়ে সাবমিট করুন।' },
+  twitter:  { icon: '🐦', label: 'Twitter / X Follow', title: 'Follow my Twitter (X) account',    ins: '1. নিচের লিংকে গিয়ে অ্যাকাউন্টটি Follow করুন।\n2. Follow করার পর স্ক্রিনশট নিয়ে সাবমিট করুন।' },
+};
+function renderPostDepositBanner() {
+  const el = document.getElementById('postDepositBanner'); if (!el) return;
+  const dep = window._userData?.depositBalance || 0;
+  el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div><div style="font-size:10.5px;color:var(--text3);font-weight:800;letter-spacing:.5px">JOB DEPOSIT BALANCE</div><div style="font-size:22px;font-weight:900;color:var(--green)">${fmtUSD(dep)}</div></div>
+      <div style="font-size:10.5px;color:var(--text2);text-align:right;max-width:55%;line-height:1.5">🎁 Signup bonus এখান থেকে জব পোস্টে খরচ করুন · ${feePctForSource('deposit')}% প্ল্যাটফর্ম ফি · উইথড্র করা যায় না</div>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:11px">${Object.entries(QUICK_SOCIAL).map(([k, q]) => `<div class="chip" onclick="quickSocialJob('${k}')">${q.icon} ${q.label}</div>`).join('')}</div>`;
+}
+function quickSocialJob(kind) {
+  const q = QUICK_SOCIAL[kind]; if (!q) return;
+  S.postFundSource = 'deposit';
+  const setVal = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
+  setVal('postTitle', q.title); setVal('postInstructions', q.ins); setVal('postReward', '0.02'); setVal('postSlots', '10');
+  if (typeof wizUpdateInstrCount === 'function') try { wizUpdateInstrCount(); } catch (e) {}
+  showToast(q.icon + ' ' + q.label + ' — ক্যাটাগরি (Social Media) বেছে নিয়ে লিংক দিন', 'info');
+  updatePostBudgetPreview();
+}
+function setTasksView(v) {
+  S.tasksView = v === 'cpa' ? 'cpa' : 'micro';
+  document.getElementById('tvMicro')?.classList.toggle('active', S.tasksView === 'micro');
+  document.getElementById('tvCpa')?.classList.toggle('active', S.tasksView === 'cpa');
+  ['categoryChips', 'subcategoryChips', 'categorySearchInput'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = S.tasksView === 'cpa' ? 'none' : ''; });
+  const sb = document.getElementById('categorySearchInput')?.parentElement; if (sb) sb.style.display = S.tasksView === 'cpa' ? 'none' : '';
+  renderAllTasks('__current__');
+}
+// Offer link: inject the worker id with each network's tracking parameter (the postback returns it as the user id).
+function cpaOfferLink(t) {
+  const uid = window._currentUser?.uid || ''; const u = t.offerUrl || ''; if (!u) return '';
+  if (/\{(user_id|subid|uid|userid)\}/i.test(u)) return u.replace(/\{(user_id|subid|uid|userid)\}/ig, encodeURIComponent(uid));
+  return u + (u.includes('?') ? '&' : '?') + 'subid=' + encodeURIComponent(uid);   // same parameter as before (just safe when the URL already has '?')
+}
+// Spark-plan CPA crediting: the postback server (Apps Script) writes cpaConversions/{uid_tid}; the worker's own
+// browser claims it in ONE transaction (Firestore rules cap the credit to that conversion's amount, one time only).
+let _unsubCpaCredits = null, _cpaClaiming = {};
+function listenCpaCredits(uid) {
+  if (_unsubCpaCredits) _unsubCpaCredits(); if (!uid) return;
+  _unsubCpaCredits = fb.onSnapshot(fb.query(fb.collection(db, 'cpaConversions'), fb.where('userId', '==', uid), fb.where('claimed', '==', false)), snap => {
+    snap.forEach(d => claimCpaConversion(d.id, d.data()));
+  }, e => console.warn('listenCpaCredits:', e.code || e.message));
+}
+async function claimCpaConversion(id, c) {
+  const userRef = window._userRef; if (!userRef || _cpaClaiming[id]) return;
+  _cpaClaiming[id] = true;
+  try {
+    const convRef = fb.doc(db, 'cpaConversions', id);
+    let amt = 0;
+    await fb.runTransaction(db, async tx => {
+      const s = await tx.get(convRef);
+      if (!s.exists() || s.data().claimed !== false) return;
+      amt = Number(s.data().amount) || 0; if (amt <= 0) return;
+      tx.update(convRef, { claimed: true, claimedAt: fb.serverTimestamp() });
+      tx.update(userRef, { balance: fb.increment(amt), totalEarned: fb.increment(amt), tasksCompleted: fb.increment(1), approvedTasks: fb.increment(1), lastCpaClaimRef: id });
+    });
+    if (amt > 0) { showToast('🎯 Offer completed! +' + fmtUSD(amt) + ' credited', 'info'); try { playCompletionSound(SITE.completionSound); } catch (e) {} }
+  } catch (e) { console.warn('claimCpaConversion:', e.code || e.message); }
+  finally { delete _cpaClaiming[id]; }
+}
+window.addEventListener('unhandledrejection', e => { console.warn('Unhandled promise rejection:', (e.reason && (e.reason.code || e.reason.message)) || e.reason); e.preventDefault(); });
+Object.assign(window, { setPostFund, quickSocialJob, setTasksView, cpaOfferLink, renderPostDepositBanner });
 </script>
 </body>
 </html>

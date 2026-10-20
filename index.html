@@ -1073,6 +1073,59 @@ html.wh-app .auth-back { display: none !important; }
 #authScreen .auth-error { font-family: 'Noto Sans Bengali','Inter',sans-serif; }
 .auth-foot { margin-top: 18px; font-size: 11.5px; color: #6f786f; text-align: center; font-family: 'Noto Sans Bengali','Inter',sans-serif; }
 
+
+/* ── compact, professional login / register ── */
+html #authScreen { padding-top: calc(env(safe-area-inset-top, 0px) + 54px) !important; }
+#authScreen > *:not(.auth-back) { max-width: 380px; }
+#authScreen .auth-logo { width: 80px !important; height: 80px !important; margin: 2px 0 2px !important; }
+#authScreen .auth-title { font-size: 25px !important; margin-bottom: 2px; }
+#authScreen .auth-sub { font-size: 12px !important; margin-bottom: 16px !important; }
+#authScreen .auth-tabs { padding: 3px !important; margin-bottom: 15px !important; border-radius: 13px !important; }
+#authScreen .auth-tab { padding: 9px 6px !important; font-size: 13px !important; border-radius: 10px !important; }
+#authScreen .auth-field { margin-bottom: 11px !important; }
+#authScreen .auth-field label { font-size: 11.5px !important; margin-bottom: 5px !important; }
+#authScreen .auth-field input, #authScreen .auth-field select { font-size: 15px !important; padding: 10px 13px !important; border-radius: 11px !important; }
+#authScreen .pass-eye { display: flex; align-items: center; justify-content: center; color: #8e978f; font-size: 0 !important; }
+#authScreen .pass-eye svg { width: 18px; height: 18px; }
+#authScreen .btn-auth { padding: 12px !important; font-size: 14px !important; border-radius: 11px !important; box-shadow: 0 8px 20px rgba(0,230,118,.22) !important; margin-top: 4px; }
+#authScreen .btn-google { padding: 11px !important; font-size: 13px !important; border-radius: 11px !important; }
+#authScreen .divider { margin: 10px 0 !important; font-size: 11.5px !important; }
+#authScreen .forgot-link { font-size: 12px !important; }
+.auth-foot { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.auth-foot svg { width: 13px; height: 13px; }
+
+/* ── forgot password: full-screen page in the same design ── */
+html #forgotPwOverlay { position: fixed !important; inset: 0 !important; z-index: 60 !important; border-radius: 0 !important; align-items: flex-start !important; justify-content: center !important; overflow-y: auto; backdrop-filter: none !important;
+  background: radial-gradient(90% 46% at 50% 0%, rgba(0,230,118,.20), transparent 70%), #070707 !important;
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) 22px 40px; }
+html #forgotPwOverlay .modal-sheet { width: 100%; max-width: 380px; max-height: none !important; background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 auto; animation: authIn .4s cubic-bezier(.22,1,.36,1); }
+.fp-back { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); left: 14px; width: 42px; height: 42px; border-radius: 14px; padding: 0; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.05); color: #EFF3EF; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2; }
+.fp-back svg { width: 20px; height: 20px; }
+.fp-head { text-align: center; margin: 36px 0 20px; }
+.fp-logo { width: 72px; height: 72px; margin: 0 auto 8px; filter: drop-shadow(0 0 18px rgba(0,230,118,.4)); }
+.fp-logo img { width: 100%; height: 100%; object-fit: contain; }
+.fp-title { font-family: 'Noto Sans Bengali','Space Grotesk',sans-serif; font-size: 21px; font-weight: 800; color: #fff; }
+.fp-sub { font-size: 12.5px; color: #8e978f; margin-top: 6px; line-height: 1.65; font-family: 'Noto Sans Bengali','Inter',sans-serif; }
+.fp-sub b { color: #dfe6e0; word-break: break-all; }
+.fp-label { display: block; font-size: 11.5px; font-weight: 600; color: #aab3ab; margin-bottom: 5px; font-family: 'Noto Sans Bengali','Inter',sans-serif; }
+.fp-input { width: 100%; box-sizing: border-box; padding: 11px 13px; border-radius: 11px; font-size: 15px; background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.1); color: #EFF3EF; outline: none; }
+.fp-input:focus { border-color: #00E676; background: rgba(0,230,118,.05); box-shadow: 0 0 0 4px rgba(0,230,118,.12); }
+.fp-otp { letter-spacing: 8px; font-size: 24px; text-align: center; font-weight: 800; padding: 12px; }
+.fp-err { font-size: 12px; color: #ff6b6b; min-height: 18px; margin: 8px 0; font-family: 'Noto Sans Bengali','Inter',sans-serif; }
+.fp-btn { width: 100%; padding: 12px; border-radius: 11px; border: none; background: linear-gradient(135deg,#00ff85,#00c566); color: #00180a; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 8px 20px rgba(0,230,118,.22); font-family: 'Noto Sans Bengali','Inter',sans-serif; }
+.fp-btn:disabled { opacity: .6; }
+.fp-btn svg { width: 17px; height: 17px; }
+.fp-link { text-align: center; margin-top: 12px; font-size: 12px; color: #7f887f; font-family: 'Noto Sans Bengali','Inter',sans-serif; }
+.fp-link span { color: #00E676; cursor: pointer; font-weight: 700; }
+.fp-timer { display: flex; align-items: center; justify-content: space-between; background: rgba(0,230,118,.07); border: 1px solid rgba(0,230,118,.2); border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; }
+.fp-timer small { font-size: 12px; color: #9aa39c; font-family: 'Noto Sans Bengali','Inter',sans-serif; }
+#fpCountdown { font-size: 21px; font-weight: 900; color: #00E676; font-family: 'Space Grotesk',monospace; letter-spacing: 1px; }
+.fp-note { font-size: 11.5px; color: #6f786f; text-align: center; margin-top: 14px; line-height: 1.6; font-family: 'Noto Sans Bengali','Inter',sans-serif; }
+.fp-done { text-align: center; padding: 6px 0; }
+.fp-done .fp-okico { width: 70px; height: 70px; margin: 18px auto 14px; border-radius: 22px; background: rgba(0,230,118,.12); border: 1px solid rgba(0,230,118,.4); display: flex; align-items: center; justify-content: center; color: #00E676; box-shadow: 0 0 30px rgba(0,230,118,.2); }
+.fp-done .fp-okico svg { width: 34px; height: 34px; }
+#whAuthToast { position: fixed !important; bottom: calc(env(safe-area-inset-bottom, 0px) + 36px) !important; z-index: 2147483600; max-width: 90vw; width: max-content; text-align: center; background: rgba(8,16,11,.94) !important; font-family: 'Noto Sans Bengali','Inter',sans-serif; font-size: 13px; }
+#whAuthToast.error { border-color: rgba(255,107,107,.5) !important; color: #ff8a8a !important; }
 /* Google sign-in cannot run inside an Android WebView — hide it there only */
 html.wh-app #authScreen .btn-google, html.wh-app #authScreen .divider { display: none !important; }
 </style>
@@ -1496,6 +1549,28 @@ a{cursor:pointer}
 .lp-fixed .modal-overlay.show{pointer-events:auto}
 .help-fab-wrap{pointer-events:none}
 .help-fab{pointer-events:auto}
+
+/* ── SVG icons (same look on every phone — no emoji) ── */
+.s-ico svg,.di svg,.hx svg{width:56%;height:56%}
+.di svg{color:#fff}
+.mock-pill svg{width:16px;height:16px}
+.device-btn svg{width:13px;height:13px;vertical-align:-2px;margin-right:4px}
+.modal-close svg{width:16px;height:16px}
+/* ── download popup ── */
+.dl-card{width:min(330px,90vw);margin:auto;background:linear-gradient(180deg,#0f1511,#0a0d0a);border:1px solid rgba(0,230,118,.28);border-radius:22px;padding:26px 22px 20px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.65),0 0 60px rgba(0,230,118,.12);animation:dlIn .38s cubic-bezier(.22,1,.36,1)}
+@keyframes dlIn{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:none}}
+.dl-ico{width:66px;height:66px;margin:0 auto 14px;border-radius:21px;background:rgba(0,230,118,.12);border:1px solid rgba(0,230,118,.38);display:flex;align-items:center;justify-content:center;color:#00E676;animation:dlBob 1.5s ease-in-out infinite;box-shadow:0 0 28px rgba(0,230,118,.22)}
+.dl-ico svg{width:30px;height:30px}
+@keyframes dlBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.dl-card h3{font-size:17px;margin:0 0 6px;color:#fff;font-family:'Noto Sans Bengali','Inter',sans-serif;font-weight:800}
+.dl-card p{font-size:12.5px;color:#9aa39c;line-height:1.7;margin:0 0 14px;font-family:'Noto Sans Bengali','Inter',sans-serif}
+.dl-bar{height:4px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:12px}
+.dl-bar i{display:block;height:100%;width:38%;border-radius:4px;background:linear-gradient(90deg,transparent,#00E676,transparent);animation:dlSlide 1.2s ease-in-out infinite}
+@keyframes dlSlide{0%{transform:translateX(-110%)}100%{transform:translateX(280%)}}
+.dl-tip{font-size:11.5px;color:#838c84;background:rgba(255,255,255,.035);border-radius:10px;padding:9px 11px;margin-bottom:14px;line-height:1.65;font-family:'Noto Sans Bengali','Inter',sans-serif}
+.dl-card.done .dl-bar,.dl-card.soon .dl-bar{display:none}
+.dl-ok{width:100%;padding:12px;border:0;border-radius:12px;background:linear-gradient(135deg,#00ff85,#00c566);color:#00180a;font-weight:800;font-size:14px;cursor:pointer;font-family:'Noto Sans Bengali','Inter',sans-serif;box-shadow:0 8px 20px rgba(0,230,118,.22)}
+.dl-card.done .dl-ico,.dl-card.soon .dl-ico{animation:none}
 </style><div class="lp-root" id="lpRoot">
 <nav>
   <div class="in">
@@ -1524,22 +1599,22 @@ a{cursor:pointer}
         <div class="spark" style="width:4px;height:4px;left:85%;top:68%;animation-delay:1.6s"></div>
 
         <div class="satellite sat-social">
-          <div class="s-ico" style="background:rgba(68,138,255,.14);color:#448AFF">👍</div>
+          <div class="s-ico" style="background:rgba(68,138,255,.14);color:#448AFF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3zM7 11l4-8a2.5 2.5 0 0 1 2.5 2.5V9H19a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.8 20H7"/></svg></div>
           <div class="s-txt"><b>সোশ্যাল মিডিয়া টাস্ক</b><span>+$0.90 · অনুমোদিত</span></div>
         </div>
 
         <div class="satellite sat-app">
-          <div class="s-ico" style="background:rgba(0,230,118,.14);color:#00E676">📲</div>
+          <div class="s-ico" style="background:rgba(0,230,118,.14);color:#00E676"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 7.5v6m0 0-2.5-2.5M12 13.5l2.5-2.5M10.5 18h3"/></svg></div>
           <div class="s-txt"><b>অ্যাপ ডাউনলোড</b><span>+$0.50 · অনুমোদিত</span></div>
         </div>
 
         <div class="satellite sat-review">
-          <div class="s-ico" style="background:rgba(255,179,0,.14);color:#FFB300">⭐</div>
+          <div class="s-ico" style="background:rgba(255,179,0,.14);color:#FFB300"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></div>
           <div class="s-txt"><b>রিভিউ টাস্ক</b><span>+$0.35 · অনুমোদিত</span></div>
         </div>
 
         <div class="satellite sat-cashout">
-          <div class="s-ico" style="background:rgba(0,230,118,.14);color:#00E676">📤</div>
+          <div class="s-ico" style="background:rgba(0,230,118,.14);color:#00E676"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
           <div class="s-txt">
             <b>bKash-এ উইথড্র</b>
             <span class="cashout-flow">ব্যালেন্স <span class="cashout-arrow">→</span> <span class="cashout-coin">৳</span> bKash</span>
@@ -1550,10 +1625,10 @@ a{cursor:pointer}
           <div class="device-notch"></div>
           <div class="device-bal-label">Available Balance</div>
           <div class="device-bal">$14.62</div>
-          <div class="device-row"><div class="di" style="background:linear-gradient(135deg,#448AFF,#2962FF)">👍</div><div class="dt"></div></div>
-          <div class="device-row"><div class="di" style="background:linear-gradient(135deg,#00E676,#00C853)">📲</div><div class="dt"></div></div>
-          <div class="device-row"><div class="di" style="background:linear-gradient(135deg,#FFB300,#FF6F00)">⭐</div><div class="dt"></div></div>
-          <div class="device-btn">⬆️ উইথড্র করুন</div>
+          <div class="device-row"><div class="di" style="background:linear-gradient(135deg,#448AFF,#2962FF)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3zM7 11l4-8a2.5 2.5 0 0 1 2.5 2.5V9H19a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.8 20H7"/></svg></div><div class="dt"></div></div>
+          <div class="device-row"><div class="di" style="background:linear-gradient(135deg,#00E676,#00C853)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 7.5v6m0 0-2.5-2.5M12 13.5l2.5-2.5M10.5 18h3"/></svg></div><div class="dt"></div></div>
+          <div class="device-row"><div class="di" style="background:linear-gradient(135deg,#FFB300,#FF6F00)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></div><div class="dt"></div></div>
+          <div class="device-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg> উইথড্র করুন</div>
         </div>
       </div>
     </div>
@@ -1634,8 +1709,8 @@ a{cursor:pointer}
               <div class="mock-line w60" style="margin:8px auto 0"></div>
             </div>
             <div class="mock-pill-row" style="margin-top:2px">
-              <div class="mock-pill" style="padding:8px 3px">📱</div>
-              <div class="mock-pill" style="padding:8px 3px">💳</div>
+              <div class="mock-pill" style="padding:8px 3px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10.5 18h3"/></svg></div>
+              <div class="mock-pill" style="padding:8px 3px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6 15h4"/></svg></div>
               <div class="mock-pill" style="padding:8px 3px">₮</div>
             </div>
             <div class="mock-card"><div class="mock-line w80"></div><div class="mock-line w40" style="margin-top:8px"></div></div>
@@ -1692,19 +1767,19 @@ a{cursor:pointer}
     </div>
     <div class="task-types">
       <div class="ttype">
-        <div class="hx" style="background:rgba(68,138,255,.12);color:var(--cat-social)">👍</div>
+        <div class="hx" style="background:rgba(68,138,255,.12);color:var(--cat-social)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3zM7 11l4-8a2.5 2.5 0 0 1 2.5 2.5V9H19a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.8 20H7"/></svg></div>
         <div><h4>সোশ্যাল মিডিয়া</h4><p>ফেসবুক পেজ/গ্রুপে লাইক, কমেন্ট, শেয়ার বা ফলো করার মতো ছোট ছোট কাজ।</p></div>
       </div>
       <div class="ttype">
-        <div class="hx" style="background:rgba(0,230,118,.12);color:var(--cat-app)">📲</div>
+        <div class="hx" style="background:rgba(0,230,118,.12);color:var(--cat-app)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 7.5v6m0 0-2.5-2.5M12 13.5l2.5-2.5M10.5 18h3"/></svg></div>
         <div><h4>অ্যাপ ডাউনলোড</h4><p>নির্দিষ্ট অ্যাপ ইনস্টল করে ওপেন করলেই টাস্ক সম্পন্ন হয়ে যায়।</p></div>
       </div>
       <div class="ttype">
-        <div class="hx" style="background:rgba(255,82,82,.12);color:var(--cat-web)">🌐</div>
+        <div class="hx" style="background:rgba(255,82,82,.12);color:var(--cat-web)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 3.9 5.6 3.9 9s-1.3 6.4-3.9 9c-2.6-2.6-3.9-5.6-3.9-9S9.4 5.6 12 3z"/></svg></div>
         <div><h4>ওয়েবসাইট ভিজিট</h4><p>নির্দিষ্ট লিংকে ভিজিট করলেই টাস্ক অটোমেটিক সম্পন্ন হয়ে যায়, কোনো প্রুফ লাগে না।</p></div>
       </div>
       <div class="ttype">
-        <div class="hx" style="background:rgba(255,179,0,.12);color:var(--cat-review)">⭐</div>
+        <div class="hx" style="background:rgba(255,179,0,.12);color:var(--cat-review)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></div>
         <div><h4>রিভিউ / রেটিং</h4><p>প্লে স্টোর বা ওয়েবসাইটে সততার সাথে রিভিউ ও রেটিং দিলে রিওয়ার্ড পাবেন।</p></div>
       </div>
       <div class="ttype">
@@ -1712,7 +1787,7 @@ a{cursor:pointer}
         <div><h4>ভিডিও দেখা</h4><p>নির্ধারিত সময় পর্যন্ত ভিডিও দেখলে সেই টাস্কের রিওয়ার্ড পেয়ে যাবেন।</p></div>
       </div>
       <div class="ttype">
-        <div class="hx" style="background:rgba(0,188,212,.12);color:var(--cat-survey)">📝</div>
+        <div class="hx" style="background:rgba(0,188,212,.12);color:var(--cat-survey)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/></svg></div>
         <div><h4>সার্ভে</h4><p>ছোট প্রশ্নপত্র পূরণ করে মতামত দিন এবং রিওয়ার্ড অর্জন করুন।</p></div>
       </div>
     </div>
@@ -1727,17 +1802,17 @@ a{cursor:pointer}
     </div>
     <div class="feat-grid">
       <div class="feat">
-        <div class="hx">✅</div>
+        <div class="hx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div>
         <h3>এডমিন-ভেরিফায়েড টাস্ক</h3>
         <p>প্রতিটি টাস্ক এডমিন অনুমোদনের পরই লাইভ হয় — কোনো স্ক্যাম বা ভুয়া টাস্ক নেই।</p>
       </div>
       <div class="feat">
-        <div class="hx">👥</div>
+        <div class="hx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.2c2.7.2 4.5 2.2 4.5 4.8"/></svg></div>
         <h3>৩-জেনারেশন রেফারেল</h3>
         <p>বন্ধুদের ইনভাইট করে ৩ লেভেল পর্যন্ত পাসিভ ইনকাম করুন — নেটওয়ার্ক যত বড়, আয় তত বেশি।</p>
       </div>
       <div class="feat">
-        <div class="hx">⚡</div>
+        <div class="hx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4.5 13.5H11L10 22l8.5-11.5H12z"/></svg></div>
         <h3>দ্রুত পেমেন্ট</h3>
         <p>bKash, Nagad ও USDT-তে ২৪–৪৮ ঘণ্টায় উইথড্রয়াল প্রসেস হয় — কোনো লুকানো ফি নেই।</p>
       </div>
@@ -1831,7 +1906,7 @@ a{cursor:pointer}
 <!-- REVIEW MODAL -->
 <div class="modal-overlay" id="reviewOverlay">
   <div class="modal">
-    <div class="modal-close" data-act="closeReview">✕</div>
+    <div class="modal-close" data-act="closeReview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
     <h3>আপনার অভিজ্ঞতা শেয়ার করুন</h3>
     <p class="hint">আপনার রিভিউ এই পেজে সবাই দেখতে পাবে</p>
     <div class="star-picker" id="starPicker">
@@ -1847,6 +1922,17 @@ a{cursor:pointer}
 </div>
 
 
+
+<div class="modal-overlay" id="dlOverlay">
+  <div class="dl-card" id="dlCard">
+    <div class="dl-ico" id="dlIco"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg></div>
+    <h3 id="dlTitle">আপনার অ্যাপটি ডাউনলোড হচ্ছে…</h3>
+    <p id="dlSub">কিছুক্ষণের মধ্যেই ডাউনলোড শুরু হবে। শেষ হলে ফাইলটি খুলে ইনস্টল করুন।</p>
+    <div class="dl-bar"><i></i></div>
+    <div class="dl-tip" id="dlTip">ইনস্টলের সময় ফোন “অজানা সোর্স (Unknown sources)” থেকে ইনস্টলের অনুমতি চাইতে পারে — অনুমতি দিন।</div>
+    <button class="dl-ok" data-act="closeDl">ঠিক আছে</button>
+  </div>
+</div>
 <!-- FLOATING HELPLINE -->
 <div class="help-fab-wrap" id="helpFabWrap">
   <div class="help-panel" id="helpPanel">
@@ -1995,12 +2081,41 @@ a{cursor:pointer}
   }
 
   // ── app download (one link for every Download button — set in Admin) ──
+  const ICON_DL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg>';
+  const ICON_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+  const ICON_OK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>';
+  let dlTimer = null;
+  function showDl(state) {
+    const card = $('dlCard'); card.classList.remove('done', 'soon');
+    clearTimeout(dlTimer);
+    if (state === 'soon') {
+      card.classList.add('soon');
+      $('dlIco').innerHTML = ICON_CLOCK;
+      $('dlTitle').textContent = 'অ্যাপ শীঘ্রই আসছে';
+      $('dlSub').textContent = 'অ্যাপের ডাউনলোড লিংক এখনো যোগ করা হয়নি। অনুগ্রহ করে একটু পরে আবার চেষ্টা করুন।';
+      $('dlTip').style.display = 'none';
+    } else {
+      $('dlIco').innerHTML = ICON_DL;
+      $('dlTitle').textContent = 'আপনার অ্যাপটি ডাউনলোড হচ্ছে…';
+      $('dlSub').textContent = 'কিছুক্ষণের মধ্যেই ডাউনলোড শুরু হবে। শেষ হলে ফাইলটি খুলে ইনস্টল করুন।';
+      $('dlTip').style.display = '';
+      dlTimer = setTimeout(() => {
+        card.classList.add('done');
+        $('dlIco').innerHTML = ICON_OK;
+        $('dlTitle').textContent = 'ডাউনলোড শুরু হয়েছে';
+        $('dlSub').textContent = 'ফোনের নোটিফিকেশন বা Downloads ফোল্ডারে WorkHive.apk খুঁজে খুলুন এবং ইনস্টল করুন।';
+      }, 4500);
+    }
+    $('dlOverlay').classList.add('show');
+  }
   function startDownload() {
-    if (!dlUrl) { toast('অ্যাপের ডাউনলোড লিংক শীঘ্রই যোগ হবে'); return; }
-    toast('📥 ডাউনলোড শুরু হচ্ছে…');
-    const a = document.createElement('a');
-    a.href = dlUrl; a.setAttribute('download', ''); a.rel = 'noopener';
-    document.body.appendChild(a); a.click(); a.remove();
+    if (!dlUrl) { showDl('soon'); return; }
+    showDl('go');
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.href = dlUrl; a.setAttribute('download', ''); a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); a.remove();
+    }, 700);
   }
   async function loadAppDownload() {
     try {
@@ -2064,7 +2179,7 @@ a{cursor:pointer}
       await fb.addDoc(fb.collection(db, 'appReviews'), { name, text, stars, uid: u.uid, createdAt: fb.serverTimestamp(), _ts: Date.now() });
       $('revName').value = ''; $('revText').value = '';
       $('reviewOverlay').classList.remove('show');
-      toast('✅ ধন্যবাদ! রিভিউ জমা হয়েছে'); loadReviews();
+      toast('ধন্যবাদ! রিভিউ জমা হয়েছে'); loadReviews();
     } catch (e) { console.warn('review submit failed:', e); toast('পাঠাতে সমস্যা হয়েছে — আবার চেষ্টা করুন'); }
   }
 
@@ -2090,6 +2205,7 @@ a{cursor:pointer}
     switch (act.dataset.act) {
       case 'login': openAuth('login'); break;
       case 'register': openAuth('register'); break;
+      case 'closeDl': $('dlOverlay').classList.remove('show'); clearTimeout(dlTimer); break;
       case 'review': openReview(); break;
       case 'closeReview': $('reviewOverlay').classList.remove('show'); break;
       case 'submitReview': submitReview(); break;
@@ -2115,7 +2231,7 @@ a{cursor:pointer}
 
   $('yr').textContent = new Date().getFullYear();
   paintStars();
-  onReady(() => { loadAppDownload(); loadReviews(); });
+  onReady(() => { loadAppDownload(); loadReviews(); setTimeout(() => { try { if (visible && window.__whNotice) window.__whNotice.show('landing'); } catch (e) {} }, 700); });
 
   // First-time / logged-out visitors see the landing page INSTANTLY (no loading screen).
   // Returning logged-in users get the branded loader while their session is restored.
@@ -2206,7 +2322,7 @@ function applyTelegramSafeArea(tg) {
   </div>
   <div id="loginPane" style="width:100%">
     <div class="auth-field"><label>ইমেইল</label><input type="email" id="loginEmail" placeholder="আপনার ইমেইল লিখুন" autocomplete="email"></div>
-    <div class="auth-field"><label>পাসওয়ার্ড</label><div class="pass-toggle"><input type="password" id="loginPass" placeholder="আপনার পাসওয়ার্ড" autocomplete="current-password"><span class="pass-eye" onclick="togglePass('loginPass',this)">👁</span></div></div>
+    <div class="auth-field"><label>পাসওয়ার্ড</label><div class="pass-toggle"><input type="password" id="loginPass" placeholder="আপনার পাসওয়ার্ড" autocomplete="current-password"><span class="pass-eye" onclick="togglePass('loginPass',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span></div></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:-5px;margin-bottom:13px">
       <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);font-weight:600;cursor:pointer"><input type="checkbox" id="rememberMe" style="width:14px;height:14px;accent-color:var(--green)">মনে রাখুন</label>
       <div class="forgot-link" onclick="openForgotPassword()">পাসওয়ার্ড ভুলে গেছেন?</div>
@@ -2225,8 +2341,8 @@ function applyTelegramSafeArea(tg) {
     <div class="auth-field"><label>ইমেইল</label><input type="email" id="regEmail" placeholder="আপনার ইমেইল লিখুন" autocomplete="email"></div>
     <div class="auth-field"><label>ফোন নম্বর</label><input type="tel" id="regPhone" placeholder="+880 1X-XXXX-XXXX" autocomplete="tel"></div>
     <div class="auth-field"><label>দেশ</label><select id="regCountry"><option value="">— দেশ বেছে নিন —</option><option>Bangladesh</option><option>India</option><option>Pakistan</option><option>Nepal</option><option>Philippines</option><option>Indonesia</option><option>Nigeria</option><option>USA</option><option>UK</option><option>Other</option></select></div>
-    <div class="auth-field"><label>পাসওয়ার্ড</label><div class="pass-toggle"><input type="password" id="regPass" placeholder="কমপক্ষে ৬ ক্যারেক্টার" autocomplete="new-password" oninput="checkStrength(this.value)"><span class="pass-eye" onclick="togglePass('regPass',this)">👁</span></div><div class="strength-bar"><div class="strength-fill" id="strengthFill" style="width:0"></div></div></div>
-    <div class="auth-field"><label>কনফার্ম পাসওয়ার্ড</label><div class="pass-toggle"><input type="password" id="regConfirmPass" placeholder="আবার লিখুন" autocomplete="new-password"><span class="pass-eye" onclick="togglePass('regConfirmPass',this)">👁</span></div></div>
+    <div class="auth-field"><label>পাসওয়ার্ড</label><div class="pass-toggle"><input type="password" id="regPass" placeholder="কমপক্ষে ৬ ক্যারেক্টার" autocomplete="new-password" oninput="checkStrength(this.value)"><span class="pass-eye" onclick="togglePass('regPass',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="strength-bar"><div class="strength-fill" id="strengthFill" style="width:0"></div></div></div>
+    <div class="auth-field"><label>কনফার্ম পাসওয়ার্ড</label><div class="pass-toggle"><input type="password" id="regConfirmPass" placeholder="আবার লিখুন" autocomplete="new-password"><span class="pass-eye" onclick="togglePass('regConfirmPass',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span></div></div>
     <div class="auth-field"><label>রেফারেল কোড (ঐচ্ছিক)</label><input type="text" id="regRef" placeholder="e.g. WH123456" style="text-transform:uppercase"></div>
     <div class="auth-error" id="regErr"></div>
     <button class="btn-auth" id="regBtn" onclick="doRegister()"><span id="regBtnText">অ্যাকাউন্ট তৈরি করুন</span></button>
@@ -2236,7 +2352,7 @@ function applyTelegramSafeArea(tg) {
       Google দিয়ে রেজিস্টার করুন
     </button>
   </div>
-  <div class="auth-foot">🔒 আপনার তথ্য সম্পূর্ণ সুরক্ষিত</div>
+  <div class="auth-foot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg> আপনার তথ্য সম্পূর্ণ সুরক্ষিত</div>
 </div>
 
 <!-- APP SHELL -->
@@ -2924,8 +3040,8 @@ function applyTelegramSafeArea(tg) {
 
   <!-- FORGOT PASSWORD OVERLAY -->
   <div class="overlay" id="forgotPwOverlay" onclick="if(event.target===this)closeForgotPassword()">
-    <div class="modal-sheet" style="max-height:80%">
-      <div class="modal-drag-bar"></div>
+    <div class="modal-sheet">
+      <button class="fp-back" onclick="closeForgotPassword()" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
       <div id="fpModalBody"></div>
     </div>
   </div>
@@ -3349,7 +3465,14 @@ function copyDailyLink(e, btn) {
 // ══════ js/core/toast.js ══════
 let _toastTimer;
 function showToast(msg, type = '') {
-  const el = document.getElementById('toast');
+  let el = document.getElementById('toast');
+  // The normal toast lives inside the app shell, which is hidden on the login screens →
+  // use a body-level toast there so messages (Google errors, reset sent …) are really visible.
+  const shell = document.getElementById('appShell');
+  if (shell && getComputedStyle(shell).display === 'none') {
+    el = document.getElementById('whAuthToast');
+    if (!el) { el = document.createElement('div'); el.id = 'whAuthToast'; document.body.appendChild(el); }
+  }
   if (!el) return;
   el.textContent = msg;
   el.className = 'toast show' + (type ? ' ' + type : '');
@@ -4477,6 +4600,7 @@ async function approveMySubmission(sub) {
     proofImageUrls: fb.deleteField(),
   });
   await creditApprovedSubmission(sub);
+  whPushSubmission(sub.id);          // phone notification for the worker (best-effort)
 }
 
 async function rejectMySubmission(sub, reason) {
@@ -4494,6 +4618,7 @@ async function rejectMySubmission(sub, reason) {
       icon: '❌', unread: true, createdAt: fb.serverTimestamp()
     }).catch(() => {});
   }
+  whPushSubmission(sub.id);          // phone notification for the worker (best-effort)
 }
 
 // ══════ js/services/wallet.js ══════
@@ -4934,7 +5059,9 @@ function switchAuthTab(tab) {
   document.getElementById('loginErr').textContent = '';
   document.getElementById('regErr').textContent = '';
 }
-function togglePass(id, el) { const i = document.getElementById(id); i.type = i.type === 'password' ? 'text' : 'password'; el.textContent = i.type === 'password' ? '👁' : '🙈'; }
+function togglePass(id, el) { const i = document.getElementById(id); i.type = i.type === 'password' ? 'text' : 'password'; el.innerHTML = i.type === 'password' ? WH_ICON_EYE : WH_ICON_EYEOFF; }
+const WH_ICON_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const WH_ICON_EYEOFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18M10.6 5.2A9.8 9.8 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.5 6.7C3.6 8.6 2 12 2 12s3.6 7 10 7c1.7 0 3.2-.4 4.5-1M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
 function checkStrength(val) {
   const el = document.getElementById('strengthFill'); let s = 0;
   if (val.length >= 6) s++; if (val.length >= 10) s++; if (/[A-Z]/.test(val)) s++; if (/[0-9]/.test(val)) s++; if (/[^A-Za-z0-9]/.test(val)) s++;
@@ -5020,7 +5147,7 @@ async function sendOtpEmail(email) {
     to_email: email,
     to_name: email.split('@')[0],
     otp_code: code,
-    expires_minutes: '15',
+    expires_minutes: '3',
     site_name: SITE.siteName || 'WorkHive',
   });
 
@@ -5070,38 +5197,58 @@ function closeForgotPassword() {
   clearInterval(_fpOtpCountdownTimer);
 }
 
+function fpHead(title, sub) {
+  const lg = document.querySelector('#authScreen .auth-logo img');
+  return `<div class="fp-head"><div class="fp-logo">${lg ? `<img src="${lg.src}" alt="">` : ''}</div><div class="fp-title">${title}</div><div class="fp-sub">${sub}</div></div>`;
+}
 function renderFpModal() {
   const body = document.getElementById('fpModalBody'); if (!body) return;
   if (_fpStep === 'email') {
-    body.innerHTML = `
-      <div class="modal-title">পাসওয়ার্ড রিসেট</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:16px">আপনার অ্যাকাউন্টের ইমেইল ঠিকানায় একটি ৬-সংখ্যার কোড পাঠানো হবে।</div>
-      <div class="field"><label>ইমেইল</label><input id="fpEmailInput" type="email" placeholder="your@email.com" style="width:100%"></div>
-      <div id="fpErr" style="font-size:12px;color:var(--red);min-height:18px;margin-bottom:8px"></div>
-      <button class="btn-primary" style="width:100%" onclick="fpSendOtp()">📧 কোড পাঠান</button>`;
+    body.innerHTML = fpHead('পাসওয়ার্ড রিসেট', 'আপনার অ্যাকাউন্টের ইমেইল দিন — ওই ইমেইলে একটি ৬-সংখ্যার কোড পাঠানো হবে।') + `
+      <label class="fp-label">ইমেইল</label>
+      <input class="fp-input" id="fpEmailInput" type="email" placeholder="your@email.com" autocomplete="email">
+      <div id="fpErr" class="fp-err"></div>
+      <button class="fp-btn" onclick="fpSendOtp()">${WH_ICON_SEND} কোড পাঠান</button>
+      <div class="fp-link"><span onclick="closeForgotPassword()">← লগইনে ফিরে যান</span></div>
+      <div class="fp-note">পাসওয়ার্ড রিসেট এখন ইমেইলের মাধ্যমে চলে।</div>`;
+    setTimeout(() => { const i = document.getElementById('fpEmailInput'); if (i) i.focus(); }, 80);
   } else if (_fpStep === 'otp') {
-    body.innerHTML = `
-      <div class="modal-title">কোড যাচাই করুন</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:6px"><b>${escHtml(_fpEmail)}</b>-এ ৬-সংখ্যার কোড পাঠানো হয়েছে।</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div style="font-size:11.5px;color:var(--text3)">মেয়াদ শেষ হওয়ার আগে দিন:</div>
-        <div id="fpCountdown" style="font-size:18px;font-weight:900;color:var(--green);font-family:monospace;min-width:50px;text-align:right">৩:০০</div>
-      </div>
-      <div class="field"><input id="fpOtpInput" type="number" maxlength="6" placeholder="123456" style="width:100%;letter-spacing:6px;font-size:22px;text-align:center;font-weight:900;padding:14px;border-radius:14px;border:2px solid var(--border2);background:var(--bg3);color:var(--text)"></div>
-      <div id="fpOtpExpiredMsg" style="display:none;font-size:12px;color:var(--red);text-align:center;margin-bottom:8px;font-weight:700">⏰ কোডের মেয়াদ শেষ হয়ে গেছে — নতুন কোড নিন</div>
-      <div id="fpErr" style="font-size:12px;color:var(--red);min-height:18px;margin-bottom:8px"></div>
-      <button id="fpVerifyBtn" class="btn-primary" style="width:100%;margin-bottom:10px" onclick="fpVerifyOtp()">✅ যাচাই করুন</button>
-      <div style="text-align:center"><span style="font-size:11.5px;color:var(--text3)">কোড পাননি? <span id="fpResendLink" style="color:var(--text3);cursor:default;text-decoration:none" onclick="fpResend()">পুনরায় পাঠান</span></span></div>
-      <div style="text-align:center;margin-top:8px"><span style="font-size:11px;color:var(--text3);cursor:pointer" onclick="_fpStep='email';renderFpModal()">← অন্য ইমেইল ব্যবহার করুন</span></div>`;
+    body.innerHTML = fpHead('কোড যাচাই করুন', `<b>${escHtml(_fpEmail)}</b>-এ ৬-সংখ্যার কোড পাঠানো হয়েছে। ইমেইল (স্প্যাম ফোল্ডারসহ) দেখুন।`) + `
+      <div class="fp-timer"><small>কোডের মেয়াদ শেষ হতে বাকি</small><div id="fpCountdown">৩:০০</div></div>
+      <input class="fp-input fp-otp" id="fpOtpInput" type="text" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)">
+      <div id="fpOtpExpiredMsg" class="fp-err" style="display:none;text-align:center;font-weight:700">কোডের মেয়াদ শেষ — নতুন কোড নিন</div>
+      <div id="fpErr" class="fp-err"></div>
+      <button id="fpVerifyBtn" class="fp-btn" onclick="fpVerifyOtp()">${WH_ICON_CHECK} যাচাই করুন</button>
+      <div class="fp-link">কোড পাননি? <span id="fpResendLink" style="color:#7f887f;cursor:default" onclick="fpResend()">পুনরায় পাঠান</span></div>
+      <div class="fp-link"><span onclick="_fpStep='email';renderFpModal()" style="color:#7f887f;font-weight:600">← অন্য ইমেইল ব্যবহার করুন</span></div>`;
     fpStartOtpCountdown();
     fpStartResendCountdown();
   } else if (_fpStep === 'newpass') {
-    body.innerHTML = `
-      <div class="modal-title">নতুন পাসওয়ার্ড</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:16px">Firebase-এর নিরাপদ পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হচ্ছে...</div>
-      <div id="fpErr" style="font-size:12px;color:var(--red);min-height:18px"></div>`;
+    body.innerHTML = fpHead('নতুন পাসওয়ার্ড সেট', 'নিরাপদ পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হচ্ছে…') + `<div id="fpErr" class="fp-err" style="text-align:center"></div>`;
     fpSendFirebaseReset();
   }
+}
+const WH_ICON_SEND = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/></svg>';
+const WH_ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>';
+const WH_ICON_MAIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7.5l8.5 6 8.5-6"/></svg>';
+
+// The EmailJS settings are normally loaded only AFTER login — but "forgot password" is used while logged out.
+let _authSiteLoaded = false;
+async function ensureAuthSiteSettings() {
+  if (_authSiteLoaded) return;
+  try {
+    const s = await fb.getDoc(fb.doc(db, 'siteSettings', 'global'));
+    if (s.exists()) {
+      const d = s.data() || {};
+      if (d.emailjsServiceId) SITE.emailjsServiceId = d.emailjsServiceId;
+      if (d.emailjsTemplateId) SITE.emailjsTemplateId = d.emailjsTemplateId;
+      if (d.emailjsPublicKey) SITE.emailjsPublicKey = d.emailjsPublicKey;
+      if (d.emailjsVerifyTemplateId) SITE.emailjsVerifyTemplateId = d.emailjsVerifyTemplateId;
+      SITE.emailjsAuthEnabled = !!d.emailjsAuthEnabled;
+      if (d.siteName) SITE.siteName = d.siteName;
+    }
+    _authSiteLoaded = true;
+  } catch (e) { console.warn('auth site settings:', e); }
 }
 
 async function fpSendOtp() {
@@ -5109,6 +5256,8 @@ async function fpSendOtp() {
   const errEl = document.getElementById('fpErr');
   if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { if (errEl) errEl.textContent = '❌ সঠিক ইমেইল দিন'; return; }
 
+  const _b0 = document.querySelector('#fpModalBody .fp-btn'); if (_b0) { _b0.disabled = true; _b0.textContent = 'অপেক্ষা করুন...'; }
+  await ensureAuthSiteSettings();
   // If EmailJS auth is disabled → skip OTP, go straight to Firebase reset link
   if (!SITE.emailjsAuthEnabled) {
     _fpEmail = email; _fpStep = 'newpass';
@@ -5116,19 +5265,24 @@ async function fpSendOtp() {
     return;
   }
 
-  if (!SITE.emailjsServiceId) { if (errEl) errEl.textContent = '❌ ইমেইল সার্ভিস কনফিগার করা নেই — Admin-কে জানান'; return; }
-  const btn = document.querySelector('#fpModalBody .btn-primary');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ পাঠানো হচ্ছে...'; }
+  if (!SITE.emailjsServiceId) {
+    _fpEmail = email; _fpStep = 'newpass'; renderFpModal(); return;     // no code service → direct secure link
+  }
+  const btn = document.querySelector('#fpModalBody .fp-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'পাঠানো হচ্ছে...'; }
   try {
     await sendOtpEmail(email);
     _fpEmail = email; _fpStep = 'otp';
     renderFpModal();
   } catch (e) {
-    const msg = e.message === 'COOLDOWN' ? '⏳ ৪৫ সেকেন্ড অপেক্ষা করুন, তারপর আবার চেষ্টা করুন'
-      : e.message === 'EMAIL_NOT_CONFIGURED' ? '❌ ইমেইল সার্ভিস কনফিগার করা নেই'
-      : '❌ পাঠানো সম্ভব হয়নি — ইন্টারনেট চেক করুন';
-    if (errEl) errEl.textContent = msg;
-    if (btn) { btn.disabled = false; btn.textContent = '📧 কোড পাঠান'; }
+    if (e.message === 'COOLDOWN') {
+      if (errEl) errEl.textContent = '৪৫ সেকেন্ড অপেক্ষা করুন, তারপর আবার চেষ্টা করুন';
+      if (btn) { btn.disabled = false; btn.innerHTML = WH_ICON_SEND + ' কোড পাঠান'; }
+      return;
+    }
+    // the code email could not be sent (EmailJS limit / config) → use the secure reset link instead
+    showToast('কোড পাঠানো যায়নি — সরাসরি রিসেট লিংক পাঠানো হচ্ছে', 'warning');
+    _fpEmail = email; _fpStep = 'newpass'; renderFpModal();
   }
 }
 
@@ -5218,15 +5372,23 @@ async function fpSendFirebaseReset() {
     await fb.sendPasswordResetEmail(auth, _fpEmail);
     const body = document.getElementById('fpModalBody');
     if (body) body.innerHTML = `
-      <div style="text-align:center;padding:20px 0">
-        <div style="font-size:48px;margin-bottom:12px">📬</div>
-        <div class="modal-title">রিসেট লিংক পাঠানো হয়েছে!</div>
-        <div style="font-size:12.5px;color:var(--text2);line-height:1.7;margin-bottom:20px"><b>${escHtml(_fpEmail)}</b>-এ একটি পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে। ইমেইল চেক করুন এবং লিংকে ক্লিক করে নতুন পাসওয়ার্ড সেট করুন।<br><br><span style="color:var(--text3);font-size:11px">ইমেইল না পেলে Spam/Junk ফোল্ডার চেক করুন।</span></div>
-        <button class="btn-primary" style="width:100%" onclick="closeForgotPassword()">Done</button>
+      <div class="fp-done">
+        <div class="fp-okico">${WH_ICON_MAIL}</div>
+        <div class="fp-title">রিসেট লিংক পাঠানো হয়েছে</div>
+        <div class="fp-sub"><b>${escHtml(_fpEmail)}</b>-এ পাসওয়ার্ড বদলানোর নিরাপদ লিংক পাঠানো হয়েছে। ইমেইল (স্প্যাম ফোল্ডারসহ) খুলে লিংকে ক্লিক করুন, নতুন পাসওয়ার্ড দিন, তারপর লগইন করুন।</div>
+        <div style="height:18px"></div>
+        <button class="fp-btn" onclick="closeForgotPassword()">${WH_ICON_CHECK} লগইনে ফিরে যান</button>
       </div>`;
   } catch (e) {
     const errEl = document.getElementById('fpErr');
-    if (errEl) errEl.textContent = '❌ রিসেট লিংক পাঠানো সম্ভব হয়নি — ' + (e.code || e.message);
+    const msg = e.code === 'auth/user-not-found' ? 'এই ইমেইলে কোনো অ্যাকাউন্ট নেই'
+      : e.code === 'auth/invalid-email' ? 'ইমেইল ফরম্যাট ভুল'
+      : e.code === 'auth/too-many-requests' ? 'অনেকবার চেষ্টা করা হয়েছে, একটু পরে আবার চেষ্টা করুন'
+      : e.code === 'auth/network-request-failed' ? 'ইন্টারনেট সংযোগ চেক করুন'
+      : 'রিসেট লিংক পাঠানো সম্ভব হয়নি (' + (e.code || e.message) + ')';
+    if (errEl) errEl.textContent = msg;
+    const body = document.getElementById('fpModalBody');
+    if (body && errEl) body.insertAdjacentHTML('beforeend', `<div class="fp-link"><span onclick="_fpStep='email';renderFpModal()">← আবার চেষ্টা করুন</span></div>`);
   }
 }
 
@@ -8007,7 +8169,7 @@ async function bootstrapApp(user, ref, data) {
   const shell = document.getElementById('appShell');
   if (window.innerWidth >= 1024) { shell.style.display = 'grid'; }
   else { shell.style.display = 'flex'; shell.style.flexDirection = 'column'; }
-  if (!_appInitialized) { try { goTab('home'); if (window.__whResetNav) window.__whResetNav(); } catch (e) {} }
+  if (!_appInitialized) { try { goTab('home'); if (window.__whResetNav) window.__whResetNav(); } catch (e) {} setTimeout(() => { try { WH_NOTICE.show('user'); } catch (e) {} }, 900); }
   window._lastKnownBalance = data?.balance || 0;
 
   prefillEditProfileFields(data, user);
@@ -8151,6 +8313,132 @@ setTimeout(() => {
 //  Bridge for the landing page (its code lives in an early script so the
 //  landing appears instantly — it uses the app's own AuthService below)
 // ═════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════
+//  PUSH (phone notifications) — the OneSignal key lives on a Cloudflare Worker,
+//  its URL is set in Admin → Settings → "App, Push & Notice".
+// ═════════════════════════════════════════════════════════════════════
+let _whPushUrl = null, _whPushUrlAt = 0;
+async function whPushWorkerUrl() {
+  if (_whPushUrl !== null && Date.now() - _whPushUrlAt < 10 * 60 * 1000) return _whPushUrl;
+  try { const s = await fb.getDoc(fb.doc(db, 'siteSettings', 'push')); _whPushUrl = (s.exists() && (s.data().workerUrl || '') || '').trim(); }
+  catch (e) { _whPushUrl = ''; }
+  _whPushUrlAt = Date.now();
+  return _whPushUrl;
+}
+async function whPushSubmission(subId) {
+  try {
+    const url = await whPushWorkerUrl();
+    if (!url || !auth.currentUser || !subId) return;
+    const tok = await auth.currentUser.getIdToken();
+    await fetch(url, { method: 'POST', headers: { 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' }, body: JSON.stringify({ kind: 'submission_result', subId }) });
+  } catch (e) { /* push is best-effort */ }
+}
+
+// ═════════════════════════════════════════════════════════════════════
+//  ADMIN NOTICE / BANNER — HTML + CSS + JS pasted in Admin (siteSettings/notice)
+//  runs inside a sandboxed iframe (cannot touch the app, login or data).
+//  Helpers inside the notice code:  WH.close()  WH.go('wallet')  WH.open('https://…')
+// ═════════════════════════════════════════════════════════════════════
+const WH_NOTICE = (function () {
+  let cfg = null, loadedAt = 0, el = null, cleanup = null;
+  const VALID = ['home', 'tasks', 'mytasks', 'post', 'deposit', 'wallet', 'history', 'notifications', 'referral', 'support', 'kyc', 'profile', 'spin', 'rules'];
+  const sget = (k, sess) => { try { return (sess ? sessionStorage : localStorage).getItem(k); } catch (e) { return null; } };
+  const sset = (k, v, sess) => { try { (sess ? sessionStorage : localStorage).setItem(k, v); } catch (e) {} };
+  async function load() {
+    if (cfg !== null && Date.now() - loadedAt < 5 * 60 * 1000) return cfg;
+    try { const s = await fb.getDoc(fb.doc(db, 'siteSettings', 'notice')); cfg = s.exists() ? (s.data() || {}) : {}; }
+    catch (e) { cfg = {}; }
+    loadedAt = Date.now();
+    return cfg;
+  }
+  function allowed(c) {
+    const rev = String(c.rev || '0'), f = c.frequency || 'always';
+    if (f === 'session') return sget('wh_nt_s_' + rev, true) !== '1';
+    if (f === 'once') return sget('wh_nt_o') !== rev;
+    if (f === 'daily') return sget('wh_nt_d_' + rev) !== new Date().toISOString().slice(0, 10);
+    return true;
+  }
+  function mark(c) {
+    const rev = String(c.rev || '0'), f = c.frequency || 'always';
+    if (f === 'session') sset('wh_nt_s_' + rev, '1', true);
+    else if (f === 'once') sset('wh_nt_o', rev);
+    else if (f === 'daily') sset('wh_nt_d_' + rev, new Date().toISOString().slice(0, 10));
+  }
+  function helperScript() {
+    return '<script>(function(){var P=window.parent;window.WH={close:function(){P.postMessage({wh:"close"},"*")},go:function(s){P.postMessage({wh:"go",screen:String(s||"")},"*")},open:function(u){P.postMessage({wh:"open",url:String(u||"")},"*")},resize:function(w,h){P.postMessage({wh:"resize",w:w,h:h},"*")}};function rs(){try{var h=Math.ceil(Math.max(document.documentElement.scrollHeight,document.body?document.body.scrollHeight:0));P.postMessage({wh:"autoheight",h:h},"*")}catch(e){}}window.addEventListener("load",function(){rs();try{new ResizeObserver(rs).observe(document.documentElement)}catch(e){}});})();<\/script>';
+  }
+  function buildDoc(html) {
+    const h = helperScript();
+    if (/<html[\s>]/i.test(html)) {
+      if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, (m) => m + h);
+      return html.replace(/<html[^>]*>/i, (m) => m + '<head>' + h + '</head>');
+    }
+    return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;padding:0;background:transparent}</style>' + h + '</head><body>' + html + '</body></html>';
+  }
+  function close() {
+    if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
+    if (el) { el.style.opacity = '0'; const x = el; el = null; setTimeout(() => x.remove(), 220); }
+  }
+  async function show(ctx) {
+    try {
+      if (el) return;
+      const c = await load();
+      if (!c || c.enabled !== true || !String(c.html || '').trim()) return;
+      if ((c.audience || 'users') === 'users' && ctx !== 'user') return;
+      if (ctx === 'landing') { const lp = document.getElementById('whLanding'); if (!lp || lp.style.display !== 'block') return; }
+      if (ctx === 'user' && (!auth.currentUser || auth.currentUser.isAnonymous)) return;
+      if (!allowed(c)) return;
+      mark(c);
+
+      const layout = c.layout || 'center';
+      const w = Math.max(200, Math.min(parseInt(c.width, 10) || 360, 1200));
+      const hFixed = (c.height && c.height !== 'auto') ? Math.max(80, parseInt(c.height, 10) || 0) : 0;
+      const wrap = document.createElement('div');
+      wrap.id = 'whNotice';
+      const dim = c.backdrop !== false && layout !== 'fullscreen';
+      wrap.style.cssText = 'position:fixed;inset:0;z-index:2147483400;display:flex;opacity:0;transition:opacity .25s;' +
+        (layout === 'bottom' ? 'align-items:flex-end;' : layout === 'top' ? 'align-items:flex-start;' : 'align-items:center;') + 'justify-content:center;' +
+        'background:' + (dim ? 'rgba(0,0,0,.62)' : 'transparent') + ';' + (dim ? 'backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);' : '') + (layout === 'fullscreen' ? '' : 'padding:12px;box-sizing:border-box;');
+      if (!dim && layout !== 'fullscreen') wrap.style.pointerEvents = 'none';
+      const fr = document.createElement('iframe');
+      fr.setAttribute('sandbox', 'allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms');
+      fr.setAttribute('title', 'WorkHive notice');
+      fr.style.cssText = 'border:0;background:transparent;color-scheme:normal;pointer-events:auto;' +
+        (layout === 'fullscreen' ? 'width:100%;height:100%;' : 'width:min(' + (layout === 'center' ? w : (c.width ? w : 1200)) + 'px,100%);max-width:100%;height:' + (hFixed ? 'min(' + hFixed + 'px,92vh)' : 'min(420px,70vh)') + ';');
+      fr.srcdoc = buildDoc(String(c.html));
+      wrap.appendChild(fr);
+      if (c.showClose !== false) {
+        const x = document.createElement('button');
+        x.setAttribute('aria-label', 'Close');
+        x.style.cssText = 'position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:2;pointer-events:auto;backdrop-filter:blur(6px)';
+        x.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+        x.onclick = close;
+        wrap.appendChild(x);
+      }
+      if (c.closeOnBackdrop !== false && dim) wrap.addEventListener('click', (e) => { if (e.target === wrap) close(); });
+
+      const onMsg = (e) => {
+        if (e.source !== fr.contentWindow || !e.data || typeof e.data !== 'object') return;
+        const d = e.data;
+        if (d.wh === 'close') close();
+        else if (d.wh === 'go') { if (ctx === 'user' && VALID.includes(d.screen)) { close(); try { goTab(d.screen); } catch (er) {} } }
+        else if (d.wh === 'open') { if (/^https?:\/\//i.test(d.url || '')) window.open(d.url, '_blank', 'noopener'); }
+        else if (d.wh === 'resize' && layout !== 'fullscreen') { if (d.h) fr.style.height = 'min(' + Math.max(60, parseInt(d.h, 10) || 0) + 'px,92vh)'; if (d.w) fr.style.width = 'min(' + Math.max(120, parseInt(d.w, 10) || 0) + 'px,100%)'; }
+        else if (d.wh === 'autoheight' && layout !== 'fullscreen' && !hFixed) fr.style.height = 'min(' + Math.max(60, parseInt(d.h, 10) || 0) + 'px,92vh)';
+      };
+      window.addEventListener('message', onMsg);
+      let timer = null;
+      if (parseInt(c.autoCloseSec, 10) > 0) timer = setTimeout(close, parseInt(c.autoCloseSec, 10) * 1000);
+      cleanup = () => { window.removeEventListener('message', onMsg); if (timer) clearTimeout(timer); };
+      document.body.appendChild(wrap);
+      el = wrap;
+      requestAnimationFrame(() => { wrap.style.opacity = '1'; });
+    } catch (e) { console.warn('notice failed:', e); }
+  }
+  return { show, close };
+})();
+window.__whNotice = WH_NOTICE;
+
 // Android app: remove the native splash as soon as the website's own loader is gone
 (function () {
   const ls = document.getElementById('loadingScreen');
@@ -8159,6 +8447,8 @@ setTimeout(() => {
   if (!ls) { fire(); return; }
   new MutationObserver(() => { if (ls.style.opacity === '0' || ls.style.display === 'none') fire(); }).observe(ls, { attributes: true, attributeFilter: ['style'] });
 })();
+// "Forgot password" page lives inside the (hidden) app shell in the original markup → move it out so it can open on the login screen
+{ const fo = document.getElementById('forgotPwOverlay'); if (fo && fo.closest('#appShell')) document.body.appendChild(fo); }
 window.__wh = { AuthService, fb, db, auth };
 document.dispatchEvent(new Event('wh-ready'));
 
@@ -8177,6 +8467,15 @@ document.dispatchEvent(new Event('wh-ready'));
     return _origGoTab(name);
   };
   window.__whResetNav = function () { navStack.length = 0; curScreen = 'home'; };
+  // tapping a push notification on the phone opens the matching screen
+  window.__whPushOpen = function (screen) {
+    try {
+      if (!auth.currentUser) return;
+      const ok = ['home', 'tasks', 'mytasks', 'post', 'deposit', 'wallet', 'history', 'notifications', 'referral', 'support', 'kyc', 'profile'];
+      try { closeSidebar(); } catch (e) {}
+      goTab(ok.includes(screen) ? screen : 'notifications');
+    } catch (e) {}
+  };
   window.goTab = goTab; // inline onclick="goTab(...)" handlers use the window copy
 
   const byId = (id) => document.getElementById(id);

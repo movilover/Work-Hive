@@ -3350,6 +3350,31 @@ function wizIcon(name, size) {
 // ══════ js/core/utils.js ══════
 const fmtUSD = n => '$' + Math.abs(n || 0).toFixed(2);
 const escHtml = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+// [SEC] escHtml() is only safe in HTML text/attribute context. Inside an inline handler such as onclick="f('${x}')"
+// the browser decodes entities BEFORE the JS runs, so a ' in x ends the JS string => script injection.
+// escJs() escapes for the JS-string layer first, then HTML-escapes the result. Use it for every '${...}' inside on*="".
+const escJs = s => escHtml(String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n/g, ' '));
+// [SEC] Only http(s) (and tg:// deep links) may be opened/linked — blocks javascript:, data:, vbscript: etc. Returns '' if unsafe.
+// A scheme-less "example.com/x" / "t.me/x" gets https:// (same convention as linkifyInstructionText) instead of opening a broken relative URL.
+const safeHttpUrl = u => {
+  let s = String(u == null ? '' : u).trim();
+  if (s && !/^[a-z][a-z0-9+.-]*:/i.test(s) && /^(?:www\.|t\.me\/|[a-z0-9-]+(?:\.[a-z0-9-]+)+(?:[\/?#:]|$))/i.test(s)) s = 'https://' + s;
+  try { const x = new URL(s); return /^(?:https?|tg):$/.test(x.protocol) ? x.href : ''; } catch (e) { return ''; }
+};
+// [OWA] Build the per-user offer link. Supports a {subid} placeholder (Offerwall.ad). For older networks the ORIGINAL string is kept
+// byte-for-byte (no URL re-serialisation) and subid is appended with the correct ? / & (it used to be a blind "?subid=" even when a query existed).
+function offerLink(url, uid) {
+  if (!url || !uid) return '';
+  let raw = String(url).trim();
+  const hasPh = raw.includes('{subid}');
+  if (hasPh) raw = raw.split('{subid}').join(encodeURIComponent(uid));
+  if (!/^https?:\/\//i.test(raw) || !safeHttpUrl(raw)) return '';
+  if (hasPh || /[?&]subid=/i.test(raw)) return raw;
+  const h = raw.indexOf('#'), base = h < 0 ? raw : raw.slice(0, h), frag = h < 0 ? '' : raw.slice(h);
+  return base + (base.includes('?') ? '&' : '?') + 'subid=' + encodeURIComponent(uid) + frag;
+}
+// [OWA] Offerwall.ad tasks are paid ONLY by the signed server postback — never by a user-submitted screenshot.
+const isAutoPaidTask = t => !!t && t.isCpaTask === true && t.network === 'offerwallad';
 const nameColor = name => avatarColors[(name || 'A').charCodeAt(0) % avatarColors.length];
 
 const getCatGrad = cat => catGradients[cat] || catGradients['Other'];
@@ -3383,7 +3408,7 @@ function catIcoBg(name) {
 function catIcoInner(name, size) {
   const c = findCategory(name);
   if (c && c.iconUrl) {
-    const safe = escHtml(name).replace(/'/g, '&#39;');
+    const safe = escJs(name);   // [SEC] &#39; is decoded before JS runs — escJs is the correct layer
     return `<img src="${escHtml(c.iconUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit" onerror="this.parentElement.innerHTML=catFallbackHtml('${safe}',${size || 16});this.parentElement.style.background=catFallbackBg('${safe}');">`;
   }
   return catFallbackHtml(name, size);
@@ -3509,7 +3534,7 @@ function dailyLinkActionRow(url) {
   const safeUrl = escHtml(url);
   return `<div class="dl-link-row">
     <span class="dl-link-text">${safeUrl}</span>
-    <button type="button" class="dl-icon-btn" title="Open link" onclick="event.stopPropagation();window.open('${safeUrl}','_blank')">
+    <button type="button" class="dl-icon-btn" title="Open link" onclick="event.stopPropagation();window.open(safeHttpUrl('${escJs(url)}')||'about:blank','_blank','noopener')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
     </button>
     <button type="button" class="dl-icon-btn" title="Copy link" data-copy="${safeUrl}" onclick="copyDailyLink(event,this)">
@@ -4406,6 +4431,7 @@ function listenMyTaskSubmissions(uid, onChange) {
 }
 
 async function submitProofTask(jobId, job, proofText, imageFiles, user, userData, verificationAnswers) {
+  if (isAutoPaidTask(job)) throw new Error('AUTO_PAID_TASK');   // [OWA] defence in depth: no manual submission for postback-paid tasks
   let proofImageUrls = [];
   for (const file of imageFiles) proofImageUrls.push(await uploadProofToImgbb(file));
   const jobPosterId = job.postedByAdmin === false ? (job.postedById || '') : 'admin';
@@ -4725,14 +4751,19 @@ function buildTransactionList() {
 }
 
 async function requestWithdrawal({ amount, method, account, notes, feePct }, user, userData, userRef) {
+  // [SEC] request + balance deduction in ONE transaction (all-or-nothing); errors propagate to doWithdraw()'s catch.
+  if (!userRef) throw new Error('NO_USER_REF');
   const fee = amount * (feePct / 100), net = parseFloat((amount - fee).toFixed(2));
-  await fb.addDoc(fb.collection(db, 'withdrawals'), {
-    userId: user.uid, userName: userData?.name || user.displayName || 'Unknown', userEmail: user.email || '',
-    userPhone: userData?.phone || '', userCountry: userData?.country || '',
-    amount, net, fee: parseFloat(fee.toFixed(2)), method, account, notes: notes || '', status: 'pending',
-    date: new Date().toLocaleString('en-US'), _ts: Date.now(), createdAt: fb.serverTimestamp()
+  const wdRef = fb.doc(fb.collection(db, 'withdrawals'));
+  await fb.runTransaction(db, async (tx) => {
+    tx.set(wdRef, {
+      userId: user.uid, userName: userData?.name || user.displayName || 'Unknown', userEmail: user.email || '',
+      userPhone: userData?.phone || '', userCountry: userData?.country || '',
+      amount, net, fee: parseFloat(fee.toFixed(2)), method, account, notes: notes || '', status: 'pending',
+      date: new Date().toLocaleString('en-US'), _ts: Date.now(), createdAt: fb.serverTimestamp()
+    });
+    tx.update(userRef, { balance: fb.increment(-amount), pendingAmount: fb.increment(net) });
   });
-  if (userRef) await fb.updateDoc(userRef, { balance: fb.increment(-amount), pendingAmount: fb.increment(net) }).catch(() => {});
 }
 
 async function requestDeposit({ amount, method, senderNumber, trxId }, user, userData) {
@@ -5782,7 +5813,7 @@ function renderTaskCategories() {
   if (_categorySearchTerm && !filtered.length) {
     el.innerHTML = `<div style="font-size:11.5px;color:var(--text3);padding:6px 2px">কোনো ক্যাটাগরি পাওয়া যায়নি</div>`;
   } else {
-    el.innerHTML = cats.map(c => `<div class="chip ${c === _activeCategoryChip ? 'active' : ''}" onclick="filterTaskCategory(this,'${escHtml(c)}')">${escHtml(c)}</div>`).join('');
+    el.innerHTML = cats.map(c => `<div class="chip ${c === _activeCategoryChip ? 'active' : ''}" onclick="filterTaskCategory(this,'${escJs(c)}')">${escHtml(c)}</div>`).join('');
   }
   renderSubcategoryChips();
   renderAllTasks(_activeCategoryChip);
@@ -5800,7 +5831,7 @@ function renderSubcategoryChips() {
   }
   wrap.style.display = 'flex';
   const subs = ['All', ...cat.subcategories];
-  wrap.innerHTML = subs.map(s => `<div class="chip ${s === S.activeSubChip ? 'active' : ''}" style="font-size:10.5px;padding:5px 11px" onclick="filterTaskSubcategory(this,'${escHtml(s)}')">${escHtml(s)}</div>`).join('');
+  wrap.innerHTML = subs.map(s => `<div class="chip ${s === S.activeSubChip ? 'active' : ''}" style="font-size:10.5px;padding:5px 11px" onclick="filterTaskSubcategory(this,'${escJs(s)}')">${escHtml(s)}</div>`).join('');
 }
 function filterTaskSubcategory(el, sub) {
   S.activeSubChip = sub;
@@ -5954,7 +5985,7 @@ function openTaskModal(jobId) {
     if (dst.onCooldown) {
       actionHtml = `<div class="daily-visit-box"><div class="dv-icon">⏳</div><div class="dv-text">আপনি আজকের টাস্কটি ইতিমধ্যে সম্পন্ন করেছেন।</div><div class="daily-cd-timer" id="dlModalTimer" data-cd-end="${dst.cooldownEnd}"><span class="cd-text">${fmtCountdownHMS(dst.remain)}</span></div><div class="dv-text">পরে আবার ভিজিট করা যাবে।</div></div><button class="btn-primary" disabled>⏳ Cooldown Active</button>`;
     } else {
-      actionHtml = `<div class="daily-visit-box" id="dailyVisitBox${jobId}"><div class="dv-icon">🔗</div><div class="dv-text" id="dlStatus${jobId}">নিচের বাটনে চাপুন — লিংকে ভিজিট করুন, তারপর এই অ্যাপে ফিরে আসুন। ৩ সেকেন্ড পর টাস্কটি অটোমেটিক সম্পন্ন হয়ে যাবে ও ব্যালেন্স যোগ হবে।</div></div><button class="btn-primary" id="dlStartBtn${jobId}" onclick="startDailyLinkTask('${jobId}','${escHtml(t.link || '#')}')">🔗 লিংক ভিজিট করুন</button>`;
+      actionHtml = `<div class="daily-visit-box" id="dailyVisitBox${jobId}"><div class="dv-icon">🔗</div><div class="dv-text" id="dlStatus${jobId}">নিচের বাটনে চাপুন — লিংকে ভিজিট করুন, তারপর এই অ্যাপে ফিরে আসুন। ৩ সেকেন্ড পর টাস্কটি অটোমেটিক সম্পন্ন হয়ে যাবে ও ব্যালেন্স যোগ হবে।</div></div><button class="btn-primary" id="dlStartBtn${jobId}" onclick="startDailyLinkTask('${jobId}','${escJs(t.link || '#')}')">🔗 লিংক ভিজিট করুন</button>`;
     }
     document.getElementById('modalContent').innerHTML = `
       <div class="modal-task-header" style="background:${grad}">${(function(){ const logo = getPlatformLogo(t); return logo ? `<div class="mth-ico" style="background:#fff"><img src="${logo}" style="width:60%;height:60%;object-fit:contain" onerror="this.parentElement.style.background='rgba(255,255,255,.18)';this.remove()"></div>` : `<div class="mth-ico" style="background:rgba(255,255,255,.18)">${catIcoInner(t.category, 22)}</div>`; })()}<div><div class="mth-title">${escHtml(t.title)}</div><div class="mth-cat">${escHtml(t.category)} · 🔁 Daily Repeat Task</div></div></div>
@@ -5990,7 +6021,7 @@ function openTaskModal(jobId) {
     ${t.isCpaTask ? `
     <div class="translate-bar" style="background:rgba(0,188,212,.08);border-color:rgba(0,188,212,.2)">
       <div style="color:var(--cyan);font-size:12px;font-weight:700">🎯 ${(t.network||'CPA').toUpperCase()} Offerwall Task</div>
-      ${t.offerUrl ? `<a href="${escHtml(t.offerUrl)}?subid=${window._currentUser?.uid||''}" target="_blank" rel="noopener" class="tbtn" style="color:var(--cyan);border-color:rgba(0,188,212,.3);background:rgba(0,188,212,.1)">🔗 Start Offer</a>` : ''}
+      ${offerLink(t.offerUrl, window._currentUser?.uid) ? `<a href="${escHtml(offerLink(t.offerUrl, window._currentUser?.uid))}" target="_blank" rel="noopener" class="tbtn" style="color:var(--cyan);border-color:rgba(0,188,212,.3);background:rgba(0,188,212,.1)">🔗 Start Offer</a>` : ''}
     </div>` : `<div class="translate-bar">🌐 Translate this job <div class="tbtn" onclick="toggleTaskInstrLang('${jobId}')">🌐 <span id="instrLangLabel${jobId}">${t.instructionsEn ? 'English' : 'N/A'}</span></div></div>`}
     <div class="cat-loc-row" style="display:flex;align-items:center;gap:14px;font-size:11px;color:var(--text3);font-weight:600;margin:10px 0 14px;flex-wrap:wrap">
       <span>📁 ${escHtml(t.category || '')}${t.subcategory ? ' • ' + escHtml(t.subcategory) : ''}</span>
@@ -6024,21 +6055,23 @@ function openTaskModal(jobId) {
     <div class="desc-box">${linkifyInstructionText(t.desc || t.title || '')}</div>
     <div class="sec-title"><h3>Instructions</h3></div>
     <div class="instr-box" id="instrBody${jobId}" style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:13px;margin-bottom:8px">${stepsHtml}</div>
+    ${isAutoPaidTask(t) ? '' : `
     <div class="sec-title"><h3>Requirements</h3></div>
     <div class="req-box">
       <div class="req-top"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><div><b>${reqList.length} Response(s) Required</b><span>You must provide proof of work as listed below</span></div></div>
       <ul class="req-list">${reqList.map(r => `<li>
         <div style="display:flex;flex-direction:column;gap:5px">
           <span>${escHtml(r.label)} <span style="color:var(--text3)">(${r.type === 'screenshot' ? 'Image' : 'Text'})</span></span>
-          ${r.exampleUrl ? `<div style="margin-top:3px"><div style="font-size:9.5px;color:var(--text3);font-weight:700;margin-bottom:3px">EXAMPLE</div><img src="${escHtml(r.exampleUrl)}" style="max-width:180px;max-height:120px;border-radius:8px;border:1px solid var(--border);object-fit:cover;cursor:pointer" onclick="window.open('${escHtml(r.exampleUrl)}','_blank')" title="Tap to view full size"></div>` : ''}
+          ${r.exampleUrl ? `<div style="margin-top:3px"><div style="font-size:9.5px;color:var(--text3);font-weight:700;margin-bottom:3px">EXAMPLE</div><img src="${escHtml(r.exampleUrl)}" style="max-width:180px;max-height:120px;border-radius:8px;border:1px solid var(--border);object-fit:cover;cursor:pointer" onclick="window.open(safeHttpUrl('${escJs(r.exampleUrl)}')||'about:blank','_blank','noopener')" title="Tap to view full size"></div>` : ''}
         </div>
       </li>`).join('')}</ul>
     </div>
+    `}
     ${(t.attachmentUrls && t.attachmentUrls.length) ? `
     <div class="sec-title"><h3>Instructional Assets</h3></div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">
       ${t.attachmentUrls.map((url, i) => `
-        <a href="${escHtml(url)}" target="_blank" rel="noopener" title="View attachment ${i+1}">
+        <a href="${escHtml(safeHttpUrl(url))}" target="_blank" rel="noopener" title="View attachment ${i+1}">
           <img src="${escHtml(url)}" style="width:90px;height:68px;object-fit:cover;border-radius:10px;border:1px solid var(--border);transition:transform .15s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
         </a>`).join('')}
     </div>` : ''}
@@ -6048,7 +6081,7 @@ function openTaskModal(jobId) {
   const actionBar = document.getElementById('modalActionBar');
   if (actionBar) actionBar.innerHTML = `
     <div style="display:flex;gap:8px">
-      <button class="btn-primary" style="flex:1" onclick="openSubmitWorkScreen('${jobId}')">📤 Submit Now</button>
+      ${isAutoPaidTask(t) ? `<div class="info-banner" style="flex:1;margin:0">✅ অফার সম্পন্ন হলে ব্যালেন্সে অটো যোগ হবে — কোনো প্রুফ লাগবে না। (কয়েক মিনিট সময় লাগতে পারে)</div>` : `<button class="btn-primary" style="flex:1" onclick="openSubmitWorkScreen('${jobId}')">📤 Submit Now</button>`}
       <div class="icon-btn" style="width:44px;height:44px;flex-shrink:0" title="Report"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--red)" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>
       <div class="icon-btn" style="width:44px;height:44px;flex-shrink:0" title="Share" onclick="window.open(location.href,'_blank')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--text3)" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
       <div class="icon-btn" style="width:44px;height:44px;flex-shrink:0" title="Close" onclick="closeTaskModal()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--text3)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
@@ -6092,6 +6125,7 @@ function closeTaskModal() {
 let _submitWorkJobId = null;
 function openSubmitWorkScreen(jobId) {
   const t = S.approvedJobs.find(x => x.id === jobId); if (!t) return;
+  if (isAutoPaidTask(t)) { showToast('এই টাস্কের টাকা অফার সম্পন্ন হলে অটো যোগ হবে — প্রুফ জমা দিতে হবে না', 'info'); return; }   // [OWA]
   closeTaskModal();
   _submitWorkJobId = jobId;
   S._pendingProofFiles[jobId] = {};
@@ -6108,7 +6142,7 @@ function openSubmitWorkScreen(jobId) {
       ${reqList.map((r, i) => `
         <div class="pw-field">
           <label>📄 ${escHtml(r.label)} <span class="req-tag">*</span><span class="pw-type-chip">${r.type === 'screenshot' ? 'Image' : 'Text'}</span></label>
-          ${r.exampleUrl ? `<div style="margin:4px 0 8px"><div style="font-size:9.5px;color:var(--text3);font-weight:700;margin-bottom:3px">EXAMPLE</div><img src="${escHtml(r.exampleUrl)}" style="max-width:140px;max-height:100px;border-radius:8px;border:1px solid var(--border);object-fit:cover;cursor:pointer" onclick="window.open('${escHtml(r.exampleUrl)}','_blank')" title="Tap to view full size"></div>` : ''}
+          ${r.exampleUrl ? `<div style="margin:4px 0 8px"><div style="font-size:9.5px;color:var(--text3);font-weight:700;margin-bottom:3px">EXAMPLE</div><img src="${escHtml(r.exampleUrl)}" style="max-width:140px;max-height:100px;border-radius:8px;border:1px solid var(--border);object-fit:cover;cursor:pointer" onclick="window.open(safeHttpUrl('${escJs(r.exampleUrl)}')||'about:blank','_blank','noopener')" title="Tap to view full size"></div>` : ''}
           ${r.type === 'screenshot'
             ? `<div class="proof-upload-area" id="swUploadArea${i}" onclick="document.getElementById('swFile${i}').click()"><div class="pua-icon">📷</div><div class="pua-text">Tap to select — ${escHtml(r.label)}</div></div><input type="file" id="swFile${i}" accept="image/*" style="display:none" onchange="handleSubmitWorkFile(${i},this)">`
             : `<textarea rows="2" id="swText${i}" placeholder="Enter ${escHtml(r.label)}"></textarea>`}
@@ -6180,7 +6214,7 @@ async function finalizeSubmitWork() {
   } finally { if (btn) { btn.disabled = false; btn.textContent = 'Submit Work'; } }
 }
 function visitLink(jobId, url) {
-  if (url) window.open(url, '_blank');
+  { const u = safeHttpUrl(url); if (u) window.open(u, '_blank', 'noopener'); }   // [SEC]
   S._visitedLinks[jobId] = true;
   const vBtn = document.getElementById('visitBtn' + jobId), fBtn = document.getElementById('finishBtn' + jobId);
   if (vBtn) { vBtn.textContent = '✅ Link Visited'; vBtn.classList.add('visited'); }
@@ -6189,7 +6223,7 @@ function visitLink(jobId, url) {
 function startDailyLinkTask(jobId, url) {
   const status = getDailyLinkStatus(jobId);
   if (status.onCooldown || S._dailyLinkCompleting[jobId]) return;
-  if (url && url !== '#') window.open(url, '_blank');
+  if (url && url !== '#') { const u = safeHttpUrl(url); if (u) window.open(u, '_blank', 'noopener'); }   // [SEC]
   S._dailyLinkPending[jobId] = true;
   const btn = document.getElementById('dlStartBtn' + jobId), status2 = document.getElementById('dlStatus' + jobId);
   if (btn) { btn.disabled = true; btn.textContent = '⏳ ব্যাক করে অপেক্ষা করুন...'; }
@@ -6275,6 +6309,7 @@ function updateProofSubmitState(jobId) {
 }
 async function submitTaskProof(jobId, proofText) {
   const t = S.approvedJobs.find(x => x.id === jobId); if (!t) return;
+  if (isAutoPaidTask(t)) { showToast('এই টাস্কে প্রুফ জমা দেওয়া যায় না — অটো ক্রেডিট হবে', 'warn'); return; }   // [OWA]
   const shotCount = t.type === 'link' ? 0 : Math.max(1, parseInt(t.screenshotCount) || 1);
   const filesObj = S._pendingProofFiles[jobId] || {};
   const imageFiles = [];
@@ -6552,14 +6587,14 @@ function renderContinentAccordion() {
     const selCount = c.countries.filter(cn => S.wiz.targetCountries.includes(cn)).length;
     const visibleCountries = term ? c.countries.filter(cn => cn.toLowerCase().includes(term)) : c.countries;
     return `<div class="continent-block">
-      <div class="continent-hd ${open ? 'open' : ''}" onclick="wizToggleContinent('${escHtml(c.name)}')">
+      <div class="continent-hd ${open ? 'open' : ''}" onclick="wizToggleContinent('${escJs(c.name)}')">
         <div class="continent-name">${escHtml(c.name)}</div>
         ${selCount ? `<span class="continent-count">${selCount}</span>` : ''}
         ${wizIcon('chevronDown', 15)}
       </div>
       <div class="continent-body ${open ? 'open' : ''}">
-        ${!term ? `<span class="continent-selectall" onclick="wizSelectAllContinent('${escHtml(c.name)}')">${selCount === c.countries.length ? 'সব বাদ দিন' : 'সব সিলেক্ট করুন'}</span>` : ''}
-        <div class="country-pill-grid">${visibleCountries.map(cn => `<div class="country-pill ${S.wiz.targetCountries.includes(cn) ? 'active' : ''}" onclick="wizToggleCountry('${escHtml(cn)}')">${escHtml(cn)}</div>`).join('')}</div>
+        ${!term ? `<span class="continent-selectall" onclick="wizSelectAllContinent('${escJs(c.name)}')">${selCount === c.countries.length ? 'সব বাদ দিন' : 'সব সিলেক্ট করুন'}</span>` : ''}
+        <div class="country-pill-grid">${visibleCountries.map(cn => `<div class="country-pill ${S.wiz.targetCountries.includes(cn) ? 'active' : ''}" onclick="wizToggleCountry('${escJs(cn)}')">${escHtml(cn)}</div>`).join('')}</div>
       </div>
     </div>`;
   }).join('');
@@ -6594,7 +6629,7 @@ function renderWizCatRowList() {
   const list = S.categories.length ? S.categories : Object.keys(catGradients).filter(c => c !== 'Other').map(name => ({ name, emoji: '' }));
   el.innerHTML = list.map(c => {
     const subCount = Array.isArray(c.subcategories) ? c.subcategories.length : 0;
-    return `<div class="cat-file-card ${S.wiz.category === c.name ? 'active' : ''}" onclick="wizSelectCategory('${escHtml(c.name)}')">
+    return `<div class="cat-file-card ${S.wiz.category === c.name ? 'active' : ''}" onclick="wizSelectCategory('${escJs(c.name)}')">
       <div class="cat-file-top"><div class="cat-file-ico" style="background:${catIcoBg(c.name)}">${catIcoInner(c.name)}</div>${subCount ? `<div class="cat-file-count">${subCount}</div>` : ''}</div>
       <div class="cat-file-name">${escHtml(c.name)}</div></div>`;
   }).join('');
@@ -6620,7 +6655,7 @@ function wizOpenSubcatOverlay(catName) {
   document.getElementById('wizSubcatOverlayTitle').textContent = catName;
   const wrap = document.getElementById('wizSubcatOverlayPills');
   const pills = ['কোনোটি না', ...subs];
-  wrap.innerHTML = pills.map(s => `<div class="subcat-pill ${(s === 'কোনোটি না' ? !S.wiz.subcategory : S.wiz.subcategory === s) ? 'active' : ''}" onclick="wizPickSubcatOverlay('${escHtml(s)}')">${escHtml(s)}</div>`).join('');
+  wrap.innerHTML = pills.map(s => `<div class="subcat-pill ${(s === 'কোনোটি না' ? !S.wiz.subcategory : S.wiz.subcategory === s) ? 'active' : ''}" onclick="wizPickSubcatOverlay('${escJs(s)}')">${escHtml(s)}</div>`).join('');
   document.getElementById('wizSubcatOverlay').classList.add('show');
 }
 function wizPickSubcatOverlay(s) {
@@ -6637,7 +6672,7 @@ function updateWizSubcatSummary() {
   if (!subs.length) { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
   txt.innerHTML = S.wiz.subcategory
-    ? `সাব-ক্যাটাগরি: <b>${escHtml(S.wiz.subcategory)}</b> <span style="text-decoration:underline;cursor:pointer;margin-left:6px" onclick="wizOpenSubcatOverlay('${escHtml(S.wiz.category)}')">Change</span>`
+    ? `সাব-ক্যাটাগরি: <b>${escHtml(S.wiz.subcategory)}</b> <span style="text-decoration:underline;cursor:pointer;margin-left:6px" onclick="wizOpenSubcatOverlay('${escJs(S.wiz.category)}')">Change</span>`
     : `সাব-ক্যাটাগরি বেছে নিতে ক্যাটাগরি কার্ডে ট্যাপ করুন`;
 }
 
@@ -7081,7 +7116,7 @@ function renderMyJobSubmissions() {
         </div>
         <div class="task-top"><div class="task-title">${escHtml(s.jobTitle||'Task')}</div><div class="task-reward-pill"><span>${fmtUSD(s.reward||0)}</span></div></div>
         ${s.proofText ? `<div style="font-size:11.5px;color:var(--text2);margin-top:6px;font-style:italic">"${escHtml(s.proofText)}"</div>` : ''}
-        ${imgs.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;margin-top:8px">${imgs.map(u=>`<img src="${escHtml(u)}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer" onclick="window.open('${escHtml(u)}','_blank')">`).join('')}</div>` : ''}
+        ${imgs.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;margin-top:8px">${imgs.map(u=>`<img src="${escHtml(u)}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer" onclick="window.open(safeHttpUrl('${escJs(u)}')||'about:blank','_blank','noopener')">`).join('')}</div>` : ''}
         ${s.rejectReason ? `<div class="myjob-reject-box">💬 <div><strong>আপনার কারণ:</strong> ${escHtml(s.rejectReason)}</div></div>` : ''}
         <div style="font-size:10px;color:var(--text3);margin-top:6px">${s.date||''}</div>
         ${s.status==='pending' ? `<div style="display:flex;gap:8px;margin-top:10px">
@@ -7191,7 +7226,7 @@ function renderDepMethodGrid() {
   const grid = document.getElementById('depMethodGrid'); if(!grid) return;
   const methods = S.paymentMethods.filter(m => m.depositEnabled !== false);
   grid.innerHTML = methods.map(m =>
-    `<div class="method-pill ${depSelectedMethod===m.name?'active':''}" data-method="${escHtml(m.name)}" onclick="selectDepMethod('${escHtml(m.name)}')">
+    `<div class="method-pill ${depSelectedMethod===m.name?'active':''}" data-method="${escHtml(m.name)}" onclick="selectDepMethod('${escJs(m.name)}')">
       <span class="mp-emoji">${m.logo ? `<img src="${m.logo}" style="width:22px;height:22px;border-radius:5px;object-fit:cover">` : '💳'}</span>${escHtml(m.name)}
     </div>`
   ).join('');
@@ -8005,7 +8040,7 @@ function renderSupportMessages() {
   const list = S.supportMessages || [];
   area.innerHTML = list.map(m => {
     const time = m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : (m.timeLabel || '');
-    const imgHtml = m.imageUrl ? `<img src="${escHtml(m.imageUrl)}" style="max-width:180px;border-radius:10px;display:block;margin-bottom:${m.text ? '6px' : '0'};cursor:pointer" onclick="window.open('${escHtml(m.imageUrl)}','_blank')">` : '';
+    const imgHtml = m.imageUrl ? `<img src="${escHtml(m.imageUrl)}" style="max-width:180px;border-radius:10px;display:block;margin-bottom:${m.text ? '6px' : '0'};cursor:pointer" onclick="window.open(safeHttpUrl('${escJs(m.imageUrl)}')||'about:blank','_blank','noopener')">` : '';
     if (m.from === 'admin') return `<div class="msg-row them"><div class="msg-ava"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/></svg></div><div><div class="msg-bubble">${imgHtml}${escHtml(m.text || '')}<div class="msg-time">${time}</div></div></div></div>`;
     return `<div class="msg-row me"><div><div class="msg-bubble" onpointerdown="startMsgLongPress('${m.id}')" onpointerup="cancelMsgLongPress()" onpointerleave="cancelMsgLongPress()">${imgHtml}${escHtml(m.text || '')}<div class="msg-time">${time}</div></div></div></div>`;
   }).join('');
